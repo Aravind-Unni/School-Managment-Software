@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/common/event-envelope",
+  "title": "EventEnvelope",
+  "description": "One durable outbox event, appended inside the writing transaction. A module owns its payload schema but never the envelope fields.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "school_id",
+    "event_type",
+    "occurred_at",
+    "aggregate_id",
+    "aggregate_version",
+    "payload",
+    "envelope_version"
+  ],
+  "properties": {
+    "event_id": { "type": "string", "format": "uuid" },
+    "school_id": { "type": "string", "format": "uuid" },
+    "event_type": {
+      "description": "Dotted and owned by the emitting module, e.g. assessment.result_published.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$"
+    },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "aggregate_id": { "type": "string", "format": "uuid" },
+    "aggregate_version": {
+      "description": "Version AFTER the write, so consumers can detect gaps.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "payload": { "type": "object" },
+    "envelope_version": { "type": "integer", "const": 1 }
+  }
+}

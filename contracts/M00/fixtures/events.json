@@ -1,0 +1,33 @@
+{
+  "description": "Outbox events M00 emits. A consumer fixture suite asserts these against any provider. Envelope fields are frozen by contracts/common/event-envelope.schema.json; only payload is module-owned.",
+  "events": [
+    {
+      "event_type": "demo.create_noted",
+      "emitted_when": "A note is created. Appended in the SAME transaction as the row; a rollback removes both.",
+      "example": {
+        "event_id": "00000000-0000-4000-8000-000000000001",
+        "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+        "event_type": "demo.create_noted",
+        "occurred_at": "2026-07-15T04:30:00+00:00",
+        "aggregate_id": "00000000-0000-4000-8000-0000000000aa",
+        "aggregate_version": 1,
+        "payload": { "version": 1 },
+        "envelope_version": 1
+      }
+    },
+    {
+      "event_type": "demo.update_noted",
+      "emitted_when": "A note is updated. aggregate_version is the version AFTER the write, so a consumer can detect a missed event as a gap.",
+      "example": {
+        "event_id": "00000000-0000-4000-8000-000000000002",
+        "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+        "event_type": "demo.update_noted",
+        "occurred_at": "2026-07-15T04:35:00+00:00",
+        "aggregate_id": "00000000-0000-4000-8000-0000000000aa",
+        "aggregate_version": 2,
+        "payload": { "version": 2 },
+        "envelope_version": 1
+      }
+    }
+  ]
+}

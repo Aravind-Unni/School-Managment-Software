@@ -1,0 +1,99 @@
+{
+  "description": "Canonical error responses. Any provider of this contract -- the harness fake or a real implementation -- must produce exactly these shapes for these situations. request_id varies per request and is compared for presence, not value.",
+  "cases": [
+    {
+      "name": "unauthenticated",
+      "situation": "No server-side identity is available (DEV_PERSONA_MODE=off and M01 not integrated).",
+      "http_status": 401,
+      "body": {
+        "code": "unauthenticated",
+        "message_key": "error.unauthenticated",
+        "request_id": "<any non-empty string>",
+        "field_errors": []
+      }
+    },
+    {
+      "name": "client_asserted_identity",
+      "situation": "Request carried X-School-Id. Rejected, not ignored.",
+      "http_status": 400,
+      "body": {
+        "code": "validation_failed",
+        "message_key": "error.client_asserted_identity",
+        "request_id": "<any non-empty string>",
+        "field_errors": [
+          { "field": "HTTP_X_SCHOOL_ID", "message_key": "error.header_not_accepted" }
+        ]
+      }
+    },
+    {
+      "name": "stale_two_factor",
+      "situation": "Teacher T1 attempts a write with 2FA asserted more than 15 minutes ago.",
+      "http_status": 401,
+      "body": {
+        "code": "stale_auth",
+        "message_key": "error.two_factor_stale",
+        "request_id": "<any non-empty string>",
+        "field_errors": []
+      }
+    },
+    {
+      "name": "action_denied",
+      "situation": "Guardian G2 reads a note about student S1, whom G2 does not guard.",
+      "http_status": 403,
+      "body": {
+        "code": "action_denied",
+        "message_key": "error.action_denied",
+        "request_id": "<any non-empty string>",
+        "field_errors": []
+      }
+    },
+    {
+      "name": "cross_school_is_not_found",
+      "situation": "A School A actor reads a School B note. MUST be 404, never 403, so probing cannot distinguish 'exists but not yours' from 'does not exist'.",
+      "http_status": 404,
+      "body": {
+        "code": "object_inaccessible",
+        "message_key": "error.object_inaccessible",
+        "request_id": "<any non-empty string>",
+        "field_errors": []
+      }
+    },
+    {
+      "name": "version_conflict",
+      "situation": "expected_version=1 sent against a note already at version 2.",
+      "http_status": 409,
+      "body": {
+        "code": "version_conflict",
+        "message_key": "error.version_conflict",
+        "request_id": "<any non-empty string>",
+        "field_errors": []
+      }
+    },
+    {
+      "name": "server_internal_field_rejected",
+      "situation": "Request body contained resource_grant, which is minted server-side only.",
+      "http_status": 422,
+      "body": {
+        "code": "validation_failed",
+        "message_key": "error.server_internal_field_rejected",
+        "request_id": "<any non-empty string>",
+        "field_errors": [
+          { "field": "resource_grant", "message_key": "error.field_not_accepted" }
+        ]
+      }
+    },
+    {
+      "name": "malformed_cursor",
+      "situation": "A hand-edited or foreign cursor. Must be 422 at the boundary, never a 500.",
+      "http_status": 422,
+      "body": {
+        "code": "validation_failed",
+        "message_key": "error.malformed_cursor",
+        "request_id": "<any non-empty string>",
+        "field_errors": [
+          { "field": "cursor", "message_key": "error.malformed_cursor" }
+        ]
+      }
+    }
+  ]
+}

@@ -139,3 +139,72 @@ def test_registration_accepts_jobs_and_health_checks():
     )
     assert registration.scheduled_jobs[0].cron == "0 18 * * *"
     assert registration.migration_dependencies == ("M02",)
+
+
+def test_the_persona_fixture_file_matches_the_derived_uuids():
+    """The committed fixture file must not drift from shared.fixtures.
+
+    A stale id here would make a cross-language consumer suite assert against a
+    persona the backend never produces.
+    """
+    import json
+    import pathlib
+
+    from shared import fixtures as fx
+
+    root = pathlib.Path(__file__).resolve().parents[2]
+    data = json.loads((root / "contracts/M00/fixtures/personas.json").read_text())
+
+    assert data["namespace"] == str(fx.FIXTURE_NAMESPACE)
+    assert data["schools"] == {
+        "school_a": str(fx.SCHOOL_A),
+        "school_b": str(fx.SCHOOL_B),
+    }
+    expected_people = {
+        "S1": fx.STUDENT_S1,
+        "S2": fx.STUDENT_S2,
+        "S3": fx.STUDENT_S3,
+        "G1": fx.GUARDIAN_G1,
+        "G2": fx.GUARDIAN_G2,
+        "T1": fx.TEACHER_T1,
+        "T2": fx.TEACHER_T2,
+        "P1": fx.PRINCIPAL_P1,
+    }
+    for key, value in expected_people.items():
+        assert data["people"][key]["id"] == str(value), key
+    assert data["sections"] == {"C1": str(fx.CLASS_C1), "C2": str(fx.CLASS_C2)}
+
+
+def test_the_documented_relationships_match_what_the_fake_registry_answers():
+    """Every expected_relationships row in the fixture file must be reproducible."""
+    import json
+    import pathlib
+    from datetime import UTC, datetime
+
+    from contracts.identity import AuthLevel, RequestContext
+    from shared import fixtures as fx
+    from shared.fakes import FakeRegistry
+
+    root = pathlib.Path(__file__).resolve().parents[2]
+    data = json.loads((root / "contracts/M00/fixtures/personas.json").read_text())
+    by_label = {
+        "S1": fx.STUDENT_S1,
+        "S2": fx.STUDENT_S2,
+        "S3": fx.STUDENT_S3,
+        "G1": fx.GUARDIAN_G1,
+        "G2": fx.GUARDIAN_G2,
+        "T1": fx.TEACHER_T1,
+        "T2": fx.TEACHER_T2,
+        "P1": fx.PRINCIPAL_P1,
+    }
+    registry = FakeRegistry()
+    for row in data["expected_relationships"]:
+        context = RequestContext(
+            actor_id=by_label[row["actor"]],
+            school_id=fx.SCHOOL_A,
+            request_id="fixture-check",
+            auth_level=AuthLevel.TWO_FACTOR,
+            auth_time=datetime.now(UTC),
+        )
+        facts = registry.relationship_facts(context, by_label[row["subject"]])
+        assert facts.relationship.value == row["relationship"], row

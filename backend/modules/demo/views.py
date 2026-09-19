@@ -10,14 +10,31 @@ from __future__ import annotations
 from uuid import UUID
 
 from django.conf import settings
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from contracts.pagination import clamp_page_size
 
-from .serializers import CreateNoteRequest, UpdateNoteRequest
+from .serializers import (
+    CreateNoteRequest,
+    ErrorEnvelopeResponse,
+    NoteCollectionResponse,
+    NoteResponse,
+    UpdateNoteRequest,
+)
 from .services import DemoNoteService
+
+#: Error responses every endpoint in this module can return. Declared once so
+#: the generated client has the full error surface, not just the happy path.
+COMMON_ERRORS = {
+    400: OpenApiResponse(ErrorEnvelopeResponse, "Client asserted its own identity."),
+    401: OpenApiResponse(ErrorEnvelopeResponse, "Unauthenticated, or 2FA too old."),
+    403: OpenApiResponse(ErrorEnvelopeResponse, "Action denied in this scope."),
+    404: OpenApiResponse(ErrorEnvelopeResponse, "Absent, or not visible to you."),
+    422: OpenApiResponse(ErrorEnvelopeResponse, "Business validation failed."),
+}
 
 
 def build_service() -> DemoNoteService:
@@ -45,6 +62,26 @@ def build_service() -> DemoNoteService:
 class NoteCollectionView(APIView):
     """GET (list) and POST (create) for demo notes."""
 
+    @extend_schema(
+        operation_id="demo_notes_list",
+        summary="List demo notes",
+        parameters=[
+            OpenApiParameter(
+                "cursor",
+                str,
+                description="Opaque keyset cursor from a previous next_cursor. Do not parse.",
+            ),
+            OpenApiParameter(
+                "page_size",
+                int,
+                description=(
+                    "Requested page size. Capped server-side; invalid values "
+                    "fall back to the default."
+                ),
+            ),
+        ],
+        responses={200: NoteCollectionResponse, **COMMON_ERRORS},
+    )
     def get(self, request: Request) -> Response:
         """Return a cursor page of notes.
 
@@ -57,6 +94,12 @@ class NoteCollectionView(APIView):
         )
         return Response(page.to_wire(lambda view: view.to_wire()))
 
+    @extend_schema(
+        operation_id="demo_notes_create",
+        summary="Create a demo note",
+        request=CreateNoteRequest,
+        responses={201: NoteResponse, **COMMON_ERRORS},
+    )
     def post(self, request: Request) -> Response:
         """Create a note and return it with HTTP 201."""
         payload = CreateNoteRequest(data=request.data)
@@ -72,11 +115,29 @@ class NoteCollectionView(APIView):
 class NoteDetailView(APIView):
     """GET (read) and PATCH (update) for one demo note."""
 
+    @extend_schema(
+        operation_id="demo_notes_read",
+        summary="Read one demo note",
+        responses={200: NoteResponse, **COMMON_ERRORS},
+    )
     def get(self, request: Request, note_id: UUID) -> Response:
         """Return one note, or the 404 envelope."""
         view = build_service().get_note(request.school_context, note_id)
         return Response(view.to_wire())
 
+    @extend_schema(
+        operation_id="demo_notes_update",
+        summary="Update a demo note under optimistic concurrency",
+        request=UpdateNoteRequest,
+        responses={
+            200: NoteResponse,
+            409: OpenApiResponse(
+                ErrorEnvelopeResponse,
+                "expected_version did not match the stored version.",
+            ),
+            **COMMON_ERRORS,
+        },
+    )
     def patch(self, request: Request, note_id: UUID) -> Response:
         """Update a note under optimistic concurrency, or return 409."""
         payload = UpdateNoteRequest(data=request.data)

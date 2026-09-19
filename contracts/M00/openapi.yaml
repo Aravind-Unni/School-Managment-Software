@@ -1,0 +1,365 @@
+openapi: 3.0.3
+info:
+  title: School platform API
+  version: school-contracts-v3-draft
+  description: Per-module REST API. One module is served per standalone profile.
+paths:
+  /api/demo/notes/:
+    get:
+      operationId: demo_notes_list
+      description: |-
+        Return a cursor page of notes.
+
+        Query parameters: ``cursor`` (opaque), ``page_size`` (capped).
+      summary: List demo notes
+      parameters:
+      - in: query
+        name: cursor
+        schema:
+          type: string
+        description: Opaque keyset cursor from a previous next_cursor. Do not parse.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Requested page size. Capped server-side; invalid values fall
+          back to the default.
+      tags:
+      - demo
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteCollectionResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Client asserted its own identity.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Unauthenticated, or 2FA too old.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Action denied in this scope.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Absent, or not visible to you.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Business validation failed.
+    post:
+      operationId: demo_notes_create
+      description: Create a note and return it with HTTP 201.
+      summary: Create a demo note
+      tags:
+      - demo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNoteRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreateNoteRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateNoteRequestRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Client asserted its own identity.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Unauthenticated, or 2FA too old.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Action denied in this scope.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Absent, or not visible to you.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Business validation failed.
+  /api/demo/notes/{note_id}/:
+    get:
+      operationId: demo_notes_read
+      description: Return one note, or the 404 envelope.
+      summary: Read one demo note
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - demo
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Client asserted its own identity.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Unauthenticated, or 2FA too old.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Action denied in this scope.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Absent, or not visible to you.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Business validation failed.
+    patch:
+      operationId: demo_notes_update
+      description: Update a note under optimistic concurrency, or return 409.
+      summary: Update a demo note under optimistic concurrency
+      parameters:
+      - in: path
+        name: note_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - demo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateNoteRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateNoteRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateNoteRequestRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NoteResponse'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: expected_version did not match the stored version.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Client asserted its own identity.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Unauthenticated, or 2FA too old.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Action denied in this scope.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Absent, or not visible to you.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Business validation failed.
+components:
+  schemas:
+    CodeEnum:
+      enum:
+      - unauthenticated
+      - stale_auth
+      - action_denied
+      - object_inaccessible
+      - version_conflict
+      - state_conflict
+      - validation_failed
+      type: string
+      description: |-
+        * `unauthenticated` - unauthenticated
+        * `stale_auth` - stale_auth
+        * `action_denied` - action_denied
+        * `object_inaccessible` - object_inaccessible
+        * `version_conflict` - version_conflict
+        * `state_conflict` - state_conflict
+        * `validation_failed` - validation_failed
+    CreateNoteRequestRequest:
+      type: object
+      description: Body for POST /api/demo/notes/.
+      properties:
+        body:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        subject_person_id:
+          type: string
+          format: uuid
+      required:
+      - body
+      - subject_person_id
+    ErrorEnvelopeResponse:
+      type: object
+      description: |-
+        The frozen error body returned by every non-2xx response.
+
+        Declared here only so that drf-spectacular emits it as a reusable component;
+        the authoritative definition is contracts/common/error-envelope.schema.json.
+      properties:
+        code:
+          $ref: '#/components/schemas/CodeEnum'
+        message_key:
+          type: string
+        request_id:
+          type: string
+        field_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldErrorResponse'
+      required:
+      - code
+      - field_errors
+      - message_key
+      - request_id
+    FieldErrorResponse:
+      type: object
+      description: One field-scoped problem inside the shared error envelope.
+      properties:
+        field:
+          type: string
+        message_key:
+          type: string
+      required:
+      - field
+      - message_key
+    NoteCollectionResponse:
+      type: object
+      description: 'The paginated collection envelope: items plus an opaque next_cursor.'
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/NoteResponse'
+        next_cursor:
+          type: string
+          nullable: true
+      required:
+      - items
+      - next_cursor
+    NoteResponse:
+      type: object
+      description: One demo note as returned by the API.
+      properties:
+        id:
+          type: string
+          format: uuid
+        school_id:
+          type: string
+          format: uuid
+        body:
+          type: string
+        version:
+          type: integer
+          minimum: 1
+        section_id:
+          type: string
+          format: uuid
+          nullable: true
+        subject_person_id:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - body
+      - id
+      - school_id
+      - section_id
+      - subject_person_id
+      - version
+    PatchedUpdateNoteRequestRequest:
+      type: object
+      description: |-
+        Body for PATCH /api/demo/notes/<id>/.
+
+        ``expected_version`` is mandatory: an update without it would be a
+        last-write-wins overwrite, which the platform forbids.
+      properties:
+        body:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        expected_version:
+          type: integer
+          minimum: 1
