@@ -19,6 +19,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import timedelta
 
+from contracts.decisions import Decision, ReasonCode
 from contracts.errors import ActionDenied, ObjectInaccessible, StaleAuth
 from contracts.identity import AuthLevel, RequestContext
 from contracts.scope import Relationship, ScopeFacts
@@ -87,6 +88,21 @@ POLICY_RULES: tuple[PolicyRule, ...] = (
 DEFAULT_STALE_AUTH_WINDOW = timedelta(minutes=15)
 
 
+def _exception_for(reason_code: ReasonCode) -> Exception:
+    """Return the exception a denial reason renders as.
+
+    SCHOOL_MISMATCH becomes 404 rather than 403, deliberately, so that probing
+    cannot distinguish "exists but not yours" from "does not exist".
+    """
+    if reason_code is ReasonCode.SCHOOL_MISMATCH:
+        return ObjectInaccessible("error.object_inaccessible")
+    if reason_code is ReasonCode.TWO_FACTOR_REQUIRED:
+        return StaleAuth("error.two_factor_required")
+    if reason_code is ReasonCode.AUTH_STEP_UP_REQUIRED:
+        return StaleAuth("error.two_factor_stale")
+    return ActionDenied("error.action_denied")
+
+
 class FakeAccess:
     """Policy-table Access adapter satisfying AccessPort.
 
@@ -116,42 +132,62 @@ class FakeAccess:
         self._rules = table
         self._failures = failures or FailureInjector()
 
+    def authorize(
+        self,
+        context: RequestContext,
+        action: str,
+        scope_facts: ScopeFacts,
+    ) -> Decision:
+        """Return a Decision. The primitive; everything else derives from it.
+
+        Evaluation order matters and is part of the contract:
+          1. school mismatch  -> SCHOOL_MISMATCH  (renders 404, hides existence)
+          2. unknown action   -> UNKNOWN_ACTION   (deny by default)
+          3. relationship     -> RELATIONSHIP_REQUIRED
+          4. auth level/age   -> AUTH_STEP_UP_REQUIRED
+        Checking school first is what keeps cross-tenant probing silent.
+        """
+        self._failures.maybe_fail("access.check")
+
+        if scope_facts.resource_school_id != context.school_id:
+            return Decision.deny(ReasonCode.SCHOOL_MISMATCH)
+
+        rule = self._rules.get(action)
+        if rule is None:
+            return Decision.deny(ReasonCode.UNKNOWN_ACTION)
+
+        if rule.allowed_relationships:
+            relationship = scope_facts.relationship or Relationship.NONE
+            if relationship not in rule.allowed_relationships:
+                return Decision.deny(ReasonCode.RELATIONSHIP_REQUIRED)
+
+        if context.auth_level.rank < rule.minimum_auth_level.rank:
+            # Never asserted at this level: the actor must complete or enrol a
+            # factor. Distinct from having one that went stale.
+            return Decision.deny(ReasonCode.TWO_FACTOR_REQUIRED)
+
+        if rule.max_auth_age is not None:
+            if self._auth_age(context) > rule.max_auth_age:
+                return Decision.deny(ReasonCode.AUTH_STEP_UP_REQUIRED)
+
+        return Decision.allow()
+
     def check(
         self,
         context: RequestContext,
         action: str,
         facts: ScopeFacts,
     ) -> None:
-        """Authorise, or raise ObjectInaccessible / ActionDenied / StaleAuth.
+        """Authorise, or raise the exception matching the decision's reason.
 
-        Order matters and is part of the contract:
-          1. school mismatch  -> 404 (do not reveal existence)
-          2. unknown action   -> 403 (deny by default)
-          3. relationship     -> 403
-          4. auth level/age   -> 401
-        Checking school first is what keeps cross-tenant probing silent.
+        A thin wrapper over ``authorize`` so the raising and non-raising paths can
+        never disagree. The message keys are preserved from the B00 behaviour so
+        existing consumer fixtures keep matching.
         """
-        self._failures.maybe_fail("access.check")
-
-        if facts.resource_school_id != context.school_id:
-            raise ObjectInaccessible("error.object_inaccessible")
-
-        rule = self._rules.get(action)
-        if rule is None:
-            raise ActionDenied("error.action_denied")
-
-        if rule.allowed_relationships:
-            relationship = facts.relationship or Relationship.NONE
-            if relationship not in rule.allowed_relationships:
-                raise ActionDenied("error.action_denied")
-
-        if context.auth_level.rank < rule.minimum_auth_level.rank:
-            raise StaleAuth("error.two_factor_required")
-
-        if rule.max_auth_age is not None:
-            age = self._auth_age(context)
-            if age > rule.max_auth_age:
-                raise StaleAuth("error.two_factor_stale")
+        decision = self.authorize(context, action, facts)
+        if decision.allowed:
+            return
+        raise _exception_for(decision.reason_code)
 
     def is_allowed(
         self,
@@ -159,12 +195,23 @@ class FakeAccess:
         action: str,
         facts: ScopeFacts,
     ) -> bool:
-        """Return True when ``check`` would pass. For navigation only."""
-        try:
-            self.check(context, action, facts)
-        except (ActionDenied, ObjectInaccessible, StaleAuth):
-            return False
-        return True
+        """Return True when ``authorize`` allows. For navigation only."""
+        return self.authorize(context, action, facts).allowed
+
+    def require_recent_2fa(
+        self,
+        context: RequestContext,
+        max_age_seconds: int = 300,
+    ) -> None:
+        """Raise StaleAuth unless 2FA was asserted within the window.
+
+        Checks the level first: an actor who never completed a second factor needs
+        to enrol, not merely to re-assert, and the message key says so.
+        """
+        if context.auth_level.rank < AuthLevel.TWO_FACTOR.rank:
+            raise StaleAuth("error.two_factor_required")
+        if self._auth_age(context) > timedelta(seconds=max_age_seconds):
+            raise StaleAuth("error.two_factor_stale")
 
     def _auth_age(self, context: RequestContext) -> timedelta:
         """Return how long ago 2FA was asserted, per the injected clock.

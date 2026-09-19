@@ -6,31 +6,63 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "event_id",
-    "school_id",
-    "event_type",
-    "occurred_at",
     "aggregate_id",
     "aggregate_version",
+    "correlation_id",
+    "envelope_version",
+    "event_id",
+    "event_type",
+    "occurred_at",
     "payload",
-    "envelope_version"
+    "schema_version",
+    "school_id"
   ],
   "properties": {
-    "event_id": { "type": "string", "format": "uuid" },
-    "school_id": { "type": "string", "format": "uuid" },
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "school_id": {
+      "type": "string",
+      "format": "uuid"
+    },
     "event_type": {
       "description": "Dotted and owned by the emitting module, e.g. assessment.result_published.",
       "type": "string",
       "pattern": "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$"
     },
-    "occurred_at": { "type": "string", "format": "date-time" },
-    "aggregate_id": { "type": "string", "format": "uuid" },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "aggregate_id": {
+      "type": "string",
+      "format": "uuid"
+    },
     "aggregate_version": {
       "description": "Version AFTER the write, so consumers can detect gaps.",
       "type": "integer",
       "minimum": 1
     },
-    "payload": { "type": "object" },
-    "envelope_version": { "type": "integer", "const": 1 }
+    "payload": {
+      "type": "object"
+    },
+    "envelope_version": {
+      "type": "integer",
+      "const": 1,
+      "description": "DEPRECATED alias of schema_version, emitted for one revision so B00 consumer fixtures keep matching. Retire in school-contracts-v4."
+    },
+    "schema_version": {
+      "type": "integer",
+      "const": 1,
+      "description": "M01's name for the envelope version. Carries the same number as envelope_version, which it replaces in the v4 revision."
+    },
+    "correlation_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Correlates every event emitted while handling one request. Null for worker-originated events."
+    }
   }
 }

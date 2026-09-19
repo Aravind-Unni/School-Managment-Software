@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/common/registry-dtos",
+  "title": "Registry DTOs",
+  "description": "Shapes RegistryPort returns. The deterministic fake and the future real provider must both satisfy these, so a consumer cannot ship against a shape that differs at integration.",
+  "$defs": {
+    "StudentDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "admission_no",
+        "display_name",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "admission_no": {
+          "type": "string",
+          "minLength": 1
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "inactive",
+            "transferred",
+            "graduated"
+          ]
+        }
+      }
+    },
+    "RosterDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "section_id",
+        "date",
+        "subject_id",
+        "version",
+        "students"
+      ],
+      "description": "When subject_id is non-null, students contains ONLY pupils enrolled in that subject offering on that date. A timetable period must use this filtered roster.",
+      "properties": {
+        "section_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "subject_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "students": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "student_id",
+              "enrolment_id",
+              "display_name"
+            ],
+            "properties": {
+              "student_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "enrolment_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "display_name": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "TeachingAssignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "section_id",
+        "subject_id",
+        "from_date",
+        "to_date"
+      ],
+      "properties": {
+        "section_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "subject_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "from_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "to_date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "description": "Inclusive last date. Null means open-ended."
+        }
+      }
+    }
+  }
+}

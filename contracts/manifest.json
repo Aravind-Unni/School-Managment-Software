@@ -18,6 +18,14 @@
     },
     {
       "frozen": true,
+      "id": "common/decision",
+      "kind": "json-schema",
+      "owner": "foundation (B00)",
+      "path": "contracts/common/decision.schema.json",
+      "sha256": "e6c6cdf5438c0e0475edcd849a07ac1b557487984cc9312785253351b7698602"
+    },
+    {
+      "frozen": true,
       "id": "common/error-envelope",
       "kind": "json-schema",
       "owner": "foundation (B00)",
@@ -30,7 +38,15 @@
       "kind": "json-schema",
       "owner": "foundation (B00)",
       "path": "contracts/common/event-envelope.schema.json",
-      "sha256": "dd0672f26e89d3b4f8997b0519bef84f16f5b68090f5350eccaee8b02a5d7015"
+      "sha256": "c4bf3a5eb12afaddbbf35d3be51f2d9516e6848f7d321268f395602a24ea8d15"
+    },
+    {
+      "frozen": true,
+      "id": "common/registry-dtos",
+      "kind": "json-schema",
+      "owner": "foundation (B00)",
+      "path": "contracts/common/registry-dtos.schema.json",
+      "sha256": "233737b633007785ae0a36eddb1308d4a6326995ac4d5b2b732cf1d392511b2d"
     },
     {
       "frozen": true,
@@ -38,7 +54,7 @@
       "kind": "json-schema",
       "owner": "foundation (B00)",
       "path": "contracts/common/relationship-facts.schema.json",
-      "sha256": "d3e65843595e0a7b91219913acf6ec5da1c0124d80279795a0213d9bc04e20e7"
+      "sha256": "29f58adf9937c2d30939d1737229f19508c5f3c19b0c5ad1f268b2a1615b56f2"
     },
     {
       "frozen": true,

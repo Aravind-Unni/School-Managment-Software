@@ -72,15 +72,99 @@ def test_malformed_api_prefixes_are_refused(bad_prefix):
         ModuleRegistration(id="M00", slug="demo", api_prefix=bad_prefix)
 
 
-def test_permission_codes_must_be_namespaced_to_the_module_slug():
-    # A module granting itself another module's permission is a privilege leak.
-    with pytest.raises(ValueError, match="namespaced"):
+def test_permission_codes_must_lie_inside_an_owned_prefix():
+    """A module granting itself another module's permission is a privilege leak.
+
+    B00 enforced this by requiring every code to start with the module slug. M01's
+    real vocabulary is 'roles.manage' and 'auth.factor.manage_self', so ownership
+    is now declared as PREFIXES instead. The property is unchanged; only how it is
+    expressed moved.
+    """
+    with pytest.raises(ValueError, match="owned prefixes"):
         ModuleRegistration(
             id="M04",
             slug="attendance",
             api_prefix="/api/attendance/",
             permission_codes=("fees.read_invoice",),
         )
+
+
+def test_the_slug_prefix_is_owned_by_default():
+    """Every registration written against B00 stays valid with no change."""
+    registration = ModuleRegistration(
+        id="M04",
+        slug="attendance",
+        api_prefix="/api/attendance/",
+        permission_codes=("attendance.read_register",),
+    )
+    assert registration.owned_permission_prefixes == frozenset({"attendance."})
+
+
+def test_a_multi_segment_code_is_accepted_inside_an_owned_prefix():
+    registration = ModuleRegistration(
+        id="M01",
+        slug="access",
+        api_prefix="/api/v1/",
+        api_path_roots=("auth/",),
+        permission_prefixes=("auth.",),
+        permission_codes=("auth.factor.manage_self", "auth.factor.reset_other"),
+    )
+    assert "auth.factor.manage_self" in registration.permission_codes
+
+
+def test_a_shared_api_prefix_requires_declared_path_roots():
+    """Two modules under /api/v1/ with no declared roots collide silently."""
+    with pytest.raises(ValueError, match="api_path_roots must declare"):
+        ModuleRegistration(id="M01", slug="access", api_prefix="/api/v1/")
+
+
+def test_path_roots_are_rejected_under_a_module_specific_prefix():
+    with pytest.raises(ValueError, match="only meaningful under a shared"):
+        ModuleRegistration(
+            id="M00", slug="demo", api_prefix="/api/demo/", api_path_roots=("notes/",)
+        )
+
+
+def test_two_modules_claiming_one_permission_prefix_is_refused():
+    from contracts.registration import assert_no_registration_collisions
+
+    first = ModuleRegistration(
+        id="M01",
+        slug="access",
+        api_prefix="/api/v1/",
+        api_path_roots=("auth/",),
+        permission_prefixes=("auth.",),
+    )
+    second = ModuleRegistration(
+        id="M02",
+        slug="registry",
+        api_prefix="/api/v1/",
+        api_path_roots=("people/",),
+        permission_prefixes=("auth.",),
+    )
+    with pytest.raises(ValueError, match="permission prefix"):
+        assert_no_registration_collisions((first, second))
+
+
+def test_two_modules_claiming_one_api_path_is_refused():
+    from contracts.registration import assert_no_registration_collisions
+
+    first = ModuleRegistration(
+        id="M01",
+        slug="access",
+        api_prefix="/api/v1/",
+        api_path_roots=("auth/",),
+        permission_prefixes=("auth.",),
+    )
+    second = ModuleRegistration(
+        id="M02",
+        slug="registry",
+        api_prefix="/api/v1/",
+        api_path_roots=("auth/",),
+        permission_prefixes=("people.",),
+    )
+    with pytest.raises(ValueError, match="API path"):
+        assert_no_registration_collisions((first, second))
 
 
 @pytest.mark.parametrize("bad_code", ["Attendance.read", "attendance-read", "attendance."])

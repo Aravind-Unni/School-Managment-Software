@@ -2,18 +2,78 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "school/common/relationship-facts",
   "title": "RelationshipFacts",
-  "description": "Registry's ONLY answer about actor-to-subject linkage. Deliberately narrower than ScopeFacts and carries no school id: the caller already knows the school, and keeping this type minimal is what stops modules growing a hidden dependency on Registry internals.",
+  "description": "Registry's ONLY answer about actor-to-subject linkage. Deliberately narrower than ScopeFacts: keeping this type minimal is what stops modules growing a hidden dependency on Registry internals, and what prevents a recursive Access-to-Registry authorisation call. Extended additively in M01 with school_id, the plural section_ids/subject_ids, and valid_until.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["actor_id", "subject_person_id", "relationship"],
+  "required": [
+    "actor_id",
+    "subject_person_id",
+    "relationship"
+  ],
   "properties": {
-    "actor_id": { "type": "string", "format": "uuid" },
-    "subject_person_id": { "type": "string", "format": "uuid" },
+    "actor_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "subject_person_id": {
+      "type": "string",
+      "format": "uuid"
+    },
     "relationship": {
       "type": "string",
-      "enum": ["none", "self", "guardian", "assigned_teacher", "class_teacher"]
+      "enum": [
+        "none",
+        "self",
+        "guardian",
+        "assigned_teacher",
+        "class_teacher"
+      ]
     },
-    "section_id": { "type": ["string", "null"], "format": "uuid" },
-    "effective_date": { "type": ["string", "null"], "format": "date" }
+    "section_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "effective_date": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "school_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid",
+      "description": "Present so a caller can detect a cross-school answer without a second lookup."
+    },
+    "section_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "description": "All sections the relationship covers. Always contains section_id when that is set."
+    },
+    "subject_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "description": "All subject offerings the relationship covers."
+    },
+    "valid_until": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date",
+      "description": "Last date the relationship is in force. Null means open-ended. A lapsed relationship must not authorise a read."
+    }
   }
 }
