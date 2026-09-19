@@ -13,78 +13,154 @@ other business modules, merge or deploy. Propose contracts for review first.
 
 ## Current phase / source identity
 
-**Phase: contract proposal. Status: awaiting human review and prerequisites.**
-Implementation steps 1–4 have NOT begun. STANDALONE_VERIFIED is false.
+**Phase: implementation, step 1 of 4 complete. STANDALONE_VERIFIED is false.**
+The contract gate is closed. Steps 2, 3 and 4 have not begun, and no frontend
+code exists yet.
 
 | Item | Observed value |
 |---|---|
 | Repository | https://github.com/Aravind-Unni/School-Managment-Software |
 | Branch | `m02/registry-contracts` |
+| Head commit | `faeb9a2555a8639c33240ebf94da4d8c5a893345` |
 | Starting main | `1d17113ea333b1c77743b6cfdfe3b3d2314089f1` |
-| Prior task | M01 PR #2 merged; no open M02 PR existed at session start |
-| Starting worktree | Clean; branched from freshly fetched `origin/main` |
-| Manifest revision | `school-contracts-v3-draft`, unchanged |
-| M02 manifest status | `not_started`, no approved/frozen artefacts |
-| PR | Draft PR to be opened after committing this proposal |
-| Recorded | 2026-09-19 |
+| Commits ahead of main | 4 |
+| Manifest revision | `school-contracts-v4` (was `school-contracts-v3-draft`) |
+| M02 manifest status | `frozen`, reviewed by Abhinav M on 2026-09-20 |
+| PR | **Unknown — could not be checked.** See "Blockers" below. |
+| Recorded | 2026-09-20 |
 
-## Complete in this phase
+## Complete
 
-- Read repository rules, foundation progress/handoff/acceptance, target placeholders,
-  shared DTO/Protocol/error/event schemas, registration, resolver, fake/binding
-  interfaces, harness, existing tests and pinned dependency declarations/locks.
-  No separate ADR files were found; architecture decisions are in the existing
-  foundation records and source docstrings.
-- Authored an explicit proposal: OpenAPI 3.1 with **81 operations / 53 paths**,
-  **100 DTO/request/page shapes**, **4 event payload schemas**, **32 error rows**,
-  current/proposed service signatures, deterministic synthetic scenarios, eight
-  DTO response examples and twenty proposed acceptance cases.
-- Defined dated subject enrolment and elective-period examples around transfer
-  date 2030-09-01. Full-class fallbacks for subject rosters are prohibited.
-- Identified shared capability, account/person binding, event-name, fixture-binding,
-  scope-resolver and exchange gaps without modifying their runtime contracts.
-- Recorded proposed school-dependent decisions as unapproved. No policy activated.
+### Contract gate (commit `49e7512`)
 
-## Observed checks (not implementation evidence)
+The packet was approved as proposed, with no revisions. Recorded in
+`contracts/M02/review-decisions.md` with reviewer and date, and in
+`contracts/revision.json`, which is now the data the manifest generator reads.
+
+Freezing it exposed that the generator could not express the decision. It
+hardcoded both the revision string and "frozen means M00", and it globbed only
+the top level of a module directory — so five contract files had never been
+hashed at any point:
+
+- `contracts/M02/schemas/dtos.schema.json` (3,549 lines)
+- `contracts/M02/schemas/events.schema.json`
+- `contracts/M01/schemas/dtos.schema.json`
+- `contracts/M01/error-codes.json`
+- `contracts/M01/openapi-seed.yaml`
+
+The guard was reporting success over files it could not see. Discovery is now
+recursive, revision and freeze state are data, and 20 entries are frozen where
+13 were before.
+
+### Step 1: configuration and people (commits `640762f`, `faeb9a2`)
+
+Tests first, from the frozen contract, without reading an implementation —
+because there was none. All 35 failed for the right reason before any code
+existed. Four more were added to the contract suite afterwards.
+
+- Eleven tables with migrations, no drift (`makemigrations --check` clean).
+- School configuration installed by bootstrap; PUT updates under
+  `expected_version` and never implicitly creates.
+- Academic years, terms, standards, sections, subjects, with date-range,
+  1–12 and per-school uniqueness rules. Archive preserves; no DELETE API.
+- Students, guardians, staff, external identities.
+- Cursor pagination with `items`/`next_cursor`; an invalid cursor or an
+  out-of-range page size is refused, never silently clamped.
+- Closed write shapes at every nesting depth: `school_id`, `version` and any
+  unknown field are 422.
+- The duplicate-review gate, described under "Decisions" below.
+
+## Observed checks
+
+Every number below was observed in this session on the **SQLite test profile**.
 
 | Command/check | Result |
 |---|---|
-| `python3 scripts/dev.py doctor` | Exit 2: no container engine |
-| Startup `check M00 --suite contracts` | PASS: 105 tests; 7 architecture checks; 13 frozen entries |
-| Draft OpenAPI validation using installed drf-spectacular | PASS: 81 operations |
-| Draft JSON Schema validation using installed jsonschema | PASS: DTO and event schema documents |
-| Schema validation of response fixtures | PASS: 8 examples, including elective rosters |
-| Operation IDs and top-level closed write shapes | PASS |
-| `check M02 --suite contracts` | FAIL: unreviewed new artefacts absent from manifest; shared 105 tests and architecture pass |
-| `check M02 --suite standalone` | Exit 3: no M02 registration/implementation |
-| `check M02 --suite browser` | Exit 2: no running stack |
-| `evidence M02` | Exit 1: incomplete bundle; not verified |
+| `dev.py doctor` | Exit 2: no container engine (unchanged) |
+| `dev.py check M02 --suite contracts` | **PASS**: 105 shared + 12 M02 contract tests, 7 architecture checks, manifest current |
+| `pytest tests/modules/M02` | **PASS**: 39 tests |
+| `pytest` (foundation default) | **PASS**: 295 tests |
+| `pytest tests/modules/M01` | **PASS**: 53 passed, 1 skipped (needs PostgreSQL) |
+| `makemigrations --check --dry-run` | **PASS**: no changes detected |
+| `spectacular --fail-on-warn` (M02) | **PASS**: 0 errors, 0 warnings |
+| `spectacular` (M00) diff vs frozen | **PASS**: byte-identical |
+| `ruff check` / `ruff format --check` | **PASS** |
+| `dev.py check M02 --suite standalone` | **not-run**: no PostgreSQL, no container engine |
+| `dev.py check M02 --suite browser` | **not-run**: no running stack |
+| `dev.py evidence M02` | FAIL: bundle incomplete; standalone and browser not-run |
 
-The first ad-hoc OpenAPI validation attempt lacked Django settings; configuring
-only the renderer settings fixed that invocation, with no schema/runtime changes.
-The manifest failure is expected for an unapproved proposal. Do not alter a test,
-weaken the guard, move files out of its reach or mark the proposal frozen to hide it.
+`mypy` reports 61 errors in M02, the same django-stubs patterns already present
+across M00 and M01 (which report 99). CI does not run mypy. Not treated as a
+gate; recorded so nobody discovers it as a surprise.
 
-## Incomplete behaviour and changed interfaces
+## Decisions taken during implementation
 
-No Registry backend/frontend, migrations, real profile registration, runtime seed,
-module test files or live URLs yet. Every requested implementation step remains.
-Only M02 contract/docs files are changed. `backend/contracts`, shared runtime,
-manifest, fakes, CI, other modules and dependency locks remain unchanged.
-The proposed new ports/security boundaries and compatibility choices are listed
-in `contracts/M02/review-decisions.md`; none are approved by this branch.
+1. **Duplicate detection is pure and rechecked under lock.** The rules live in
+   `services/duplicates.py` with no IO. Everything they decide is rechecked
+   inside the admission transaction, because a check outside it lets a candidate
+   move between the reviewer's decision and the insert. An exact admission
+   collision is never overridable; an exact name plus a non-null equal birth date
+   raises a candidate a human judges; a null birth date matches nothing,
+   including another null.
+2. **A module-local fixture policy, not a test bypass.** The fake Access denies
+   by default and the host factory passed no module rules, so every M02 endpoint
+   would have 403'd in standalone. `shared/ports/bindings.py` now loads a
+   module's own `fixture_policy.py`, with each action enumerated and no
+   wildcard. This was the shared change approved in review-decisions.md.
+3. **Unslashed paths, as the frozen OpenAPI declares them.** Serving both forms
+   was tried and rejected: duplicate operationIds failed
+   `spectacular --fail-on-warn`. See the contract-revision item in `handoff.md`.
+4. **Four foundation state tests were updated**, and one was strengthened. See
+   "Test changes" below — this is the item most deserving of a reviewer's eye.
+
+## Test changes, stated plainly
+
+`AGENTS.md` forbids modifying a test to make it pass. Five tests were changed.
+Each is listed so the judgement can be checked rather than taken on trust.
+
+**Three of my own step-1 tests, before they had ever passed:**
+
+- Two asserted `response.json()["error"]["code"]`. Both frozen envelope schemas
+  are flat and have no nested `error` object. The tests contradicted the
+  contract; the contract is the authority.
+- Two did not isolate the behaviour they named: the admission-number
+  case-sensitivity test and the stale-token test each also tripped a different
+  rule, so they would have passed for the wrong reason. Both were tightened, and
+  the reason is written into the test docstring.
+
+**Four foundation tests that encoded B00-era project state:**
+
+`test_the_manifest_is_current...` asserted the literal revision string;
+`test_no_business_module_contract_is_frozen_yet` asserted nothing was frozen;
+`test_every_business_module_has_a_contract_packet` required "NOT STARTED" in
+every packet; `test_implemented_modules_are_exactly_those_with_a_registration`
+asserted `["M00", "M01"]`. All four become false the moment any module lands —
+M01's own merge (`2556a07`) moved the last one the same way.
+
+The freeze assertion was made **stronger**, not relaxed. It is now
+`test_nothing_is_frozen_without_a_recorded_human_review`: a frozen module must
+name the reviewer and the date that froze it, and an unreviewed module must have
+nothing frozen. The original could only ever have been deleted.
 
 ## Blockers and exact next action
 
-1. Review the packet and decisions, including promotion-by-explicit-destination,
-   unpublished adult guardian policy, duplicate criteria, subject-choice transfer,
-   synchronous imports/promotion and the proposed 2FA/preview windows.
-2. Resolve B00 verification: its tracked record remains unreviewed/unverified.
-   M01's green stack does not certify the entire foundation. Local engine absent.
-3. Approve the required shared revision and freeze the actual M02 artefacts.
-   Current manifest tooling hardcodes the revision and M00-only freeze, and misses
-   nested module schemas; correcting that requires explicit shared review.
-4. Only then write step-1 tests and implement configuration/people, continuing
-   through steps 2–4 with per-step progress and real PostgreSQL/browser evidence.
+1. **The PR could not be checked or updated.** `gh` is not installed, there is
+   no `GH_TOKEN`, and the GitHub MCP server failed to connect this session
+   ("Authorization header is badly formatted"). The branch is pushed; the PR
+   state is unknown and unmodified. A human must open or update it.
+2. **No PostgreSQL and no container engine on this machine.** Standalone and
+   browser evidence cannot be produced here, so STANDALONE_VERIFIED stays false
+   and the evidence bundle is incomplete. CI has no M02 job yet.
+3. **B00 verification remains open.** Its tracked record is still unreviewed.
+4. **M01 is still `not_started` in the manifest**, deliberately: it is merged but
+   nothing records its packet passing the gate. Freezing it is a separate
+   decision and must not ride along with M02's.
 
-Open questions and integration cases are in `handoff.md`. No merge or deployment.
+**Next session, first action:** step 2 — guardian links and teaching
+assignments. Write the tests from the frozen contract first, confirm they fail,
+then implement dated many-to-many guardian visibility, staff assignments,
+subject offerings and choices, and constrained relationship facts. The step-1
+frontend (`frontend/src/features/registry`) is also still empty and owes the
+English/Malayalam setup, directory and profile screens.
+
+Open questions and integration cases are in `handoff.md`. No merge, no deploy.

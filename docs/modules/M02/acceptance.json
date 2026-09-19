@@ -1,29 +1,21 @@
 {
   "module": "M02 Academic registry and student lifecycle",
-  "recorded_at": "2026-09-19",
-  "phase": "contract_proposal",
+  "recorded_at": "2026-09-20",
+  "phase": "implementation_step_1_of_4",
   "standalone_verified": false,
   "source_identity": {
     "repository": "https://github.com/Aravind-Unni/School-Managment-Software",
     "branch": "m02/registry-contracts",
+    "head_commit": "faeb9a2555a8639c33240ebf94da4d8c5a893345",
     "starting_commit": "1d17113ea333b1c77743b6cfdfe3b3d2314089f1",
-    "manifest_revision": "school-contracts-v3-draft",
-    "module_status": "not_started",
-    "frozen": false,
+    "manifest_revision": "school-contracts-v4",
+    "module_status": "frozen",
+    "frozen": true,
+    "reviewed_by": "Abhinav M",
+    "reviewed_on": "2026-09-20",
     "pr_url": null,
-    "validation_source": "Uncommitted proposal content identified by SHA-256 below; not application test evidence."
-  },
-  "proposal_sha256": {
-    "contracts/M02/PACKET.md": "a857ef58ddcb101b443af3a2309984e41016631afa287a583354f59b42095f30",
-    "contracts/M02/error-codes.json": "7f028202a48a75d1457de491a178c282a5ef0eacd362f6afc9327dd18862d39a",
-    "contracts/M02/fixtures/expected-results.json": "3c9f732b397a4a503686c3f8846a3dcbeceaa92f76ef2720b5e13b99c91bb102",
-    "contracts/M02/fixtures/responses.json": "6eb4c3c95a2bdd886967fa9272810be7d1c917978800bdab51a74457ddcbf0ee",
-    "contracts/M02/fixtures/scenario.json": "5038036a176cd568765b2c76aee8938d7978db13a519a84b6630dd96b5bc001c",
-    "contracts/M02/openapi.json": "34e97eb06e5d67dbb18383b6cfda081e86403c0e1fbc45d9ddf9572aaeb198f3",
-    "contracts/M02/ports.md": "d85e5616ce84ee1ce89533da1ac8c1b0fb087192020f3ea516b85748e8c23a45",
-    "contracts/M02/review-decisions.md": "59dad146b727a6124c78cf19d65a041cc33638941b63a757299ab69e314f6375",
-    "contracts/M02/schemas/dtos.schema.json": "404e3d5194ec1482613e277aad31963f5eac0100458c4aec79d8246058ecb585",
-    "contracts/M02/schemas/events.schema.json": "dfc29145342bdc2a634c0899c6d646da541c5346d4d7b00a2b07b3d24481ed4f"
+    "pr_state": "unknown: gh CLI absent, no GH_TOKEN, GitHub MCP server failed to connect",
+    "validation_source": "Executed test runs on the SQLite test profile. NOT standalone evidence: this machine has no container engine and no PostgreSQL."
   },
   "startup_commands": [
     "python3 scripts/dev.py doctor",
@@ -140,5 +132,38 @@
     "M10 alumni candidates",
     "M01 account access/revocation",
     "M13 exchange consumer"
-  ]
+  ],
+  "frozen_sha256": {
+    "contracts/M02/PACKET.md": "b40ecc7d1b7ca3d57de09f5498b7121da2597b5323ec8c654c55e3cf8b93575f",
+    "contracts/M02/error-codes.json": "1c76c6cddb59d2ec5444c9676100229355eddb7977192ac1c47afa5b05885870",
+    "contracts/M02/fixtures/expected-results.json": "3c9f732b397a4a503686c3f8846a3dcbeceaa92f76ef2720b5e13b99c91bb102",
+    "contracts/M02/fixtures/responses.json": "6eb4c3c95a2bdd886967fa9272810be7d1c917978800bdab51a74457ddcbf0ee",
+    "contracts/M02/fixtures/scenario.json": "5038036a176cd568765b2c76aee8938d7978db13a519a84b6630dd96b5bc001c",
+    "contracts/M02/openapi.json": "34e97eb06e5d67dbb18383b6cfda081e86403c0e1fbc45d9ddf9572aaeb198f3",
+    "contracts/M02/ports.md": "f52c9271d13bec460b8bec773cb4792b8098776aff9653331cb1f2ef4fd863e8",
+    "contracts/M02/review-decisions.md": "7fada0c9905230fdfc7b798d77ab3127b8eb35467cdc67b327ff03a92b9ce306",
+    "contracts/M02/schemas/dtos.schema.json": "404e3d5194ec1482613e277aad31963f5eac0100458c4aec79d8246058ecb585",
+    "contracts/M02/schemas/events.schema.json": "dfc29145342bdc2a634c0899c6d646da541c5346d4d7b00a2b07b3d24481ed4f"
+  },
+  "observed_checks": {
+    "dev.py doctor": "exit 2: no container engine",
+    "dev.py check M02 --suite contracts": "PASS: 105 shared + 12 M02 contract tests, 7 architecture checks",
+    "pytest tests/modules/M02": "PASS: 39 tests",
+    "pytest (foundation default)": "PASS: 295 tests",
+    "pytest tests/modules/M01": "PASS: 53 passed, 1 skipped (needs PostgreSQL)",
+    "makemigrations --check --dry-run": "PASS: no changes detected",
+    "spectacular --fail-on-warn (M02)": "PASS: 0 errors, 0 warnings",
+    "spectacular (M00) vs frozen openapi.yaml": "PASS: byte-identical",
+    "ruff check / format --check": "PASS",
+    "dev.py check M02 --suite standalone": "not-run: no PostgreSQL, no container engine",
+    "dev.py check M02 --suite browser": "not-run: no running stack",
+    "dev.py evidence M02": "FAIL: incomplete bundle; standalone and browser not-run",
+    "mypy backend/modules/registry": "61 errors, same django-stubs patterns as M00/M01 (99); CI does not run mypy"
+  },
+  "steps": {
+    "1_configuration_and_people": "complete (backend); frontend outstanding",
+    "2_links_and_assignments": "not started",
+    "3_enrolment_lifecycle": "not started",
+    "4_exchange_and_historical_rosters": "not started"
+  }
 }
