@@ -105,6 +105,11 @@ def render(
         lines += _redis(images, ports)
     if declaration.needs_object_storage:
         lines += _minio(images, names, ports)
+    lines += _api(images, declaration, names, ports, profile)
+    if declaration.needs_worker:
+        lines += _worker(images, declaration, names, ports, profile)
+    if declaration.needs_frontend:
+        lines += _frontend(images, ports)
 
     lines += ["", "volumes:"]
     lines += [
@@ -191,12 +196,180 @@ def _minio(images: dict[str, str], names: ResourceNames, ports: dict[str, int]) 
     ]
 
 
+def _backend_environment(
+    declaration: ModuleDeclaration,
+    names: ResourceNames,
+    ports: dict[str, int],
+    profile: str,
+) -> list[str]:
+    """Return the environment block shared by the api and worker services.
+
+    Secrets are read from the host environment (``${VAR}``), which ``dev.py``
+    populates from dev/secrets -- never written into the generated file, because
+    dev/state is not git-ignored by accident but by intent and a secret there
+    would still be sitting in plaintext next to the checkout.
+
+    Note the hostnames: inside the Compose network services reach each other by
+    service name on the container port, not through the allocated host port.
+    """
+    block = [
+        "    environment:",
+        f"      APP_ENV: {_quote(profile)}",
+        f"      MODULE_ID: {_quote(declaration.module_id)}",
+        "      DATABASE_URL: "
+        + _quote(
+            f"postgresql://{LOCAL_DB_USER}:{LOCAL_DB_PASSWORD}"
+            f"@postgres:{POSTGRES_PORT}/{names.database}"
+        ),
+        '      SESSION_SECRET: "${SESSION_SECRET}"',
+        '      TOTP_ENCRYPTION_KEY: "${TOTP_ENCRYPTION_KEY}"',
+        '      DEV_PERSONA_MODE: "fixed"',
+        "      DJANGO_SETTINGS_MODULE: " + _quote(f"config.settings.{profile}"),
+    ]
+    if declaration.needs_broker:
+        block.append("      BROKER_URL: " + _quote(f"redis://broker:{REDIS_PORT}/0"))
+        block.append(
+            "      WORKER_AVAILABLE: " + _quote("true" if declaration.needs_worker else "false")
+        )
+    if declaration.needs_object_storage:
+        block += [
+            "      OBJECT_STORAGE_ENDPOINT: "
+            + _quote(f"http://object_storage:{MINIO_API_PORT}"),
+            f"      OBJECT_STORAGE_BUCKET: {_quote(names.bucket)}",
+            f"      OBJECT_STORAGE_ACCESS_KEY: {_quote(LOCAL_MINIO_USER)}",
+            '      OBJECT_STORAGE_SECRET_KEY: "${OBJECT_STORAGE_SECRET_KEY}"',
+        ]
+    return block
+
+
+def _api(
+    images: dict[str, str],
+    declaration: ModuleDeclaration,
+    names: ResourceNames,
+    ports: dict[str, int],
+    profile: str,
+) -> list[str]:
+    """Return the Django API service block.
+
+    Built from infra/backend.Dockerfile so dependencies come from the committed
+    hash-pinned lockfiles. The source is bind-mounted so an edit is picked up by
+    the autoreloader without a rebuild.
+    """
+    lines = [
+        "  api:",
+        "    build:",
+        "      context: ..",
+        "      dockerfile: infra/backend.Dockerfile",
+        "      args:",
+        f"        PYTHON_IMAGE: {_quote(images['python'])}",
+    ]
+    lines += _backend_environment(declaration, names, ports, profile)
+    lines += [
+        "    ports:",
+        f'      - "127.0.0.1:{ports["api"]}:{API_PORT}"',
+        "    volumes:",
+        "      # Bind-mounted for autoreload. Read-only: the API has no reason to",
+        "      # write into the developer's checkout.",
+        "      - ../backend:/app/backend:ro",
+        "      - ../contracts:/app/contracts:ro",
+        "    depends_on:",
+        "      postgres:",
+        "        condition: service_healthy",
+    ]
+    if declaration.needs_broker:
+        lines += ["      broker:", "        condition: service_healthy"]
+    if declaration.needs_object_storage:
+        lines += ["      object_storage:", "        condition: service_healthy"]
+    lines += [
+        "    healthcheck:",
+        f'      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:{API_PORT}/healthz"]',
+        '      interval: "3s"',
+        '      timeout: "5s"',
+        "      retries: 40",
+        '    restart: "no"',
+    ]
+    return lines
+
+
+def _worker(
+    images: dict[str, str],
+    declaration: ModuleDeclaration,
+    names: ResourceNames,
+    ports: dict[str, int],
+    profile: str,
+) -> list[str]:
+    """Return the Celery worker block, for modules that own asynchronous work.
+
+    A REAL worker against a REAL broker. Eager execution is never configured,
+    because it cannot demonstrate crash or retry behaviour and B00 forbids
+    claiming those results from it.
+    """
+    lines = [
+        "  worker:",
+        "    build:",
+        "      context: ..",
+        "      dockerfile: infra/backend.Dockerfile",
+        "      args:",
+        f"        PYTHON_IMAGE: {_quote(images['python'])}",
+        "    command:",
+        "      - celery",
+        "      - -A",
+        "      - config.celery:app",
+        "      - worker",
+        "      - --loglevel=info",
+        "      - -Q",
+        f"      - {names.queue}",
+    ]
+    lines += _backend_environment(declaration, names, ports, profile)
+    lines += [
+        "    volumes:",
+        "      - ../backend:/app/backend:ro",
+        "      - ../contracts:/app/contracts:ro",
+        "    depends_on:",
+        "      broker:",
+        "        condition: service_healthy",
+        "      postgres:",
+        "        condition: service_healthy",
+        '    restart: "no"',
+    ]
+    return lines
+
+
+def _frontend(images: dict[str, str], ports: dict[str, int]) -> list[str]:
+    """Return the Vite dev server block.
+
+    VITE_SCHOOL_API_URL points at the HOST-published API port, not the container
+    hostname: the browser resolves it, and the browser is outside the Compose
+    network.
+    """
+    return [
+        "  frontend:",
+        "    build:",
+        "      context: ..",
+        "      dockerfile: infra/frontend.Dockerfile",
+        "      args:",
+        f"        NODE_IMAGE: {_quote(images['node'])}",
+        "    environment:",
+        "      VITE_SCHOOL_API_URL: " + _quote(f"http://127.0.0.1:{ports['api']}"),
+        f"      SCHOOL_FRONTEND_PORT: {_quote(FRONTEND_PORT)}",
+        "    ports:",
+        f'      - "127.0.0.1:{ports["frontend"]}:{FRONTEND_PORT}"',
+        "    volumes:",
+        "      - ../frontend/src:/app/frontend/src:ro",
+        "      - ../contracts:/app/contracts:ro",
+        "    depends_on:",
+        "      api:",
+        "        condition: service_started",
+        '    restart: "no"',
+    ]
+
+
 def required_port_names(declaration: ModuleDeclaration) -> tuple[str, ...]:
     """Return the logical port names this module's stack needs.
 
-    ``api`` and ``frontend`` are host-run processes rather than containers in the
-    development profile, but they still need reserved ports so that two
-    simultaneous stacks do not both try to serve on the same one.
+    All of these are containers. The api and frontend ports are published to the
+    host so a developer's browser can reach them; inside the Compose network the
+    services address each other by service name instead.
     """
     required = ["postgres", "api"]
     if declaration.needs_frontend:

@@ -265,7 +265,10 @@ def test_a_module_with_no_async_work_starts_no_broker():
             profile="standalone",
         )
     )
-    assert sorted(spec["services"]) == ["postgres"]
+    # api and frontend are always present; broker/worker must not be.
+    assert sorted(spec["services"]) == ["api", "frontend", "postgres"]
+    assert "broker" not in spec["services"]
+    assert "worker" not in spec["services"]
 
 
 def test_a_module_declaring_a_worker_gets_a_broker():
@@ -290,6 +293,7 @@ def test_a_module_declaring_a_worker_gets_a_broker():
         )
     )
     assert "broker" in spec["services"]
+    assert "worker" in spec["services"]
 
 
 @pytest.mark.parametrize("module_id", ["M00", "M11", "M12", "M14"])
@@ -315,9 +319,79 @@ def test_every_image_is_pinned_by_digest_and_bound_to_loopback(module_id):
         )
     )
     for service, body in spec["services"].items():
-        assert "@sha256:" in body["image"], (module_id, service)
+        if "image" in body:
+            assert "@sha256:" in body["image"], (module_id, service)
+        else:
+            # A built service pins its BASE image by digest through a build arg.
+            args = body["build"]["args"]
+            pinned = [value for value in args.values() if "@sha256:" in str(value)]
+            assert pinned, (module_id, service, args)
         for mapping in body.get("ports", []):
             assert mapping.startswith("127.0.0.1:"), (module_id, service, mapping)
+
+
+@pytest.mark.parametrize("module_id", ["M00", "M11", "M12", "M14"])
+def test_no_secret_value_is_written_into_a_generated_compose_file(module_id, tmp_path):
+    """Generated files live beside the checkout; a secret there is a secret on disk.
+
+    The file must reference secrets as ${VAR} for Compose to interpolate from the
+    environment, never embed the value.
+    """
+    from harness import compose
+    from harness.modules import load
+    from harness.naming import ResourceNames
+    from harness.secrets import LocalSecrets
+
+    real = LocalSecrets(repo_root=tmp_path, stem="probe").ensure()
+    declaration = load(REPO_ROOT, module_id)
+    names = ResourceNames(module_id=module_id, repo_root=REPO_ROOT)
+    allocated = {
+        name: 50000 + index
+        for index, name in enumerate(compose.required_port_names(declaration))
+    }
+    text = compose.render(
+        repo_root=REPO_ROOT,
+        declaration=declaration,
+        names=names,
+        ports=allocated,
+        profile="standalone",
+    )
+    for value in real.values():
+        assert value not in text
+    assert "${SESSION_SECRET}" in text
+    assert "${TOTP_ENCRYPTION_KEY}" in text
+
+
+@pytest.mark.parametrize("module_id", ["M00", "M11", "M12"])
+def test_the_api_service_waits_for_a_healthy_database(module_id):
+    import yaml
+    from harness import compose
+    from harness.modules import load
+    from harness.naming import ResourceNames
+
+    declaration = load(REPO_ROOT, module_id)
+    names = ResourceNames(module_id=module_id, repo_root=REPO_ROOT)
+    allocated = {
+        name: 50000 + index
+        for index, name in enumerate(compose.required_port_names(declaration))
+    }
+    spec = yaml.safe_load(
+        compose.render(
+            repo_root=REPO_ROOT,
+            declaration=declaration,
+            names=names,
+            ports=allocated,
+            profile="standalone",
+        )
+    )
+    assert spec["services"]["api"]["depends_on"]["postgres"]["condition"] == "service_healthy"
+
+
+def test_a_worker_module_never_configures_eager_execution():
+    """Eager mode cannot demonstrate crash or retry behaviour."""
+    celery = (REPO_ROOT / "backend" / "config" / "celery.py").read_text()
+    assert "task_always_eager = False" in celery
+    assert "task_always_eager = True" not in celery
 
 
 def test_images_are_pinned_from_the_committed_record():

@@ -463,6 +463,12 @@ def command_up(arguments: argparse.Namespace) -> int:
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(compose_text)
 
+    # Secrets are generated before compose runs: the generated file references
+    # them as ${VAR} rather than embedding them, so they must be in the
+    # environment for interpolation.
+    local = secrets.LocalSecrets(repo_root=REPO_ROOT, stem=names.stem)
+    generated = local.ensure()
+
     say(f"starting {declaration.module_id} ({declaration.slug}) -- profile {arguments.profile}")
     say(f"  project   {names.compose_project}")
     say(f"  database  {names.database}")
@@ -471,8 +477,9 @@ def command_up(arguments: argparse.Namespace) -> int:
     say("")
 
     result = subprocess.run(
-        [*composer, "-f", str(target), "up", "-d", "--wait"],
+        [*composer, "-f", str(target), "up", "-d", "--build", "--wait"],
         cwd=REPO_ROOT,
+        env={**os.environ, **generated},
     )
     if result.returncode != 0:
         fail(
@@ -484,10 +491,6 @@ def command_up(arguments: argparse.Namespace) -> int:
             ),
         )
         return EXIT_FAILED
-
-    # Secrets are generated on first use, outside Git.
-    local = secrets.LocalSecrets(repo_root=REPO_ROOT, stem=names.stem)
-    local.ensure()
 
     say("")
     say("stack is up.")
