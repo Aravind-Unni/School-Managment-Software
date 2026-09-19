@@ -1,6 +1,9 @@
-# M02 Academic registry — contract proposal
+# M02 Academic registry — approved contract (revision school-contracts-v4)
 
-**PROPOSED, NOT APPROVED OR FROZEN. No implementation or module tests yet.**
+**APPROVED AND FROZEN** under revision `school-contracts-v4` on 2026-09-20 by
+Abhinav M. The review outcome is recorded in `review-decisions.md`.
+Changing any artefact in this directory now moves a frozen hash and will fail
+`contract_manifest.py --check`; that is a new reviewed revision, not an edit.
 Owner: Developer A. Based on main `1d17113ea333b1c77743b6cfdfe3b3d2314089f1`,
 manifest `school-contracts-v3-draft`, M02 `not_started`.
 

@@ -188,7 +188,7 @@
           "kind": "json-schema",
           "owner": "M02 registry",
           "path": "contracts/M02/error-codes.json",
-          "sha256": "7f028202a48a75d1457de491a178c282a5ef0eacd362f6afc9327dd18862d39a"
+          "sha256": "1c76c6cddb59d2ec5444c9676100229355eddb7977192ac1c47afa5b05885870"
         },
         {
           "frozen": true,
