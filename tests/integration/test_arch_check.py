@@ -156,7 +156,11 @@ def test_the_manifest_is_current_and_names_an_owner_for_every_entry():
     assert result.returncode == 0, result.stderr
 
     manifest = json.loads((REPO_ROOT / "contracts" / "manifest.json").read_text())
-    assert manifest["revision"] == "school-contracts-v3-draft"
+    revision_record = json.loads((REPO_ROOT / "contracts" / "revision.json").read_text())
+    # The revision is data now, not a constant in the generator. Asserting the
+    # two agree is the useful check; asserting a literal string would have to be
+    # edited by every reviewed revision and would prove nothing about either.
+    assert manifest["revision"] == revision_record["revision"]
     entries = list(manifest["common"])
     for module in manifest["modules"].values():
         entries.extend(module["artefacts"])
@@ -167,27 +171,37 @@ def test_the_manifest_is_current_and_names_an_owner_for_every_entry():
         assert len(entry["sha256"]) == 64, entry
 
 
-def test_no_business_module_contract_is_frozen_yet():
-    """Only the placeholder may be frozen in B00.
+def test_nothing_is_frozen_without_a_recorded_human_review():
+    """A frozen contract must name the review that froze it.
 
-    A frozen business contract here would mean a module's interface was approved
-    without passing its human review gate.
+    Replaces an earlier assertion that NO business module was frozen yet. That
+    was true at B00 and stopped being true the moment a packet passed its gate,
+    so as a permanent guard it could only ever be deleted. This asserts the rule
+    the original was reaching for, and is strictly stronger: freezing is a human
+    review gate, so a frozen module must carry the reviewer and date that closed
+    it, and an unreviewed module must have nothing frozen.
     """
     import json
 
     manifest = json.loads((REPO_ROOT / "contracts" / "manifest.json").read_text())
+    reviews = json.loads((REPO_ROOT / "contracts" / "revision.json").read_text())[
+        "frozen_modules"
+    ]
+
     for module_id, module in manifest["modules"].items():
-        if module_id == "M00":
-            assert module["status"] == "frozen"
-            continue
-        # A module in progress legitimately has artefacts; what must not happen is
-        # any of them being FROZEN, because freezing is a human review gate.
-        for entry in module["artefacts"] + module["fixtures"]:
-            assert entry["frozen"] is False, (module_id, entry["id"])
-        if module["artefacts"]:
-            assert module["status"] in {"not_started", "in_progress"}, module_id
+        entries = module["artefacts"] + module["fixtures"]
+        if module_id in reviews:
+            assert module["status"] == "frozen", module_id
+            assert reviews[module_id]["reviewer"], module_id
+            assert reviews[module_id]["reviewed_on"], module_id
+            for entry in entries:
+                assert entry["frozen"] is True, (module_id, entry["id"])
         else:
-            assert module["status"] == "not_started", module_id
+            # An unreviewed module may legitimately have artefacts in progress;
+            # what it may not have is any of them frozen.
+            for entry in entries:
+                assert entry["frozen"] is False, (module_id, entry["id"])
+            assert module["status"] in {"not_started", "in_progress"}, module_id
 
 
 @pytest.mark.parametrize("module_id", [f"M{index:02d}" for index in range(1, 15)])
@@ -198,11 +212,22 @@ def test_every_business_module_has_a_contract_packet(module_id):
     modules that have not begun. Asserting it unconditionally would force a false
     status onto a module that had started.
     """
+    import json
+
     packet = REPO_ROOT / "contracts" / module_id / "PACKET.md"
     assert packet.exists()
     text = packet.read_text()
-    assert "school-contracts-v3-draft" in text
-    if module_id == "M01":
+    reviews = json.loads((REPO_ROOT / "contracts" / "revision.json").read_text())[
+        "frozen_modules"
+    ]
+
+    if module_id in reviews:
+        # An approved packet must say so and name the revision that froze it,
+        # so a reader of the file alone cannot mistake it for a proposal.
+        assert "APPROVED AND FROZEN" in text, module_id
+        assert reviews[module_id]["reviewed_on"] in text, module_id
+    elif module_id == "M01":
         assert "CONTRACT PROPOSED" in text
     else:
+        assert "school-contracts-v3-draft" in text
         assert "NOT STARTED" in text

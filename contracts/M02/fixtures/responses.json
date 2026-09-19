@@ -1,0 +1,131 @@
+[
+  {
+    "case": "before_transfer",
+    "schema": "RosterDTO",
+    "value": {
+      "section_id": "5800df78-7f3b-5169-8ee1-4682b6052ec1",
+      "date": "2030-08-31",
+      "subject_id": null,
+      "version": 2,
+      "students": [
+        {
+          "student_id": "adc7ca58-a7c1-586a-947e-2d7d32d40319",
+          "enrolment_id": "994f3c87-2131-5578-a378-8b585416c8de",
+          "display_name": "Synthetic S1"
+        },
+        {
+          "student_id": "feb25995-76f5-54cf-99f6-e2167fb8e5f5",
+          "enrolment_id": "e1af1ff0-7132-533e-8cfa-38b161acf657",
+          "display_name": "Synthetic S2"
+        }
+      ]
+    }
+  },
+  {
+    "case": "at_transfer_old",
+    "schema": "RosterDTO",
+    "value": {
+      "section_id": "5800df78-7f3b-5169-8ee1-4682b6052ec1",
+      "date": "2030-09-01",
+      "subject_id": null,
+      "version": 2,
+      "students": [
+        {
+          "student_id": "feb25995-76f5-54cf-99f6-e2167fb8e5f5",
+          "enrolment_id": "e1af1ff0-7132-533e-8cfa-38b161acf657",
+          "display_name": "Synthetic S2"
+        }
+      ]
+    }
+  },
+  {
+    "case": "at_transfer_new",
+    "schema": "RosterDTO",
+    "value": {
+      "section_id": "f60346cd-fc06-56a7-95c2-7c1d8e7bbdf5",
+      "date": "2030-09-01",
+      "subject_id": null,
+      "version": 2,
+      "students": [
+        {
+          "student_id": "adc7ca58-a7c1-586a-947e-2d7d32d40319",
+          "enrolment_id": "8fe2fd04-7db5-5341-95a5-9f47dbc8b35a",
+          "display_name": "Synthetic S1"
+        }
+      ]
+    }
+  },
+  {
+    "case": "elective_x_before",
+    "schema": "RosterDTO",
+    "value": {
+      "section_id": "5800df78-7f3b-5169-8ee1-4682b6052ec1",
+      "date": "2030-08-31",
+      "subject_id": "b7b1ce9c-db9d-5e02-87de-1be830481f69",
+      "version": 2,
+      "students": [
+        {
+          "student_id": "adc7ca58-a7c1-586a-947e-2d7d32d40319",
+          "enrolment_id": "994f3c87-2131-5578-a378-8b585416c8de",
+          "display_name": "Synthetic S1"
+        }
+      ]
+    }
+  },
+  {
+    "case": "elective_y_before",
+    "schema": "RosterDTO",
+    "value": {
+      "section_id": "5800df78-7f3b-5169-8ee1-4682b6052ec1",
+      "date": "2030-08-31",
+      "subject_id": "aaf63a61-3716-55e1-95ad-0cb88efc4d82",
+      "version": 2,
+      "students": [
+        {
+          "student_id": "feb25995-76f5-54cf-99f6-e2167fb8e5f5",
+          "enrolment_id": "e1af1ff0-7132-533e-8cfa-38b161acf657",
+          "display_name": "Synthetic S2"
+        }
+      ]
+    }
+  },
+  {
+    "case": "elective_x_after",
+    "schema": "RosterDTO",
+    "value": {
+      "section_id": "5800df78-7f3b-5169-8ee1-4682b6052ec1",
+      "date": "2030-09-01",
+      "subject_id": "b7b1ce9c-db9d-5e02-87de-1be830481f69",
+      "version": 2,
+      "students": []
+    }
+  },
+  {
+    "case": "elective_x_new",
+    "schema": "RosterDTO",
+    "value": {
+      "section_id": "f60346cd-fc06-56a7-95c2-7c1d8e7bbdf5",
+      "date": "2030-09-01",
+      "subject_id": "b7b1ce9c-db9d-5e02-87de-1be830481f69",
+      "version": 2,
+      "students": [
+        {
+          "student_id": "adc7ca58-a7c1-586a-947e-2d7d32d40319",
+          "enrolment_id": "8fe2fd04-7db5-5341-95a5-9f47dbc8b35a",
+          "display_name": "Synthetic S1"
+        }
+      ]
+    }
+  },
+  {
+    "case": "student_without_account",
+    "schema": "StudentDTO",
+    "value": {
+      "id": "adc7ca58-a7c1-586a-947e-2d7d32d40319",
+      "school_id": "6ae53aab-eba0-5a15-9800-9cdb26c09bae",
+      "admission_no": "SYN-M02-001",
+      "display_name": "Synthetic S1",
+      "status": "active"
+    }
+  }
+]

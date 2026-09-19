@@ -1,0 +1,165 @@
+{
+  "status": "approved",
+  "rows": [
+    {
+      "status": 401,
+      "code": "unauthenticated",
+      "message_key": "error.unauthenticated"
+    },
+    {
+      "status": 401,
+      "code": "stale_auth",
+      "message_key": "error.two_factor_stale"
+    },
+    {
+      "status": 403,
+      "code": "action_denied",
+      "message_key": "error.action_denied"
+    },
+    {
+      "status": 404,
+      "code": "object_inaccessible",
+      "message_key": "error.object_inaccessible"
+    },
+    {
+      "status": 409,
+      "code": "version_conflict",
+      "message_key": "error.version_conflict"
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "registry.error.admission_number_exists"
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "registry.error.duplicate_review_required"
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "registry.error.duplicate_review_stale"
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "registry.error.enrolment_overlap"
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "registry.error.preview_stale"
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "registry.error.idempotency_conflict"
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "registry.error.year_closed"
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "registry.error.referenced_record"
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "registry.error.policy_not_published"
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "registry.error.subject_choice_required"
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "registry.error.invalid_state_transition"
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "registry.error.unknown_field"
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "registry.error.invalid_date_range"
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "registry.error.term_outside_year"
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "registry.error.enrolment_outside_year"
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "registry.error.subject_outside_enrolment"
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "registry.error.subject_not_offered"
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "registry.error.optional_group_conflict"
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "registry.error.invalid_outcome"
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "registry.error.missing_version"
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "registry.error.invalid_cursor"
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "registry.error.invalid_reference"
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "registry.error.incomplete_promotion_cohort"
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "registry.error.import_invalid"
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "registry.error.duplicate_external_id"
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "registry.error.invalid_policy"
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "registry.error.invalid_effective_date"
+    }
+  ]
+}

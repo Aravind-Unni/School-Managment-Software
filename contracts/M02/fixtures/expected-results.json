@@ -1,0 +1,85 @@
+{
+  "status": "proposed acceptance cases, not executed tests",
+  "cases": [
+    {
+      "case": "guardian_two_children",
+      "expected": "G1 may read S1 and S2; G3 may also read S1"
+    },
+    {
+      "case": "unrelated_guardian",
+      "expected": "G2 reading S1 denied; no personal data"
+    },
+    {
+      "case": "tenant_isolation",
+      "expected": "School B cannot read or modify School A; 404"
+    },
+    {
+      "case": "duplicate_review",
+      "expected": "POST students without current review returns 409; exact admission cannot be overridden"
+    },
+    {
+      "case": "overlap",
+      "expected": "Overlapping active ranges rejected; concurrent creates have one winner"
+    },
+    {
+      "case": "promotion_retry",
+      "expected": "Same key and payload yields same created IDs; one new enrolment per choice"
+    },
+    {
+      "case": "promotion_stale",
+      "expected": "Change any preview dependency then commit: 409 and no writes"
+    },
+    {
+      "case": "idempotency_mismatch",
+      "expected": "Same key with changed payload: 409"
+    },
+    {
+      "case": "withdrawal_history",
+      "expected": "End date D-1; absent from rosters on D; earlier roster intact"
+    },
+    {
+      "case": "rollback",
+      "expected": "Student/enrolment/link mutation, audit, outbox, review task and operation record all roll back"
+    },
+    {
+      "case": "elective_transfer_missing",
+      "expected": "Transfer to section without mapped offering refuses; no whole-class elective fallback"
+    },
+    {
+      "case": "optional_choice_overlap",
+      "expected": "Two choices in one optional group on same date rejected"
+    },
+    {
+      "case": "teacher_roster",
+      "expected": "T1 can read assigned C1/subject-x only; T2 denied"
+    },
+    {
+      "case": "stale_auth",
+      "expected": "Sensitive write with stale 2FA returns 401 before mutation"
+    },
+    {
+      "case": "capability_denial",
+      "expected": "Wrong-school/expired/out-of-scope fact capability denied without recursive Access call"
+    },
+    {
+      "case": "import_duplicate",
+      "expected": "Duplicate stable external IDs and stale import versions rejected"
+    },
+    {
+      "case": "archive_reference",
+      "expected": "No destructive deletion of referenced records"
+    },
+    {
+      "case": "unknown_fields",
+      "expected": "Client school_id/role/relationship/grant or unknown write field rejected"
+    },
+    {
+      "case": "dependency_failure",
+      "expected": "Injected Access/Platform failure leaves no committed write; unused job port refuses"
+    },
+    {
+      "case": "policy_unpublished",
+      "expected": "No board pass rule or adult-transition change activated by draft fixture"
+    }
+  ]
+}

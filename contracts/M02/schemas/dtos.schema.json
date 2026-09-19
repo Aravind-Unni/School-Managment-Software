@@ -1,0 +1,3549 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M02/dtos-proposed",
+  "title": "M02 proposed DTOs — NOT APPROVED",
+  "$defs": {
+    "Profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "date_of_birth": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "preferred_language": {
+          "type": "string",
+          "enum": [
+            "en",
+            "ml"
+          ]
+        }
+      },
+      "required": [
+        "date_of_birth",
+        "preferred_language"
+      ]
+    },
+    "ExternalId": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "source",
+        "value"
+      ]
+    },
+    "SchoolConfigInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "board": {
+          "type": "string",
+          "enum": [
+            "CBSE"
+          ]
+        },
+        "default_language": {
+          "type": "string",
+          "enum": [
+            "en",
+            "ml"
+          ]
+        }
+      },
+      "required": [
+        "display_name",
+        "board",
+        "default_language"
+      ]
+    },
+    "SchoolConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "board": {
+          "type": "string",
+          "enum": [
+            "CBSE"
+          ]
+        },
+        "default_language": {
+          "type": "string",
+          "enum": [
+            "en",
+            "ml"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "display_name",
+        "board",
+        "default_language"
+      ]
+    },
+    "AcademicYearInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "start": {
+          "type": "string",
+          "format": "date"
+        },
+        "end": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "required": [
+        "name",
+        "start",
+        "end"
+      ]
+    },
+    "AcademicYear": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "start": {
+          "type": "string",
+          "format": "date"
+        },
+        "end": {
+          "type": "string",
+          "format": "date"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "active",
+            "closed",
+            "archived"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "name",
+        "start",
+        "end",
+        "state"
+      ]
+    },
+    "TermInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "year_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "start": {
+          "type": "string",
+          "format": "date"
+        },
+        "end": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "required": [
+        "year_id",
+        "name",
+        "start",
+        "end"
+      ]
+    },
+    "Term": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "year_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "start": {
+          "type": "string",
+          "format": "date"
+        },
+        "end": {
+          "type": "string",
+          "format": "date"
+        },
+        "archived": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "year_id",
+        "name",
+        "start",
+        "end",
+        "archived"
+      ]
+    },
+    "StandardInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "number": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        }
+      },
+      "required": [
+        "number"
+      ]
+    },
+    "Standard": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "number": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "archived": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "number",
+        "archived"
+      ]
+    },
+    "SectionInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "year_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "standard_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "year_id",
+        "standard_id",
+        "name"
+      ]
+    },
+    "Section": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "year_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "standard_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "archived": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "year_id",
+        "standard_id",
+        "name",
+        "archived"
+      ]
+    },
+    "SubjectInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "code",
+        "display_name"
+      ]
+    },
+    "Subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "archived": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "code",
+        "display_name",
+        "archived"
+      ]
+    },
+    "SubjectOfferingInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "year_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "section_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "subject_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "optional_group": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "year_id",
+        "section_id",
+        "subject_id",
+        "optional_group"
+      ]
+    },
+    "SubjectOffering": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "year_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "section_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "subject_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "optional_group": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "archived": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "year_id",
+        "section_id",
+        "subject_id",
+        "optional_group",
+        "archived"
+      ]
+    },
+    "StudentDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "admission_no",
+        "display_name",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "admission_no": {
+          "type": "string",
+          "minLength": 1
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "inactive",
+            "transferred",
+            "graduated"
+          ]
+        }
+      }
+    },
+    "RosterDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "section_id",
+        "date",
+        "subject_id",
+        "version",
+        "students"
+      ],
+      "description": "When subject_id is non-null, students contains ONLY pupils enrolled in that subject offering on that date. A timetable period must use this filtered roster.",
+      "properties": {
+        "section_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "subject_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "students": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "student_id",
+              "enrolment_id",
+              "display_name"
+            ],
+            "properties": {
+              "student_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "enrolment_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "display_name": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "TeachingAssignmentDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "section_id",
+        "subject_id",
+        "from_date",
+        "to_date"
+      ],
+      "properties": {
+        "section_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "subject_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "from_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "to_date": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "description": "Inclusive last date. Null means open-ended."
+        }
+      }
+    },
+    "StudentRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "admission_no": {
+          "type": "string",
+          "minLength": 1
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "inactive",
+            "transferred",
+            "graduated"
+          ]
+        },
+        "profile": {
+          "$ref": "#/$defs/Profile"
+        },
+        "external_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExternalId"
+          }
+        },
+        "archived": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "admission_no",
+        "display_name",
+        "status",
+        "profile",
+        "external_ids",
+        "archived"
+      ]
+    },
+    "GuardianInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "email": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "email"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "phone": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "external_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExternalId"
+          }
+        }
+      },
+      "required": [
+        "display_name",
+        "email",
+        "phone",
+        "external_ids"
+      ]
+    },
+    "Guardian": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "email": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "email"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "phone": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "external_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExternalId"
+          }
+        },
+        "archived": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "display_name",
+        "email",
+        "phone",
+        "external_ids",
+        "archived"
+      ]
+    },
+    "GuardianLinkInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "guardian_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "academic",
+            "none"
+          ]
+        },
+        "from_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "to_date": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "student_id",
+        "guardian_id",
+        "visibility",
+        "from_date",
+        "to_date"
+      ]
+    },
+    "GuardianLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "guardian_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "academic",
+            "none"
+          ]
+        },
+        "from_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "to_date": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "student_id",
+        "guardian_id",
+        "visibility",
+        "from_date",
+        "to_date"
+      ]
+    },
+    "InitialGuardianLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "guardian_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "academic",
+            "none"
+          ]
+        },
+        "from_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "to_date": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "guardian_id",
+        "visibility",
+        "from_date",
+        "to_date"
+      ]
+    },
+    "StaffInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "external_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExternalId"
+          }
+        }
+      },
+      "required": [
+        "display_name",
+        "external_ids"
+      ]
+    },
+    "Staff": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "external_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExternalId"
+          }
+        },
+        "archived": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "display_name",
+        "external_ids",
+        "archived"
+      ]
+    },
+    "TeachingAssignmentInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "staff_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "section_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "subject_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "from_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "to_date": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "staff_id",
+        "section_id",
+        "subject_id",
+        "from_date",
+        "to_date"
+      ]
+    },
+    "TeachingAssignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "staff_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "section_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "subject_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "from_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "to_date": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "staff_id",
+        "section_id",
+        "subject_id",
+        "from_date",
+        "to_date"
+      ]
+    },
+    "EnrolmentInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "year_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "section_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "from_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "to_date": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "student_id",
+        "year_id",
+        "section_id",
+        "from_date",
+        "to_date"
+      ]
+    },
+    "Enrolment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "year_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "section_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "from_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "to_date": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "previous_enrolment_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "active",
+            "cancelled"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "student_id",
+        "year_id",
+        "section_id",
+        "from_date",
+        "to_date",
+        "previous_enrolment_id",
+        "state"
+      ]
+    },
+    "SubjectEnrolmentInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enrolment_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "subject_offering_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "from_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "to_date": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "enrolment_id",
+        "subject_offering_id",
+        "from_date",
+        "to_date"
+      ]
+    },
+    "SubjectEnrolment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "enrolment_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "subject_offering_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "from_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "to_date": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "enrolment_id",
+        "subject_offering_id",
+        "from_date",
+        "to_date"
+      ]
+    },
+    "LearningOutcomeInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "subject_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description_en": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description_ml": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "subject_id",
+        "code",
+        "description_en",
+        "description_ml"
+      ]
+    },
+    "LearningOutcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "subject_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description_en": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description_ml": {
+          "type": "string",
+          "minLength": 1
+        },
+        "archived": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "subject_id",
+        "code",
+        "description_en",
+        "description_ml",
+        "archived"
+      ]
+    },
+    "PolicyReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label_en": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label_ml": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "code",
+        "label_en",
+        "label_ml"
+      ]
+    },
+    "PolicyInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "year_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "subject_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "streams": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PolicyReference"
+          }
+        },
+        "grading_references": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PolicyReference"
+          }
+        },
+        "withdrawal_outcomes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "type": "string",
+                "minLength": 1
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "inactive",
+                  "transferred",
+                  "graduated"
+                ]
+              }
+            },
+            "required": [
+              "code",
+              "status"
+            ]
+          }
+        },
+        "adult_guardian_rule": {
+          "type": "string",
+          "enum": [
+            "unpublished",
+            "explicit_link_visibility"
+          ]
+        },
+        "approved_example_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "year_id",
+        "subject_ids",
+        "streams",
+        "grading_references",
+        "withdrawal_outcomes",
+        "adult_guardian_rule",
+        "approved_example_refs"
+      ]
+    },
+    "Policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "year_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "subject_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "streams": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PolicyReference"
+          }
+        },
+        "grading_references": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PolicyReference"
+          }
+        },
+        "withdrawal_outcomes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "type": "string",
+                "minLength": 1
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "inactive",
+                  "transferred",
+                  "graduated"
+                ]
+              }
+            },
+            "required": [
+              "code",
+              "status"
+            ]
+          }
+        },
+        "adult_guardian_rule": {
+          "type": "string",
+          "enum": [
+            "unpublished",
+            "explicit_link_visibility"
+          ]
+        },
+        "approved_example_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "published",
+            "archived"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "year_id",
+        "subject_ids",
+        "streams",
+        "grading_references",
+        "withdrawal_outcomes",
+        "adult_guardian_rule",
+        "approved_example_refs",
+        "state"
+      ]
+    },
+    "PolicyPublish": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "approval_reference": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "expected_version",
+        "approval_reference"
+      ]
+    },
+    "ActorPersonBindingProposal": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "actor_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "person_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "person_kind": {
+          "type": "string",
+          "enum": [
+            "student",
+            "guardian",
+            "staff"
+          ]
+        },
+        "from_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "to_date": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "actor_id",
+        "person_id",
+        "person_kind",
+        "from_date",
+        "to_date"
+      ]
+    },
+    "StudentLifecycleRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "effective_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "outcome": {
+          "type": "string",
+          "minLength": 1
+        },
+        "resulting_status": {
+          "type": "string",
+          "enum": [
+            "inactive",
+            "transferred",
+            "graduated"
+          ]
+        },
+        "policy_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "student_id",
+        "effective_date",
+        "outcome",
+        "resulting_status",
+        "policy_version"
+      ]
+    },
+    "AccessReviewTask": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "effective_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "source_event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "open",
+            "completed"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "student_id",
+        "effective_date",
+        "source_event_id",
+        "state"
+      ]
+    },
+    "DuplicateReviewRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "admission_no": {
+          "type": "string",
+          "minLength": 1
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "profile": {
+          "$ref": "#/$defs/Profile"
+        }
+      },
+      "required": [
+        "admission_no",
+        "display_name",
+        "profile"
+      ]
+    },
+    "DuplicateCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "admission_no",
+            "name_and_birth_date"
+          ]
+        }
+      },
+      "required": [
+        "student_id",
+        "version",
+        "reason"
+      ]
+    },
+    "DuplicateReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "review_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "review_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DuplicateCandidate"
+          }
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "review_id",
+        "review_version",
+        "candidates",
+        "expires_at"
+      ]
+    },
+    "DuplicateAcknowledgement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "review_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "review_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "distinct_person_reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "review_id",
+        "review_version",
+        "distinct_person_reason"
+      ]
+    },
+    "CreateStudent": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "admission_no": {
+          "type": "string",
+          "minLength": 1
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "profile": {
+          "$ref": "#/$defs/Profile"
+        },
+        "guardian_links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/InitialGuardianLink"
+          }
+        },
+        "external_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExternalId"
+          }
+        },
+        "duplicate_review": {
+          "$ref": "#/$defs/DuplicateAcknowledgement"
+        }
+      },
+      "required": [
+        "admission_no",
+        "display_name",
+        "profile",
+        "guardian_links",
+        "external_ids",
+        "duplicate_review"
+      ]
+    },
+    "UpdateStudent": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "profile": {
+          "$ref": "#/$defs/Profile"
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "display_name",
+        "profile",
+        "expected_version"
+      ]
+    },
+    "Transfer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "target_section_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "effective_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "target_section_id",
+        "effective_date",
+        "expected_version",
+        "reason"
+      ]
+    },
+    "Withdrawal": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "effective_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "outcome": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "policy_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "effective_date",
+        "outcome",
+        "reason",
+        "expected_version",
+        "policy_version"
+      ]
+    },
+    "PromotionChoice": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "source_enrolment_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "target_section_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "disposition": {
+          "type": "string",
+          "enum": [
+            "promote",
+            "repeat",
+            "exclude"
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "student_id",
+        "source_enrolment_id",
+        "expected_version",
+        "target_section_id",
+        "disposition",
+        "reason"
+      ]
+    },
+    "PromotionPreviewRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "target_year_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "effective_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "policy_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "choices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PromotionChoice"
+          }
+        }
+      },
+      "required": [
+        "target_year_id",
+        "effective_date",
+        "policy_version",
+        "choices"
+      ]
+    },
+    "PromotionException": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "message_key": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "student_id",
+        "message_key"
+      ]
+    },
+    "PromotionPreview": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "preview_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "preview_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "source_year_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "target_year_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "effective_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "cohort": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PromotionChoice"
+          }
+        },
+        "exceptions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PromotionException"
+          }
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "preview_id",
+        "preview_version",
+        "source_year_id",
+        "target_year_id",
+        "effective_date",
+        "cohort",
+        "exceptions",
+        "expires_at"
+      ]
+    },
+    "PromotionCommit": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "preview_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "preview_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "preview_id",
+        "preview_version",
+        "expected_version"
+      ]
+    },
+    "PromotionResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "operation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "enrolments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Enrolment"
+          }
+        },
+        "replayed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "operation_id",
+        "enrolments",
+        "replayed"
+      ]
+    },
+    "VersionedReason": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "expected_version",
+        "reason"
+      ]
+    },
+    "StateChange": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "active",
+            "closed",
+            "archived"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "expected_version",
+        "state",
+        "reason"
+      ]
+    },
+    "ExchangeStudent": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "external_id": {
+          "$ref": "#/$defs/ExternalId"
+        },
+        "expected_version": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "admission_no": {
+          "type": "string",
+          "minLength": 1
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "profile": {
+          "$ref": "#/$defs/Profile"
+        }
+      },
+      "required": [
+        "external_id",
+        "expected_version",
+        "admission_no",
+        "display_name",
+        "profile"
+      ]
+    },
+    "ExchangeStaff": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "external_id": {
+          "$ref": "#/$defs/ExternalId"
+        },
+        "expected_version": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "external_id",
+        "expected_version",
+        "display_name"
+      ]
+    },
+    "ExchangeEnrolment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "external_id": {
+          "$ref": "#/$defs/ExternalId"
+        },
+        "expected_version": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "student_external_id": {
+          "$ref": "#/$defs/ExternalId"
+        },
+        "year_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "section_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "from_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "to_date": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "external_id",
+        "expected_version",
+        "student_external_id",
+        "year_id",
+        "section_id",
+        "from_date",
+        "to_date"
+      ]
+    },
+    "ExchangeRows": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "students": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExchangeStudent"
+          }
+        },
+        "staff": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExchangeStaff"
+          }
+        },
+        "opening_enrolments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExchangeEnrolment"
+          }
+        }
+      },
+      "required": [
+        "students",
+        "staff",
+        "opening_enrolments"
+      ]
+    },
+    "ImportPreviewRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rows": {
+          "$ref": "#/$defs/ExchangeRows"
+        }
+      },
+      "required": [
+        "source",
+        "rows"
+      ]
+    },
+    "ImportIssue": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message_key": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "field",
+        "message_key"
+      ]
+    },
+    "ImportPreview": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "preview_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "preview_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ImportIssue"
+          }
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "preview_id",
+        "preview_version",
+        "row_count",
+        "issues",
+        "expires_at"
+      ]
+    },
+    "ImportCommit": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "preview_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "preview_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "preview_id",
+        "preview_version"
+      ]
+    },
+    "ImportResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "operation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "created_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "updated_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "replayed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "operation_id",
+        "created_ids",
+        "updated_ids",
+        "replayed"
+      ]
+    },
+    "ExportRow": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ExchangeStudent"
+        },
+        {
+          "$ref": "#/$defs/ExchangeStaff"
+        },
+        {
+          "$ref": "#/$defs/ExchangeEnrolment"
+        }
+      ]
+    },
+    "ExportPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExportRow"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "ErrorEnvelope": {
+      "title": "ErrorEnvelope",
+      "description": "The body of every non-2xx response from every module. Frozen: adding a top-level property is a contract revision, never a per-module extension.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message_key",
+        "request_id",
+        "field_errors"
+      ],
+      "properties": {
+        "code": {
+          "description": "Stable machine-readable code. 401 unauthenticated/stale_auth, 403 action_denied, 404 object_inaccessible, 409 version_conflict/state_conflict, 422 validation_failed. 429 rate_limited (added in M01; response carries Retry-After).",
+          "type": "string",
+          "enum": [
+            "unauthenticated",
+            "stale_auth",
+            "action_denied",
+            "object_inaccessible",
+            "version_conflict",
+            "state_conflict",
+            "validation_failed",
+            "rate_limited"
+          ]
+        },
+        "message_key": {
+          "description": "Lookup key the frontend renders in English or Malayalam. Never user-facing prose.",
+          "type": "string",
+          "minLength": 1
+        },
+        "request_id": {
+          "description": "Correlates the response with server logs and audit rows.",
+          "type": "string",
+          "minLength": 1
+        },
+        "field_errors": {
+          "description": "Always present; empty array when there are none, so clients never branch on key absence.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "field",
+              "message_key"
+            ],
+            "properties": {
+              "field": {
+                "description": "Dotted path using wire field names, never ORM attribute names.",
+                "type": "string"
+              },
+              "message_key": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "UpdateSchoolConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "board": {
+          "type": "string",
+          "enum": [
+            "CBSE"
+          ]
+        },
+        "default_language": {
+          "type": "string",
+          "enum": [
+            "en",
+            "ml"
+          ]
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "display_name",
+        "board",
+        "default_language",
+        "expected_version"
+      ]
+    },
+    "UpdateAcademicYear": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "start": {
+          "type": "string",
+          "format": "date"
+        },
+        "end": {
+          "type": "string",
+          "format": "date"
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "name",
+        "start",
+        "end",
+        "expected_version"
+      ]
+    },
+    "UpdateTerm": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "year_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "start": {
+          "type": "string",
+          "format": "date"
+        },
+        "end": {
+          "type": "string",
+          "format": "date"
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "year_id",
+        "name",
+        "start",
+        "end",
+        "expected_version"
+      ]
+    },
+    "UpdateStandard": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "number": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "number",
+        "expected_version"
+      ]
+    },
+    "UpdateSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "year_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "standard_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "year_id",
+        "standard_id",
+        "name",
+        "expected_version"
+      ]
+    },
+    "UpdateSubject": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "code",
+        "display_name",
+        "expected_version"
+      ]
+    },
+    "UpdateSubjectOffering": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "year_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "section_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "subject_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "optional_group": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "year_id",
+        "section_id",
+        "subject_id",
+        "optional_group",
+        "expected_version"
+      ]
+    },
+    "UpdateGuardian": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "email": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "email"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "phone": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "external_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExternalId"
+          }
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "display_name",
+        "email",
+        "phone",
+        "external_ids",
+        "expected_version"
+      ]
+    },
+    "UpdateStaff": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "external_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExternalId"
+          }
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "display_name",
+        "external_ids",
+        "expected_version"
+      ]
+    },
+    "UpdateTeachingAssignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "staff_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "section_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "subject_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "from_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "to_date": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "staff_id",
+        "section_id",
+        "subject_id",
+        "from_date",
+        "to_date",
+        "expected_version"
+      ]
+    },
+    "UpdateLearningOutcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "subject_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description_en": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description_ml": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "subject_id",
+        "code",
+        "description_en",
+        "description_ml",
+        "expected_version"
+      ]
+    },
+    "UpdatePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "year_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "subject_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "streams": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PolicyReference"
+          }
+        },
+        "grading_references": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PolicyReference"
+          }
+        },
+        "withdrawal_outcomes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "type": "string",
+                "minLength": 1
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "inactive",
+                  "transferred",
+                  "graduated"
+                ]
+              }
+            },
+            "required": [
+              "code",
+              "status"
+            ]
+          }
+        },
+        "adult_guardian_rule": {
+          "type": "string",
+          "enum": [
+            "unpublished",
+            "explicit_link_visibility"
+          ]
+        },
+        "approved_example_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "year_id",
+        "subject_ids",
+        "streams",
+        "grading_references",
+        "withdrawal_outcomes",
+        "adult_guardian_rule",
+        "approved_example_refs",
+        "expected_version"
+      ]
+    },
+    "UpdateGuardianLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "academic",
+            "none"
+          ]
+        },
+        "from_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "to_date": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "visibility",
+        "from_date",
+        "to_date",
+        "expected_version",
+        "reason"
+      ]
+    },
+    "EndSubjectEnrolment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "to_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "to_date",
+        "expected_version",
+        "reason"
+      ]
+    },
+    "AcademicYearPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AcademicYear"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "TermPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Term"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "StandardPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Standard"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "SectionPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Section"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "SubjectPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Subject"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "SubjectOfferingPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SubjectOffering"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "StudentRecordPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/StudentRecord"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "GuardianPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Guardian"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "GuardianLinkPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/GuardianLink"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "StaffPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Staff"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "TeachingAssignmentPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TeachingAssignment"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "EnrolmentPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Enrolment"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "SubjectEnrolmentPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SubjectEnrolment"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "LearningOutcomePage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/LearningOutcome"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "PolicyPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Policy"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    },
+    "AccessReviewTaskPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AccessReviewTask"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ]
+    }
+  }
+}

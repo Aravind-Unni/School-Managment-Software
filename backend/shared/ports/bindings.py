@@ -55,8 +55,15 @@ def build_fake_registry(
         )
 
     def access_factory():
-        """Build fake Access wired to the injected clock so 2FA age is testable."""
-        adapter = FakeAccess()
+        """Build fake Access wired to the injected clock so 2FA age is testable.
+
+        Loads the module's own fixture grants when it declares any. Without this
+        the fake denies every module-specific action, and the tempting fix is a
+        test-only bypass inside the module -- which would mean its authorisation
+        path never ran in development. Grants stay enumerated in the module, and
+        only the FAKE builder reads them: the real profiles never call this.
+        """
+        adapter = FakeAccess(extra_rules=_module_fixture_rules(registration))
         adapter._now = clock.now
         return adapter
 
@@ -73,3 +80,24 @@ def build_fake_registry(
     for port_name in consumers:
         registry.register(port_name, factories[port_name], kind=AdapterKind.FAKE)
     return registry
+
+
+def _module_fixture_rules(registration) -> tuple:
+    """Return the fixture PolicyRules a module declares, or none.
+
+    Looks for ``FIXTURE_POLICY_RULES`` in ``modules.<slug>.fixture_policy``. The
+    module is absent for M00 and for any module that has not declared grants, so
+    a missing file is a normal empty answer rather than an error.
+
+    Does not handle: validating the rules. They are ordinary PolicyRule values
+    and the fake applies its own deny-by-default semantics to them.
+    """
+    import importlib
+
+    if registration is None:
+        return ()
+    try:
+        module = importlib.import_module(f"modules.{registration.slug}.fixture_policy")
+    except ModuleNotFoundError:
+        return ()
+    return tuple(getattr(module, "FIXTURE_POLICY_RULES", ()))

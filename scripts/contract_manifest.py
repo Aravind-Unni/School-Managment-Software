@@ -23,10 +23,22 @@ import sys
 REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
 MANIFEST_PATH = REPO_ROOT / "contracts" / "manifest.json"
 
-#: The current revision. B00 starts at a draft; it is replaced by the actual
-#: approved revision once contract review completes. No final v2 executable
-#: contract is assumed to exist.
-REVISION = "school-contracts-v3-draft"
+#: Revision and freeze state live in data, not in this script. Which modules are
+#: approved is a human review outcome; hardcoding it here meant the generator
+#: could only ever express "M00 is frozen", and a reviewer had to edit code to
+#: record a decision.
+REVISION_PATH = REPO_ROOT / "contracts" / "revision.json"
+
+#: Contract artefact filenames, by glob, searched recursively under a module
+#: directory. Recursive on purpose: the earlier top-level-only scan silently
+#: omitted every schema kept in a schemas/ subdirectory -- including M02's
+#: 3,549-line DTO schema -- so those files could change without the drift guard
+#: ever noticing. Anything matching these globs is a contract.
+ARTEFACT_GLOBS = ("openapi*.yaml", "openapi*.json", "*.schema.json", "error-codes.json")
+
+#: Fixtures are consumer-facing examples rather than the contract itself, so they
+#: are recorded in their own section. Also recursive.
+FIXTURE_GLOB = "*.json"
 
 #: id -> slug, duplicated here deliberately: this script must run without the
 #: backend package importable (for example in a lint-only CI job).
@@ -67,6 +79,42 @@ def relative(path: pathlib.Path) -> str:
     return path.relative_to(REPO_ROOT).as_posix()
 
 
+def load_revision() -> dict:
+    """Read the reviewed revision record from contracts/revision.json.
+
+    Assumes the file exists and names a revision; it is part of the repository,
+    not generated. Does not handle deciding whether a module *should* be frozen:
+    that is a human review gate, and this file records its outcome.
+    """
+    if not REVISION_PATH.exists():
+        raise SystemExit(
+            f"FAIL: {relative(REVISION_PATH)} is missing. The manifest cannot be "
+            "generated without a reviewed revision record."
+        )
+    revision_record = json.loads(REVISION_PATH.read_text())
+    if not revision_record.get("revision"):
+        raise SystemExit(f"FAIL: {relative(REVISION_PATH)} names no revision.")
+    return revision_record
+
+
+def artefact_paths(module_dir: pathlib.Path) -> list[pathlib.Path]:
+    """Return every contract artefact under a module directory, recursively.
+
+    Excludes anything under fixtures/, which is recorded separately. Deduplicates
+    because the globs can overlap. Sorted so the manifest is byte-stable.
+
+    Does not handle: a contract stored under a name none of ARTEFACT_GLOBS match.
+    Such a file is invisible to the drift guard, so contracts must use these names.
+    """
+    found: set[pathlib.Path] = set()
+    for pattern in ARTEFACT_GLOBS:
+        for path in module_dir.rglob(pattern):
+            if "fixtures" in path.relative_to(module_dir).parts:
+                continue
+            found.add(path)
+    return sorted(found)
+
+
 def build_manifest() -> dict:
     """Assemble the manifest from what is actually on disk.
 
@@ -74,11 +122,14 @@ def build_manifest() -> dict:
     list, so a new schema file cannot be silently omitted from the manifest.
 
     Does not handle: deciding whether a contract *should* be frozen. That is a
-    human review gate; this records the outcome.
+    human review gate; contracts/revision.json records its outcome.
     """
+    revision_record = load_revision()
+    frozen_modules = revision_record.get("frozen_modules", {})
+
     common_dir = REPO_ROOT / "contracts" / "common"
     common_entries = []
-    for path in sorted(common_dir.glob("*.schema.json")):
+    for path in sorted(common_dir.rglob("*.schema.json")):
         common_entries.append(
             {
                 "id": f"common/{path.name.removesuffix('.schema.json')}",
@@ -93,21 +144,23 @@ def build_manifest() -> dict:
     modules: dict[str, dict] = {}
     for module_id, slug in sorted(MODULE_SLUGS.items()):
         module_dir = REPO_ROOT / "contracts" / module_id
+        is_frozen = module_id in frozen_modules
+
         artefacts = []
-        for pattern in ("openapi.yaml", "openapi.json", "*.schema.json"):
-            for path in sorted(module_dir.glob(pattern)):
-                artefacts.append(
-                    {
-                        "id": f"{module_id}/{path.name}",
-                        "path": relative(path),
-                        "sha256": sha256_of(path),
-                        "owner": f"{module_id} {slug}",
-                        "kind": "openapi" if path.name.startswith("openapi") else "json-schema",
-                        "frozen": module_id == "M00",
-                    }
-                )
+        for path in artefact_paths(module_dir):
+            artefacts.append(
+                {
+                    "id": f"{module_id}/{relative(path).split(module_id + '/', 1)[1]}",
+                    "path": relative(path),
+                    "sha256": sha256_of(path),
+                    "owner": f"{module_id} {slug}",
+                    "kind": "openapi" if path.name.startswith("openapi") else "json-schema",
+                    "frozen": is_frozen,
+                }
+            )
+
         fixtures = []
-        for path in sorted((module_dir / "fixtures").glob("*.json")):
+        for path in sorted((module_dir / "fixtures").rglob(FIXTURE_GLOB)):
             fixtures.append(
                 {
                     "id": f"{module_id}/fixtures/{path.name}",
@@ -115,32 +168,27 @@ def build_manifest() -> dict:
                     "sha256": sha256_of(path),
                     "owner": f"{module_id} {slug}",
                     "kind": "consumer-fixture",
-                    "frozen": module_id == "M00",
+                    "frozen": is_frozen,
                 }
             )
 
         packet = module_dir / "PACKET.md"
-        modules[module_id] = {
+        entry = {
             "slug": slug,
-            # M00 is the placeholder: its contract is generated from real code
-            # and frozen so drift is detectable. The fourteen business modules
-            # are not started; nothing about them is frozen yet.
-            "status": "frozen" if module_id == "M00" else "not_started",
+            "status": "frozen" if is_frozen else "not_started",
             "packet": relative(packet) if packet.exists() else None,
             "artefacts": artefacts,
             "fixtures": fixtures,
         }
+        if is_frozen:
+            entry["review"] = frozen_modules[module_id]
+        modules[module_id] = entry
 
     return {
-        "revision": REVISION,
-        "status": "draft",
-        "note": (
-            "Starting revision for the B00 foundation. No final v2 executable "
-            "contract is assumed to exist. Replace 'revision' with the actual "
-            "approved revision once contract review completes, and flip an "
-            "entry's 'frozen' to true only after its human review gate."
-        ),
-        "envelope_versions": {"event_envelope": 1},
+        "revision": revision_record["revision"],
+        "status": revision_record.get("status", "draft"),
+        "note": revision_record.get("note", ""),
+        "envelope_versions": revision_record.get("envelope_versions", {"event_envelope": 1}),
         "common": common_entries,
         "modules": modules,
     }
@@ -163,12 +211,14 @@ def main() -> int:
     group.add_argument("--update", action="store_true", help="rewrite the manifest")
     arguments = parser.parse_args()
 
-    expected = render(build_manifest())
+    manifest = build_manifest()
+    expected = render(manifest)
+    revision = manifest["revision"]
 
     if arguments.update:
         MANIFEST_PATH.parent.mkdir(parents=True, exist_ok=True)
         MANIFEST_PATH.write_text(expected)
-        print(f"wrote {relative(MANIFEST_PATH)} at revision {REVISION}")
+        print(f"wrote {relative(MANIFEST_PATH)} at revision {revision}")
         return 0
 
     if not MANIFEST_PATH.exists():
@@ -190,7 +240,7 @@ def main() -> int:
         return 1
 
     frozen = sum(1 for entry in _all_entries(json.loads(actual)) if entry.get("frozen"))
-    print(f"OK: manifest current at revision {REVISION} ({frozen} frozen entries)")
+    print(f"OK: manifest current at revision {revision} ({frozen} frozen entries)")
     return 0
 
 

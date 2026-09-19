@@ -1,0 +1,210 @@
+{
+  "synthetic": true,
+  "warning": "Structural test data only; not real school data or approved policy.",
+  "ids": {
+    "school-a": "6ae53aab-eba0-5a15-9800-9cdb26c09bae",
+    "school-b": "097cd5c5-ad2f-5ca5-846e-15b97b70b524",
+    "year-a": "fb6a4836-5d50-59ff-a209-b939a03f36b5",
+    "year-b": "a41ea1ae-4e8f-52cc-9409-ecf96dfd5e2d",
+    "standard-11": "5081f0a4-e0bd-5701-a6a6-8e56550476ee",
+    "C1": "5800df78-7f3b-5169-8ee1-4682b6052ec1",
+    "C2": "f60346cd-fc06-56a7-95c2-7c1d8e7bbdf5",
+    "C3": "f4248abf-69ae-58c5-97de-c35bf067e4ca",
+    "S1": "adc7ca58-a7c1-586a-947e-2d7d32d40319",
+    "S2": "feb25995-76f5-54cf-99f6-e2167fb8e5f5",
+    "S3": "7ffc4aa7-a828-58de-96d3-488bc7c2cd85",
+    "G1": "ef3ad528-3862-56c1-9589-07e44d12be2c",
+    "G2": "1f119161-ba66-5f15-a163-78a78a5206ef",
+    "G3": "dfae9cde-00a3-5f4a-8c34-14dfd75acaed",
+    "T1": "b792a65c-ee1a-5292-af1e-b8dcc420af0d",
+    "T2": "239a3291-015c-5875-9e1c-f2cc78ff8143",
+    "subject-x": "b7b1ce9c-db9d-5e02-87de-1be830481f69",
+    "subject-y": "aaf63a61-3716-55e1-95ad-0cb88efc4d82",
+    "offering-c1-x": "3a189c11-8343-5023-80e2-bf8dddca96a2",
+    "offering-c1-y": "ce70b71f-66e3-55e6-beca-533a6866e328",
+    "offering-c2-x": "6343cb93-a228-5411-be00-5c247c1c6c37",
+    "offering-c2-y": "794d1ed3-d48f-57fb-84bb-10dc3e2243f4",
+    "enrolment-s1-c1": "994f3c87-2131-5578-a378-8b585416c8de",
+    "enrolment-s1-c2": "8fe2fd04-7db5-5341-95a5-9f47dbc8b35a",
+    "enrolment-s2-c1": "e1af1ff0-7132-533e-8cfa-38b161acf657",
+    "S4": "104e496d-119e-5cb9-ac69-c76c65d2c450"
+  },
+  "clock": "2030-08-01T03:30:00Z",
+  "transfer_date": "2030-09-01",
+  "years": [
+    {
+      "id": "fb6a4836-5d50-59ff-a209-b939a03f36b5",
+      "school_id": "6ae53aab-eba0-5a15-9800-9cdb26c09bae",
+      "start": "2030-04-01",
+      "end": "2031-03-31",
+      "state": "active"
+    },
+    {
+      "id": "a41ea1ae-4e8f-52cc-9409-ecf96dfd5e2d",
+      "school_id": "6ae53aab-eba0-5a15-9800-9cdb26c09bae",
+      "start": "2031-04-01",
+      "end": "2032-03-31",
+      "state": "active"
+    }
+  ],
+  "guardian_links": [
+    {
+      "guardian": "G1",
+      "student": "S1"
+    },
+    {
+      "guardian": "G1",
+      "student": "S2"
+    },
+    {
+      "guardian": "G3",
+      "student": "S1"
+    },
+    {
+      "guardian": "G2",
+      "student": "S3"
+    }
+  ],
+  "subject_choices": [
+    {
+      "student": "S1",
+      "subject": "subject-x",
+      "section": "C1",
+      "from_date": "2030-04-01",
+      "to_date": "2030-08-31"
+    },
+    {
+      "student": "S1",
+      "subject": "subject-x",
+      "section": "C2",
+      "from_date": "2030-09-01",
+      "to_date": "2031-03-31"
+    },
+    {
+      "student": "S2",
+      "subject": "subject-y",
+      "section": "C1",
+      "from_date": "2030-04-01",
+      "to_date": "2031-03-31"
+    }
+  ],
+  "actor_roles": {
+    "G1": "linked_guardian",
+    "G2": "unrelated_to_S1",
+    "T1": "assigned_C1_subject_x",
+    "T2": "unassigned"
+  },
+  "enrolments": [
+    {
+      "student": "S1",
+      "section": "C1",
+      "from_date": "2030-04-01",
+      "to_date": "2030-08-31"
+    },
+    {
+      "student": "S1",
+      "section": "C2",
+      "from_date": "2030-09-01",
+      "to_date": "2031-03-31"
+    },
+    {
+      "student": "S2",
+      "section": "C1",
+      "from_date": "2030-04-01",
+      "to_date": "2031-03-31"
+    }
+  ],
+  "people": [
+    {
+      "label": "S1",
+      "id": "adc7ca58-a7c1-586a-947e-2d7d32d40319",
+      "school_id": "6ae53aab-eba0-5a15-9800-9cdb26c09bae",
+      "display_name": "Synthetic S1",
+      "kind": "student"
+    },
+    {
+      "label": "S2",
+      "id": "feb25995-76f5-54cf-99f6-e2167fb8e5f5",
+      "school_id": "6ae53aab-eba0-5a15-9800-9cdb26c09bae",
+      "display_name": "Synthetic S2",
+      "kind": "student"
+    },
+    {
+      "label": "S3",
+      "id": "7ffc4aa7-a828-58de-96d3-488bc7c2cd85",
+      "school_id": "6ae53aab-eba0-5a15-9800-9cdb26c09bae",
+      "display_name": "Synthetic S3",
+      "kind": "student"
+    },
+    {
+      "label": "S4",
+      "id": "104e496d-119e-5cb9-ac69-c76c65d2c450",
+      "school_id": "097cd5c5-ad2f-5ca5-846e-15b97b70b524",
+      "display_name": "Synthetic S4",
+      "kind": "student"
+    },
+    {
+      "label": "G1",
+      "id": "ef3ad528-3862-56c1-9589-07e44d12be2c",
+      "school_id": "6ae53aab-eba0-5a15-9800-9cdb26c09bae",
+      "display_name": "Synthetic G1",
+      "kind": "guardian"
+    },
+    {
+      "label": "G2",
+      "id": "1f119161-ba66-5f15-a163-78a78a5206ef",
+      "school_id": "6ae53aab-eba0-5a15-9800-9cdb26c09bae",
+      "display_name": "Synthetic G2",
+      "kind": "guardian"
+    },
+    {
+      "label": "G3",
+      "id": "dfae9cde-00a3-5f4a-8c34-14dfd75acaed",
+      "school_id": "6ae53aab-eba0-5a15-9800-9cdb26c09bae",
+      "display_name": "Synthetic G3",
+      "kind": "guardian"
+    },
+    {
+      "label": "T1",
+      "id": "b792a65c-ee1a-5292-af1e-b8dcc420af0d",
+      "school_id": "6ae53aab-eba0-5a15-9800-9cdb26c09bae",
+      "display_name": "Synthetic T1",
+      "kind": "staff"
+    },
+    {
+      "label": "T2",
+      "id": "239a3291-015c-5875-9e1c-f2cc78ff8143",
+      "school_id": "6ae53aab-eba0-5a15-9800-9cdb26c09bae",
+      "display_name": "Synthetic T2",
+      "kind": "staff"
+    }
+  ],
+  "actor_person_bindings": [
+    {
+      "actor_id": "735b181a-5ab1-5f3a-aa08-e496a77988db",
+      "person_id": "ef3ad528-3862-56c1-9589-07e44d12be2c",
+      "school_id": "6ae53aab-eba0-5a15-9800-9cdb26c09bae"
+    },
+    {
+      "actor_id": "0ef084c5-f51a-5361-853c-7dcda1c85891",
+      "person_id": "1f119161-ba66-5f15-a163-78a78a5206ef",
+      "school_id": "6ae53aab-eba0-5a15-9800-9cdb26c09bae"
+    },
+    {
+      "actor_id": "7e087213-849c-5374-b782-15bdc92e4ac6",
+      "person_id": "b792a65c-ee1a-5292-af1e-b8dcc420af0d",
+      "school_id": "6ae53aab-eba0-5a15-9800-9cdb26c09bae"
+    },
+    {
+      "actor_id": "81f60768-8d24-5da5-9823-937ad33fef5c",
+      "person_id": "239a3291-015c-5875-9e1c-f2cc78ff8143",
+      "school_id": "6ae53aab-eba0-5a15-9800-9cdb26c09bae"
+    },
+    {
+      "actor_id": "fed52f4b-f478-51d0-803e-7e557d18263c",
+      "person_id": "adc7ca58-a7c1-586a-947e-2d7d32d40319",
+      "school_id": "6ae53aab-eba0-5a15-9800-9cdb26c09bae"
+    }
+  ],
+  "people_note": "S2 and S3 have no login binding. School B pupil S4 exists only for cross-school denial. No guardian link crosses a school boundary."
+}

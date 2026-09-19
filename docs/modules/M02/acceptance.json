@@ -1,0 +1,169 @@
+{
+  "module": "M02 Academic registry and student lifecycle",
+  "recorded_at": "2026-09-20",
+  "phase": "implementation_step_1_of_4",
+  "standalone_verified": false,
+  "source_identity": {
+    "repository": "https://github.com/Aravind-Unni/School-Managment-Software",
+    "branch": "m02/registry-contracts",
+    "head_commit": "faeb9a2555a8639c33240ebf94da4d8c5a893345",
+    "starting_commit": "1d17113ea333b1c77743b6cfdfe3b3d2314089f1",
+    "manifest_revision": "school-contracts-v4",
+    "module_status": "frozen",
+    "frozen": true,
+    "reviewed_by": "Abhinav M",
+    "reviewed_on": "2026-09-20",
+    "pr_url": null,
+    "pr_state": "unknown: gh CLI absent, no GH_TOKEN, GitHub MCP server failed to connect",
+    "validation_source": "Executed test runs on the SQLite test profile. NOT standalone evidence: this machine has no container engine and no PostgreSQL."
+  },
+  "startup_commands": [
+    "python3 scripts/dev.py doctor",
+    "python3 scripts/dev.py up M02 --profile standalone",
+    "python3 scripts/dev.py migrate M02 --profile standalone",
+    "python3 scripts/dev.py seed M02 --scenario baseline",
+    "python3 scripts/dev.py check M02 --suite standalone",
+    "python3 scripts/dev.py check M02 --suite contracts",
+    "python3 scripts/dev.py check M02 --suite browser",
+    "python3 scripts/dev.py evidence M02",
+    "python3 scripts/dev.py down M02"
+  ],
+  "printed_urls": [],
+  "printed_urls_note": "None: no M02 implementation or running stack. Allocate via the shared runner after approval.",
+  "fictional_login_instructions": {
+    "status": "not implemented",
+    "planned": "Server-fixed synthetic persona in localhost standalone, with explicit deny-by-default fake Access fixture grants; no M01 integration and no client identity headers."
+  },
+  "manual_actions_and_expected_outcomes": [
+    {
+      "action": "Create synthetic pupil after duplicate review",
+      "expected": "201, no account required; duplicate admission refused"
+    },
+    {
+      "action": "View S1 class before/on transfer date 2030-09-01",
+      "expected": "C1 before, C2 on/after; prior history preserved"
+    },
+    {
+      "action": "View C1 subject-X period before transfer",
+      "expected": "S1 only; S2 enrolled in subject Y is not returned"
+    },
+    {
+      "action": "G1 reads S1/S2; G2 reads S1",
+      "expected": "Linked children visible; unrelated child denied"
+    },
+    {
+      "action": "Repeat committed promotion with same idempotency key",
+      "expected": "Same IDs; no additional enrolment"
+    },
+    {
+      "action": "Switch English/Malayalam and reload",
+      "expected": "Translated labels and persistent locale"
+    }
+  ],
+  "manual_actions_status": "Proposed, not executed",
+  "migrations": {
+    "files": [],
+    "empty_database": "not-run",
+    "seeded_database": "not-run",
+    "irreversible_operations": "No migrations authored; future migrations require review."
+  },
+  "checks": {
+    "startup_doctor": {
+      "exit": 2,
+      "reason": "No container engine"
+    },
+    "startup_M00_contracts": {
+      "exit": 0,
+      "passed": 105,
+      "architecture_checks": 7,
+      "frozen_entries": 13
+    },
+    "proposal_schema_validation": {
+      "status": "passed",
+      "openapi_operations": 81,
+      "paths": 53,
+      "dto_shapes": 100,
+      "event_payloads": 4,
+      "response_examples": 8,
+      "kind": "syntax/schema checks only; no module tests"
+    },
+    "M02_contracts": {
+      "exit": 1,
+      "shared_tests_passed": 105,
+      "architecture": "passed",
+      "manifest": "failed: proposed files are not yet reviewed/recorded"
+    },
+    "M02_standalone": {
+      "exit": 3,
+      "status": "not-run",
+      "reason": "M02 registration absent"
+    },
+    "M02_browser": {
+      "exit": 2,
+      "status": "not-run",
+      "reason": "No running stack"
+    },
+    "M02_evidence": {
+      "exit": 1,
+      "status": "incomplete",
+      "path": "dev/evidence/abnvm_aumspro_1c8e30_m02/bundle.json"
+    }
+  },
+  "completed_steps": [],
+  "remaining_steps": [
+    "1 configuration and people",
+    "2 links and assignments",
+    "3 enrolment lifecycle",
+    "4 imports and historical roster tests"
+  ],
+  "runtime_interfaces_changed": [],
+  "proposed_interfaces": "contracts/M02/review-decisions.md",
+  "blockers": [
+    "B00 verification/peer review unresolved in tracked records",
+    "M02 contract packet and school-dependent decisions require review",
+    "Required shared capability/exchange/event/fake-binding/resolver and manifest revision not approved",
+    "No local container engine",
+    "No M02 implementation, migrations or required test suites",
+    "Second developer verification and phase exit gate outstanding"
+  ],
+  "pending_integration": [
+    "M03 subject-period rosters",
+    "M04 per-period attendance history",
+    "M10 alumni candidates",
+    "M01 account access/revocation",
+    "M13 exchange consumer"
+  ],
+  "frozen_sha256": {
+    "contracts/M02/PACKET.md": "b40ecc7d1b7ca3d57de09f5498b7121da2597b5323ec8c654c55e3cf8b93575f",
+    "contracts/M02/error-codes.json": "1c76c6cddb59d2ec5444c9676100229355eddb7977192ac1c47afa5b05885870",
+    "contracts/M02/fixtures/expected-results.json": "3c9f732b397a4a503686c3f8846a3dcbeceaa92f76ef2720b5e13b99c91bb102",
+    "contracts/M02/fixtures/responses.json": "6eb4c3c95a2bdd886967fa9272810be7d1c917978800bdab51a74457ddcbf0ee",
+    "contracts/M02/fixtures/scenario.json": "5038036a176cd568765b2c76aee8938d7978db13a519a84b6630dd96b5bc001c",
+    "contracts/M02/openapi.json": "34e97eb06e5d67dbb18383b6cfda081e86403c0e1fbc45d9ddf9572aaeb198f3",
+    "contracts/M02/ports.md": "f52c9271d13bec460b8bec773cb4792b8098776aff9653331cb1f2ef4fd863e8",
+    "contracts/M02/review-decisions.md": "7fada0c9905230fdfc7b798d77ab3127b8eb35467cdc67b327ff03a92b9ce306",
+    "contracts/M02/schemas/dtos.schema.json": "404e3d5194ec1482613e277aad31963f5eac0100458c4aec79d8246058ecb585",
+    "contracts/M02/schemas/events.schema.json": "dfc29145342bdc2a634c0899c6d646da541c5346d4d7b00a2b07b3d24481ed4f"
+  },
+  "observed_checks": {
+    "dev.py doctor": "exit 2: no container engine",
+    "dev.py check M02 --suite contracts": "PASS: 105 shared + 12 M02 contract tests, 7 architecture checks",
+    "pytest tests/modules/M02": "PASS: 39 tests",
+    "pytest (foundation default)": "PASS: 295 tests",
+    "pytest tests/modules/M01": "PASS: 53 passed, 1 skipped (needs PostgreSQL)",
+    "makemigrations --check --dry-run": "PASS: no changes detected",
+    "spectacular --fail-on-warn (M02)": "PASS: 0 errors, 0 warnings",
+    "spectacular (M00) vs frozen openapi.yaml": "PASS: byte-identical",
+    "ruff check / format --check": "PASS",
+    "dev.py check M02 --suite standalone": "not-run: no PostgreSQL, no container engine",
+    "dev.py check M02 --suite browser": "not-run: no running stack",
+    "dev.py evidence M02": "FAIL: incomplete bundle; standalone and browser not-run",
+    "mypy backend/modules/registry": "61 errors, same django-stubs patterns as M00/M01 (99); CI does not run mypy"
+  },
+  "steps": {
+    "1_configuration_and_people": "complete (backend); frontend outstanding",
+    "2_links_and_assignments": "not started",
+    "3_enrolment_lifecycle": "not started",
+    "4_exchange_and_historical_rosters": "not started"
+  }
+}
