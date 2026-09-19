@@ -27,17 +27,21 @@ RUN python -m pip install --require-hashes --no-deps \
  && python -m pip install --require-hashes --no-deps \
         -r /app/backend/requirements-dev.txt
 
+# Unprivileged by default. A development container running as root writes
+# root-owned files into the developer's checkout through the bind mount, and Django
+# needs a writable home for nothing in particular -- but a writable app directory
+# matters for anything that caches beside its source.
+RUN useradd --create-home --uid 10001 school
+
 # Source arrives via a bind mount in development; copying it here keeps the image
-# usable standalone (CI, and later M14's production build).
-COPY backend /app/backend
-COPY contracts /app/contracts
-COPY pyproject.toml /app/
+# usable standalone (CI, and later M14's production build). Owned by the runtime
+# user for the same reason the frontend image is.
+COPY --chown=school:school backend /app/backend
+COPY --chown=school:school contracts /app/contracts
+COPY --chown=school:school pyproject.toml /app/
 
 ENV PYTHONPATH=/app/backend
 
-# Unprivileged by default. A development container that runs as root writes
-# root-owned files into the developer's checkout through the bind mount.
-RUN useradd --create-home --uid 10001 school
 USER school
 
 EXPOSE 8000

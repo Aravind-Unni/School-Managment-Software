@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M01/dtos",
+  "title": "M01 access DTOs",
+  "description": "Request and response shapes for M01. Every write endpoint rejects unknown fields (additionalProperties false) and returns error.unknown_field naming the offender, so a client typo is a 422 rather than a silently ignored field.",
+  "$defs": {
+    "LoginRequest": {
+      "type": "object", "additionalProperties": false,
+      "required": ["login_name", "password"],
+      "properties": {
+        "login_name": { "type": "string", "minLength": 1, "maxLength": 150 },
+        "password": { "type": "string", "minLength": 1, "maxLength": 1024 }
+      }
+    },
+    "ChallengeResponse": {
+      "type": "object", "additionalProperties": false,
+      "description": "A pre-authentication challenge. NOT a business session: no business endpoint accepts it, and no session cookie is issued until the required factor succeeds.",
+      "required": ["challenge_id", "expires_at", "next_action"],
+      "properties": {
+        "challenge_id": { "type": "string", "format": "uuid" },
+        "expires_at": { "type": "string", "format": "date-time" },
+        "next_action": {
+          "type": "string",
+          "description": "totp_required: an active factor exists, send a code. enrol_factor_required: the account must enrol before it can sign in (mandatory-2FA roles). authenticated: no factor required by policy and the session is already live.",
+          "enum": ["totp_required", "enrol_factor_required", "authenticated"]
+        }
+      }
+    },
+    "TotpVerifyRequest": {
+      "type": "object", "additionalProperties": false,
+      "required": ["challenge_id", "code"],
+      "properties": {
+        "challenge_id": { "type": "string", "format": "uuid" },
+        "code": { "type": "string", "pattern": "^[0-9]{6}$",
+                  "description": "Six digits. Validated once atomically against last_accepted_step, so a replay of an accepted code fails even inside its time window." }
+      }
+    },
+    "AuthenticatedResponse": {
+      "type": "object", "additionalProperties": false,
+      "required": ["authenticated", "auth_level", "actor_id", "school_id", "auth_time"],
+      "properties": {
+        "authenticated": { "type": "boolean", "const": true },
+        "auth_level": { "type": "string", "enum": ["password", "password_totp", "recovery"] },
+        "actor_id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "auth_time": { "type": "string", "format": "date-time" }
+      }
+    },
+    "EnrolStartResponse": {
+      "type": "object", "additionalProperties": false,
+      "description": "One-time provisioning data. The secret is shown ONCE and is never returned again, not even to an administrator. otpauth_uri and secret_base32 carry the same secret; the manual secret exists so setup does not require a camera.",
+      "required": ["factor_id", "secret_base32", "otpauth_uri", "digits", "period_seconds", "issuer", "account_name"],
+      "properties": {
+        "factor_id": { "type": "string", "format": "uuid" },
+        "secret_base32": { "type": "string", "pattern": "^[A-Z2-7]{32}$" },
+        "otpauth_uri": { "type": "string", "pattern": "^otpauth://totp/" },
+        "digits": { "type": "integer", "const": 6 },
+        "period_seconds": { "type": "integer", "const": 30 },
+        "issuer": { "type": "string" },
+        "account_name": { "type": "string" }
+      }
+    },
+    "EnrolConfirmRequest": {
+      "type": "object", "additionalProperties": false,
+      "required": ["factor_id", "code"],
+      "properties": {
+        "factor_id": { "type": "string", "format": "uuid" },
+        "code": { "type": "string", "pattern": "^[0-9]{6}$" }
+      }
+    },
+    "RecoveryCodesResponse": {
+      "type": "object", "additionalProperties": false,
+      "description": "Returned exactly ONCE, when a factor is activated. Only hashes are stored, so these values cannot be re-displayed or recovered by support.",
+      "required": ["codes", "generated_at", "count"],
+      "properties": {
+        "codes": { "type": "array", "minItems": 10, "maxItems": 10,
+                   "items": { "type": "string", "pattern": "^[A-Z2-9]{5}-[A-Z2-9]{5}$" } },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "count": { "type": "integer", "const": 10 }
+      }
+    },
+    "RecoverRequest": {
+      "type": "object", "additionalProperties": false,
+      "required": ["challenge_id", "recovery_code"],
+      "properties": {
+        "challenge_id": { "type": "string", "format": "uuid" },
+        "recovery_code": { "type": "string", "minLength": 11, "maxLength": 11 }
+      }
+    },
+    "SessionDTO": {
+      "type": "object", "additionalProperties": false,
+      "description": "One session belonging to the CALLING user. An administrator never sees another user's factor or session detail through this endpoint.",
+      "required": ["id", "auth_level", "auth_time", "created_at", "last_seen_at", "revoked_at", "is_current", "user_agent_family"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "auth_level": { "type": "string", "enum": ["password", "password_totp", "recovery"] },
+        "auth_time": { "type": "string", "format": "date-time" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "last_seen_at": { "type": "string", "format": "date-time" },
+        "revoked_at": { "type": ["string", "null"], "format": "date-time" },
+        "is_current": { "type": "boolean" },
+        "user_agent_family": { "type": "string",
+          "description": "A coarse family such as 'Chrome' or 'unknown'. Deliberately not the raw header, which is a fingerprinting surface." }
+      }
+    },
+    "GrantDTO": {
+      "type": "object", "additionalProperties": false,
+      "description": "One permission grant with a bounded scope and validity window. scope_type section/subject requires scope_id; school scope requires it to be null.",
+      "required": ["action", "scope_type", "scope_id", "valid_from", "valid_to"],
+      "properties": {
+        "action": { "type": "string", "pattern": "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$" },
+        "scope_type": { "type": "string", "enum": ["school", "section", "subject", "self"] },
+        "scope_id": { "type": ["string", "null"], "format": "uuid" },
+        "valid_from": { "type": "string", "format": "date" },
+        "valid_to": { "type": ["string", "null"], "format": "date",
+                      "description": "Inclusive last date. Null means open-ended." }
+      }
+    },
+    "RoleDTO": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "school_id", "name", "is_owner_role", "requires_two_factor", "version", "grants"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "is_owner_role": { "type": "boolean",
+          "description": "Owner roles are protected: the last account holding one cannot lose it, and 2FA cannot be disabled for it." },
+        "requires_two_factor": { "type": "boolean" },
+        "version": { "type": "integer", "minimum": 1 },
+        "grants": { "type": "array", "items": { "$ref": "#/$defs/GrantDTO" } }
+      }
+    },
+    "RoleWriteRequest": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "grants"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "requires_two_factor": { "type": "boolean", "default": false },
+        "grants": { "type": "array", "items": { "$ref": "#/$defs/GrantDTO" } },
+        "expected_version": { "type": "integer", "minimum": 1,
+          "description": "Required on update, forbidden on create. A missing value on update is a 422, never a last-write-wins overwrite." }
+      }
+    },
+    "AccountDTO": {
+      "type": "object", "additionalProperties": false,
+      "description": "Never exposes password material, TOTP seeds, recovery codes, or another user's factor secret. has_active_factor is a boolean only.",
+      "required": ["id", "school_id", "login_name", "display_name", "active", "version", "role_ids", "has_active_factor", "two_factor_required"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "login_name": { "type": "string" },
+        "display_name": { "type": "string" },
+        "active": { "type": "boolean" },
+        "version": { "type": "integer", "minimum": 1 },
+        "role_ids": { "type": "array", "items": { "type": "string", "format": "uuid" } },
+        "has_active_factor": { "type": "boolean" },
+        "two_factor_required": { "type": "boolean" }
+      }
+    },
+    "RecoveryCaseDTO": {
+      "type": "object", "additionalProperties": false,
+      "description": "A documented identity-verification case for a lost factor, approved by a DIFFERENT authorised person. Owner recovery uses the company-controlled process and does not require a second owner to exist.",
+      "required": ["id", "user_id", "state", "reason", "approver_id", "created_at", "decided_at", "version"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "user_id": { "type": "string", "format": "uuid" },
+        "state": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "reason": { "type": "string", "maxLength": 1000 },
+        "approver_id": { "type": ["string", "null"], "format": "uuid" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "decided_at": { "type": ["string", "null"], "format": "date-time" },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

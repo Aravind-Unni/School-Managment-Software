@@ -18,11 +18,19 @@
     },
     {
       "frozen": true,
+      "id": "common/decision",
+      "kind": "json-schema",
+      "owner": "foundation (B00)",
+      "path": "contracts/common/decision.schema.json",
+      "sha256": "e6c6cdf5438c0e0475edcd849a07ac1b557487984cc9312785253351b7698602"
+    },
+    {
+      "frozen": true,
       "id": "common/error-envelope",
       "kind": "json-schema",
       "owner": "foundation (B00)",
       "path": "contracts/common/error-envelope.schema.json",
-      "sha256": "e6952e7781b1b2a9f91ebedff52b2267fa3fbc9c39647e1462011ab8297e94b4"
+      "sha256": "c027e337923de01ca12ba319a44d99df7a4ebe4db44d09e47ca789d90bf9240a"
     },
     {
       "frozen": true,
@@ -30,7 +38,15 @@
       "kind": "json-schema",
       "owner": "foundation (B00)",
       "path": "contracts/common/event-envelope.schema.json",
-      "sha256": "dd0672f26e89d3b4f8997b0519bef84f16f5b68090f5350eccaee8b02a5d7015"
+      "sha256": "c4bf3a5eb12afaddbbf35d3be51f2d9516e6848f7d321268f395602a24ea8d15"
+    },
+    {
+      "frozen": true,
+      "id": "common/registry-dtos",
+      "kind": "json-schema",
+      "owner": "foundation (B00)",
+      "path": "contracts/common/registry-dtos.schema.json",
+      "sha256": "233737b633007785ae0a36eddb1308d4a6326995ac4d5b2b732cf1d392511b2d"
     },
     {
       "frozen": true,
@@ -38,7 +54,7 @@
       "kind": "json-schema",
       "owner": "foundation (B00)",
       "path": "contracts/common/relationship-facts.schema.json",
-      "sha256": "d3e65843595e0a7b91219913acf6ec5da1c0124d80279795a0213d9bc04e20e7"
+      "sha256": "29f58adf9937c2d30939d1737229f19508c5f3c19b0c5ad1f268b2a1615b56f2"
     },
     {
       "frozen": true,
@@ -103,8 +119,34 @@
       "status": "frozen"
     },
     "M01": {
-      "artefacts": [],
-      "fixtures": [],
+      "artefacts": [
+        {
+          "frozen": false,
+          "id": "M01/openapi.yaml",
+          "kind": "openapi",
+          "owner": "M01 access",
+          "path": "contracts/M01/openapi.yaml",
+          "sha256": "f73c02342ac06be7c2b5893c9bd5e72d03023fdc7a0c9dc19dae899ce7955bfd"
+        }
+      ],
+      "fixtures": [
+        {
+          "frozen": false,
+          "id": "M01/fixtures/expected-results.json",
+          "kind": "consumer-fixture",
+          "owner": "M01 access",
+          "path": "contracts/M01/fixtures/expected-results.json",
+          "sha256": "93d4b7619ece904c8e892aec9f0296cd2466227fc0edaf0446ed5e81f19fa5e7"
+        },
+        {
+          "frozen": false,
+          "id": "M01/fixtures/personas.json",
+          "kind": "consumer-fixture",
+          "owner": "M01 access",
+          "path": "contracts/M01/fixtures/personas.json",
+          "sha256": "869f0cfa8971f2daf858994f21962db559ad6edfb2ace66bede7866bfe4e2404"
+        }
+      ],
       "packet": "contracts/M01/PACKET.md",
       "slug": "access",
       "status": "not_started"

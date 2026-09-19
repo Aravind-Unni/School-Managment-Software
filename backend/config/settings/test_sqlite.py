@@ -17,13 +17,21 @@ machine-readable report.
 
 from __future__ import annotations
 
+from cryptography.fernet import Fernet
+
+from config import env
 from config.settings.base import *
 from config.settings.base import HARNESS_APPS, INSTALLED_APPS
+from shared.module_catalog import address_for
 
 APP_ENV = "standalone"
-MODULE_ID = "M00"
 
-INSTALLED_APPS = INSTALLED_APPS + HARNESS_APPS + ["modules.demo"]
+#: Which module's app to install. Defaults to the M00 placeholder so B00's own
+#: suite is unchanged; each module's suite selects itself with MODULE_ID.
+MODULE_ID = env.optional("MODULE_ID", "M00").upper()
+MODULE_ADDRESS = address_for(MODULE_ID)
+
+INSTALLED_APPS = INSTALLED_APPS + HARNESS_APPS + [MODULE_ADDRESS.django_app]
 
 DATABASES = {
     "default": {
@@ -34,7 +42,15 @@ DATABASES = {
 }
 
 SECRET_KEY = "test-only-not-a-secret"
-DEV_PERSONA_MODE = "fixed"
+
+#: A test-only Fernet key. Generated fresh per process, so nothing encrypted in
+#: one test run can be decrypted in another -- which is correct for a throwaway
+#: in-memory database and means no key material is ever committed.
+TOTP_ENCRYPTION_KEY = Fernet.generate_key().decode()
+
+#: M01 owns real login, so it must NOT get a synthetic persona: a persona would
+#: bypass the very flow under test. Every other module uses the fixed persona.
+DEV_PERSONA_MODE = "off" if MODULE_ID == "M01" else "fixed"
 DEMO_FIXTURES_ENABLED = True
 WORKER_AVAILABLE = False
 
@@ -63,3 +79,37 @@ def build_port_registry(registration=None):
         clock=SCHOOL_CLOCK,
         worker_available=False,
     )
+
+
+# --- module-contributed middleware and public paths --------------------------
+# A module that owns authentication declares middleware and unauthenticated paths
+# in its registration; the host installs them rather than each profile hardcoding
+# a module name. Imported lazily so a module with no implementation yet simply
+# contributes nothing instead of breaking settings import.
+try:
+    import importlib
+
+    _registration = importlib.import_module(
+        f"{MODULE_ADDRESS.django_app}.registration"
+    ).REGISTRATION
+except (ModuleNotFoundError, AttributeError):  # module not implemented yet
+    _registration = None
+
+if _registration is not None and _registration.middleware:
+    _shared = "shared.http.middleware.RequestContextMiddleware"
+    MIDDLEWARE = [
+        *[m for m in MIDDLEWARE if m != _shared],
+    ]
+    # The module's middleware runs BEFORE the shared one, so it can resolve a real
+    # session; the shared one then yields to whatever context it produced.
+    _index = MIDDLEWARE.index("django.middleware.common.CommonMiddleware") + 1
+    MIDDLEWARE = [
+        *MIDDLEWARE[:_index],
+        *_registration.middleware,
+        _shared,
+        *MIDDLEWARE[_index:],
+    ]
+
+SCHOOL_PUBLIC_PATH_PREFIXES = (
+    _registration.absolute_public_paths if _registration is not None else ()
+)

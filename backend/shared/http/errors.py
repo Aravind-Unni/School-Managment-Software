@@ -66,7 +66,13 @@ def exception_handler(exc: Exception, context: dict | None = None) -> Response |
             request_id=request_id,
             field_errors=exc.field_errors,
         )
-        return Response(envelope.to_wire(), status=exc.http_status)
+        response = Response(envelope.to_wire(), status=exc.http_status)
+        retry_after = getattr(exc, "retry_after_seconds", None)
+        if retry_after is not None:
+            # A throttled client must be told how long to wait, or it will
+            # hammer and make the throttle worse.
+            response["Retry-After"] = str(int(retry_after))
+        return response
 
     from rest_framework.exceptions import ValidationError as DRFValidationError
 

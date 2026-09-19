@@ -1,5 +1,6 @@
 """Port binding container and adapter selection rules."""
 
+from . import runtime
 from .bindings import FAKEABLE_PORTS, build_fake_registry
 from .registry import (
     AdapterKind,
@@ -15,4 +16,5 @@ __all__ = [
     "PortRegistry",
     "ProductionSafetyError",
     "build_fake_registry",
+    "runtime",
 ]

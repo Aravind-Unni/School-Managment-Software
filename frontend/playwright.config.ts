@@ -10,6 +10,9 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./tests/browser",
+  // An M01 standalone stack mounts Access routes only. Keep the default full
+  // collection for other callers; opt in explicitly when verifying that stack.
+  ...(process.env["MODULE_ID"] === "M01" ? { testMatch: "**/access.spec.ts" } : {}),
   fullyParallel: true,
   forbidOnly: !!process.env["CI"],
   retries: 0,

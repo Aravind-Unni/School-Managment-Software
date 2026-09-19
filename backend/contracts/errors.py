@@ -30,6 +30,11 @@ class ErrorCode(enum.StrEnum):
     VERSION_CONFLICT = "version_conflict"
     STATE_CONFLICT = "state_conflict"
     VALIDATION_FAILED = "validation_failed"
+    #: Throttled by account or IP. Added in M01: a login endpoint without
+    #: throttling is a credential-stuffing target, and folding this into
+    #: validation_failed would stop a client backing off correctly. The response
+    #: carries Retry-After; there is never a permanent attacker-triggered lockout.
+    RATE_LIMITED = "rate_limited"
 
 
 #: Authoritative code -> HTTP status mapping. 401/403/404/409/422 only.
@@ -44,6 +49,7 @@ HTTP_STATUS_BY_CODE: Mapping[ErrorCode, int] = MappingProxyType(
         ErrorCode.VERSION_CONFLICT: 409,
         ErrorCode.STATE_CONFLICT: 409,
         ErrorCode.VALIDATION_FAILED: 422,
+        ErrorCode.RATE_LIMITED: 429,
     }
 )
 
@@ -153,6 +159,27 @@ class ValidationFailed(ContractError):
     """Business validation rejected the input. Renders 422."""
 
     code = ErrorCode.VALIDATION_FAILED
+
+
+class RateLimited(ContractError):
+    """Too many attempts. Renders 429 with a retry hint.
+
+    Carries ``retry_after_seconds`` so the client can back off correctly rather
+    than hammering. The cooldown is progressive and always finite: a permanent
+    lockout would let an attacker deny a legitimate user their own account.
+    """
+
+    code = ErrorCode.RATE_LIMITED
+
+    def __init__(
+        self,
+        message_key: str = "error.too_many_attempts",
+        *,
+        retry_after_seconds: int = 30,
+    ) -> None:
+        """Record how long the caller should wait before retrying."""
+        super().__init__(message_key)
+        self.retry_after_seconds = retry_after_seconds
 
 
 @dataclass(frozen=True, slots=True)

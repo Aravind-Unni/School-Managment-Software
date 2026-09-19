@@ -11,6 +11,10 @@ from contracts.events import EVENT_ENVELOPE_VERSION, AuditRecord, EventEnvelope
 
 pytestmark = pytest.mark.contract
 
+#: The wire shape as of school-contracts-v3-draft, after M01's additive
+#: revision. "schema_version" is M01's name for the number B00 called
+#: "envelope_version"; BOTH are emitted for one revision so neither side breaks.
+#: The v4 revision should retire "envelope_version".
 EXPECTED_EVENT_KEYS = {
     "event_id",
     "school_id",
@@ -20,6 +24,8 @@ EXPECTED_EVENT_KEYS = {
     "aggregate_version",
     "payload",
     "envelope_version",
+    "schema_version",
+    "correlation_id",
 }
 
 
@@ -89,3 +95,15 @@ def test_audit_record_wire_shape_is_exactly_the_contract():
         "before",
         "after",
     }
+
+
+def test_schema_version_and_envelope_version_carry_the_same_number():
+    """Two names for one field during the transition; they must never diverge."""
+    wire = _event().to_wire()
+    assert wire["schema_version"] == wire["envelope_version"] == EVENT_ENVELOPE_VERSION
+
+
+def test_correlation_id_is_optional_and_defaults_to_null():
+    """A worker-originated event need not invent a correlation id."""
+    assert _event().to_wire()["correlation_id"] is None
+    assert _event(correlation_id="req-7").to_wire()["correlation_id"] == "req-7"

@@ -8,7 +8,8 @@
 
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { LANGUAGES, translate, type Language } from "./messages";
+import { ACCESS_MESSAGES } from "@features/access/locales/messages";
+import { LANGUAGES, SHARED_MESSAGES, translate, type Language } from "./messages";
 
 const STORAGE_KEY = "school.language";
 
@@ -50,7 +51,13 @@ export function LanguageProvider({ children }: { readonly children: ReactNode })
     () => ({
       language,
       setLanguage,
-      t: (key: string) => translate(language, key),
+      // Module catalogues are merged over the shared one, so a module's keys
+      // resolve anywhere in the tree without each screen wiring its own lookup.
+      t: (key: string) =>
+        translate(language, key, {
+          en: { ...SHARED_MESSAGES.en, ...ACCESS_MESSAGES.en },
+          ml: { ...SHARED_MESSAGES.ml, ...ACCESS_MESSAGES.ml },
+        }),
     }),
     [language, setLanguage],
   );

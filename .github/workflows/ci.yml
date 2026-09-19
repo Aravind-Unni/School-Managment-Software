@@ -293,3 +293,180 @@ jobs:
           load: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  m01-backend:
+    name: M01 access suite on real PostgreSQL
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17.11-alpine
+        env:
+          POSTGRES_DB: school_ci_ci_m01
+          POSTGRES_USER: school_dev
+          POSTGRES_PASSWORD: school_dev_local_only
+          LANG: C
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U school_dev -d school_ci_ci_m01"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+
+    env:
+      APP_ENV: standalone
+      MODULE_ID: M01
+      SCHOOL_ID: 83cfc7d4-738c-5527-ba46-c61563fe7c1c
+      DATABASE_URL: postgresql://school_dev:school_dev_local_only@127.0.0.1:5432/school_ci_ci_m01
+      SESSION_SECRET: ci-only-not-a-real-secret
+      DEV_PERSONA_MODE: "off"
+      DEMO_FIXTURES_ENABLED: "true"
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: install from hash-pinned lockfiles
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --require-hashes --no-deps \
+            -r backend/requirements.txt -r backend/requirements-dev.txt
+
+      - name: generate a throwaway TOTP key
+        id: totp
+        run: |
+          # Generated per run and never committed. The key lives OUTSIDE the
+          # database, which is the property being preserved.
+          echo "key=$(python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')" >> "$GITHUB_OUTPUT"
+
+      - name: migrations match the models (no drift)
+        run: python backend/manage.py makemigrations --check --dry-run
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.standalone
+          PYTHONPATH: backend
+          TOTP_ENCRYPTION_KEY: ${{ steps.totp.outputs.key }}
+
+      - name: apply M01 migrations to an EMPTY database
+        run: python backend/manage.py migrate --noinput
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.standalone
+          PYTHONPATH: backend
+          TOTP_ENCRYPTION_KEY: ${{ steps.totp.outputs.key }}
+
+      - name: seed, then re-apply migrations to a POPULATED database
+        run: |
+          python backend/manage.py seed_scenario --scenario baseline
+          # M01 requires migrations to be verified on fresh AND populated data.
+          python backend/manage.py migrate --noinput
+          python backend/manage.py seed_scenario --scenario baseline
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.standalone
+          PYTHONPATH: backend
+          TOTP_ENCRYPTION_KEY: ${{ steps.totp.outputs.key }}
+
+      - name: M01 suite against PostgreSQL
+        run: |
+          pytest tests/modules/M01 tests/contracts -q \
+            --ds=config.settings.standalone \
+            --json-report --json-report-file=pytest-m01.json
+        env:
+          TOTP_ENCRYPTION_KEY: ${{ steps.totp.outputs.key }}
+
+      - name: the committed M01 OpenAPI matches the code
+        run: |
+          python backend/manage.py spectacular --fail-on-warn --file /tmp/m01.yaml
+          diff -u contracts/M01/openapi.yaml /tmp/m01.yaml
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.standalone
+          PYTHONPATH: backend
+          TOTP_ENCRYPTION_KEY: ${{ steps.totp.outputs.key }}
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: m01-test-report
+          path: pytest-m01.json
+          if-no-files-found: warn
+
+  m01-browser:
+    name: M01 browser suite against a real stack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # Diagnostics only. doctor legitimately FAILS on a bare runner because
+      # .venv does not exist yet, so it must not gate the build here -- it gates
+      # after the install, below. `|| true` is deliberate and narrow: the same
+      # command runs for real two steps later.
+      - name: doctor (diagnostics, before install)
+        run: python3 scripts/dev.py doctor || true
+
+      - name: install backend dependencies from lockfiles
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install --upgrade pip
+          .venv/bin/python -m pip install --require-hashes --no-deps \
+            -r backend/requirements.txt -r backend/requirements-dev.txt
+
+      - name: install frontend dependencies and Chromium
+        run: |
+          npm ci --no-audit --no-fund --prefix frontend
+          npx --prefix frontend playwright install --with-deps chromium
+
+      # Now it must pass: the venv exists, node is present, and the runner has a
+      # container engine. A failure here is a real prerequisite problem.
+      - name: doctor (gating, after install)
+        run: python3 scripts/dev.py doctor
+
+      # This is what makes the browser suite REAL rather than recorded as not-run:
+      # the generated Compose file brings up PostgreSQL, the Django API and the Vite
+      # dev server, on dynamically allocated ports.
+      - name: bring up the M01 stack
+        run: python3 scripts/dev.py up M01 --profile standalone
+
+      - name: migrate and seed
+        run: |
+          python3 scripts/dev.py migrate M01 --profile standalone
+          python3 scripts/dev.py seed M01 --scenario baseline
+
+      - name: run the browser suite against the allocated URLs
+        run: python3 scripts/dev.py check M01 --suite browser
+        env:
+          MODULE_ID: M01
+
+      - name: evidence bundle
+        if: always()
+        run: python3 scripts/dev.py evidence M01 || true
+
+      - name: stack diagnostics on failure
+        if: failure()
+        run: |
+          for file in dev/state/*.compose.yaml; do
+            echo "::group::$file"
+            docker compose -f "$file" ps || true
+            docker compose -f "$file" logs --tail 200 || true
+            echo "::endgroup::"
+          done
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: m01-browser-evidence
+          path: |
+            dev/evidence/
+            dev/state/frontend-playwright.json
+          if-no-files-found: warn
+
+      - name: down
+        if: always()
+        run: python3 scripts/dev.py down M01 || true

@@ -10,6 +10,12 @@ RULES enforced by ``scripts/arch_check.py``:
   * No module under ``backend/modules/`` may import another module.
 """
 
+from .decisions import (
+    NOT_FOUND_REASONS,
+    UNAUTHENTICATED_REASONS,
+    Decision,
+    ReasonCode,
+)
 from .errors import (
     HTTP_STATUS_BY_CODE,
     ActionDenied,
@@ -18,6 +24,7 @@ from .errors import (
     ErrorEnvelope,
     FieldError,
     ObjectInaccessible,
+    RateLimited,
     StaleAuth,
     StateConflict,
     Unauthenticated,
@@ -39,6 +46,13 @@ from .pagination import (
     decode_cursor,
     encode_cursor,
 )
+from .people import (
+    RosterDTO,
+    RosterEntry,
+    StudentDTO,
+    StudentStatus,
+    TeachingAssignment,
+)
 from .ports import (
     AccessPort,
     ClockPort,
@@ -52,6 +66,7 @@ from .registration import (
     HealthCheck,
     ModuleRegistration,
     ScheduledJob,
+    assert_no_registration_collisions,
 )
 from .scope import Relationship, RelationshipFacts, ScopeFacts
 from .values import (
@@ -70,13 +85,16 @@ __all__ = [
     "HTTP_STATUS_BY_CODE",
     "MARKS_DECIMAL_PLACES",
     "MAX_PAGE_SIZE",
+    "NOT_FOUND_REASONS",
     "SCHOOL_TIMEZONE",
+    "UNAUTHENTICATED_REASONS",
     "AccessPort",
     "ActionDenied",
     "AuditRecord",
     "AuthLevel",
     "ClockPort",
     "ContractError",
+    "Decision",
     "ErrorCode",
     "ErrorEnvelope",
     "EventEnvelope",
@@ -90,18 +108,26 @@ __all__ = [
     "ObjectStoragePort",
     "Page",
     "PlatformPort",
+    "RateLimited",
+    "ReasonCode",
     "RegistryPort",
     "Relationship",
     "RelationshipFacts",
     "RequestContext",
     "ResourceGrant",
+    "RosterDTO",
+    "RosterEntry",
     "ScheduledJob",
     "ScopeFacts",
     "StaleAuth",
     "StateConflict",
+    "StudentDTO",
+    "StudentStatus",
+    "TeachingAssignment",
     "Unauthenticated",
     "ValidationFailed",
     "VersionConflict",
+    "assert_no_registration_collisions",
     "clamp_page_size",
     "decode_cursor",
     "encode_cursor",

@@ -43,10 +43,19 @@ SCHOOL_ID = env.optional("SCHOOL_ID") or str(fixtures.SCHOOL_A)
 #: Defaults to T1, class teacher of C1, so a developer opening the demo page
 #: can list, read and write. Authorisation tests build their own contexts for
 #: S1/G1/G2/T1/T2 rather than relying on this persona.
-DEV_PERSONA = DevPersona(
-    actor_id=fixtures.TEACHER_T1,
-    school_id=fixtures.SCHOOL_A,
+#: M01 owns real login, sessions and 2FA, so it must NOT get a synthetic
+#: persona -- one would bypass the flow under test. Every other module uses it.
+DEV_PERSONA = (
+    None
+    if MODULE_ID == "M01"
+    else DevPersona(actor_id=fixtures.TEACHER_T1, school_id=fixtures.SCHOOL_A)
 )
+DEV_PERSONA_MODE = "off" if MODULE_ID == "M01" else env.optional("DEV_PERSONA_MODE", "fixed")
+
+#: Fernet key for TOTP seeds at rest. Held OUTSIDE the database. dev.py generates
+#: one into dev/secrets/ and passes it in; there is no default, because a default
+#: would mean every developer's seeds were encrypted with the same known key.
+TOTP_ENCRYPTION_KEY = env.optional("TOTP_ENCRYPTION_KEY")
 
 #: Demo fixtures are the placeholder module's seed data, allowed here only.
 DEMO_FIXTURES_ENABLED = env.flag("DEMO_FIXTURES_ENABLED", default=True)
@@ -74,3 +83,37 @@ def build_port_registry(registration: ModuleRegistration | None) -> PortRegistry
         clock=SCHOOL_CLOCK,
         worker_available=WORKER_AVAILABLE,
     )
+
+
+# --- module-contributed middleware and public paths --------------------------
+# A module that owns authentication declares middleware and unauthenticated paths
+# in its registration; the host installs them rather than each profile hardcoding
+# a module name. Imported lazily so a module with no implementation yet simply
+# contributes nothing instead of breaking settings import.
+try:
+    import importlib
+
+    _registration = importlib.import_module(
+        f"{MODULE_ADDRESS.django_app}.registration"
+    ).REGISTRATION
+except (ModuleNotFoundError, AttributeError):  # module not implemented yet
+    _registration = None
+
+if _registration is not None and _registration.middleware:
+    _shared = "shared.http.middleware.RequestContextMiddleware"
+    MIDDLEWARE = [
+        *[m for m in MIDDLEWARE if m != _shared],
+    ]
+    # The module's middleware runs BEFORE the shared one, so it can resolve a real
+    # session; the shared one then yields to whatever context it produced.
+    _index = MIDDLEWARE.index("django.middleware.common.CommonMiddleware") + 1
+    MIDDLEWARE = [
+        *MIDDLEWARE[:_index],
+        *_registration.middleware,
+        _shared,
+        *MIDDLEWARE[_index:],
+    ]
+
+SCHOOL_PUBLIC_PATH_PREFIXES = (
+    _registration.absolute_public_paths if _registration is not None else ()
+)

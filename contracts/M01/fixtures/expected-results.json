@@ -1,0 +1,172 @@
+{
+  "_comment": "The outcomes M01's acceptance tests assert. Each row names the behaviour, the request and the exact expected status and message_key, so the fixture file and the tests cannot drift apart silently.",
+  "cases": [
+    {
+      "name": "business API refused before 2FA completes",
+      "given": "T1 has an active factor and a password-only session",
+      "when": "GET /api/v1/accounts",
+      "then": {
+        "status": 401,
+        "code": "stale_auth",
+        "message_key": "error.two_factor_required"
+      }
+    },
+    {
+      "name": "challenge is not a business session",
+      "given": "a fresh challenge from /auth/login",
+      "when": "GET /api/v1/accounts using only the challenge id",
+      "then": {
+        "status": 401,
+        "code": "unauthenticated"
+      }
+    },
+    {
+      "name": "first valid completed login works",
+      "given": "T1 enrolled, correct code",
+      "when": "POST /auth/2fa/verify",
+      "then": {
+        "status": 200,
+        "auth_level": "password_totp"
+      }
+    },
+    {
+      "name": "replayed TOTP code is refused inside its own window",
+      "given": "the same code accepted a moment ago",
+      "when": "POST /auth/2fa/verify again",
+      "then": {
+        "status": 422,
+        "message_key": "error.totp_code_invalid"
+      },
+      "why": "last_accepted_step makes acceptance atomic, so a code cannot be used twice even within its 30-second step."
+    },
+    {
+      "name": "expired challenge is refused",
+      "given": "the preloaded expired challenge",
+      "when": "POST /auth/2fa/verify",
+      "then": {
+        "status": 401,
+        "message_key": "error.challenge_expired"
+      }
+    },
+    {
+      "name": "concurrent reuse of one recovery code succeeds exactly once",
+      "given": "two simultaneous requests with the same unused code",
+      "when": "POST /auth/2fa/recover x2",
+      "then": {
+        "successes": 1,
+        "failures": 1,
+        "failure_status": 409,
+        "failure_message_key": "error.recovery_code_already_used"
+      }
+    },
+    {
+      "name": "replaying an already-used recovery code is refused",
+      "given": "the preloaded used code",
+      "when": "POST /auth/2fa/recover",
+      "then": {
+        "status": 409,
+        "message_key": "error.recovery_code_already_used"
+      }
+    },
+    {
+      "name": "factor reset revokes existing sessions",
+      "given": "T1 has two live sessions and a pending case; P1 approves it",
+      "when": "POST /auth/factor/reset-requests/{id}/approve",
+      "then": {
+        "status": 200,
+        "t1_live_sessions_after": 0,
+        "event": "FactorReset.v1"
+      }
+    },
+    {
+      "name": "device-loss recovery works with no SMS service",
+      "given": "no SMS provider is configured or reachable anywhere in the profile",
+      "when": "the full lost-device path runs",
+      "then": {
+        "succeeds": true,
+        "sms_calls": 0
+      }
+    },
+    {
+      "name": "no self-escalation",
+      "given": "T1 holds only auth.factor.manage_self",
+      "when": "POST /roles granting roles.manage",
+      "then": {
+        "status": 403
+      }
+    },
+    {
+      "name": "delegation cannot exceed the delegator's scope",
+      "given": "an actor with roles.delegate scoped to section C1",
+      "when": "PUT /roles/{id}/grants granting school-wide scope",
+      "then": {
+        "status": 422,
+        "message_key": "error.grant_escalation"
+      }
+    },
+    {
+      "name": "last active owner is protected",
+      "given": "O1 is the only active owner",
+      "when": "PUT /roles/{owner_role}/grants removing the owner grant",
+      "then": {
+        "status": 409,
+        "message_key": "error.last_owner_protected"
+      }
+    },
+    {
+      "name": "cross-school access is 404, never 403",
+      "given": "a School A actor",
+      "when": "any read of O2_SCHOOL_B",
+      "then": {
+        "status": 404,
+        "code": "object_inaccessible"
+      }
+    },
+    {
+      "name": "stale expected_version is refused",
+      "given": "a role at version 2",
+      "when": "PUT with expected_version 1",
+      "then": {
+        "status": 409,
+        "code": "version_conflict"
+      }
+    },
+    {
+      "name": "unknown write field is refused",
+      "given": "any write endpoint",
+      "when": "body carries an undeclared field",
+      "then": {
+        "status": 422,
+        "message_key": "error.unknown_field"
+      }
+    },
+    {
+      "name": "role removal affects evidence downloads",
+      "given": "an actor whose grant permitted a private file read",
+      "when": "the grant is removed, then the download is retried",
+      "then": {
+        "status": 403,
+        "note": "Access checks apply to private files, not only to API routes. The decision must invalidate promptly on grant change."
+      }
+    },
+    {
+      "name": "a required factor cannot be disabled on a protected role",
+      "given": "O1 holds the owner role, which requires 2FA",
+      "when": "an attempt to disable the factor",
+      "then": {
+        "status": 403,
+        "message_key": "error.required_factor_protected"
+      }
+    },
+    {
+      "name": "throttling is finite",
+      "given": "repeated failed logins",
+      "then": {
+        "status": 429,
+        "code": "rate_limited",
+        "carries_retry_after": true,
+        "note": "Progressive cooldown, never a permanent attacker-triggered lockout."
+      }
+    }
+  ]
+}

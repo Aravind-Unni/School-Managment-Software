@@ -5,10 +5,15 @@
   "description": "The body of every non-2xx response from every module. Frozen: adding a top-level property is a contract revision, never a per-module extension.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["code", "message_key", "request_id", "field_errors"],
+  "required": [
+    "code",
+    "message_key",
+    "request_id",
+    "field_errors"
+  ],
   "properties": {
     "code": {
-      "description": "Stable machine-readable code. 401 unauthenticated/stale_auth, 403 action_denied, 404 object_inaccessible, 409 version_conflict/state_conflict, 422 validation_failed.",
+      "description": "Stable machine-readable code. 401 unauthenticated/stale_auth, 403 action_denied, 404 object_inaccessible, 409 version_conflict/state_conflict, 422 validation_failed. 429 rate_limited (added in M01; response carries Retry-After).",
       "type": "string",
       "enum": [
         "unauthenticated",
@@ -17,7 +22,8 @@
         "object_inaccessible",
         "version_conflict",
         "state_conflict",
-        "validation_failed"
+        "validation_failed",
+        "rate_limited"
       ]
     },
     "message_key": {
@@ -36,13 +42,18 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["field", "message_key"],
+        "required": [
+          "field",
+          "message_key"
+        ],
         "properties": {
           "field": {
             "description": "Dotted path using wire field names, never ORM attribute names.",
             "type": "string"
           },
-          "message_key": { "type": "string" }
+          "message_key": {
+            "type": "string"
+          }
         }
       }
     }

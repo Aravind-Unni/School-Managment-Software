@@ -1,0 +1,137 @@
+{
+  "_comment": "M01's synthetic cast. UUIDs are uuid5 over the shared fixture namespace, so they are identical on every machine and in every language. Nothing here describes a real person. The login names are fictional and the passwords are test-only values that exist nowhere else.",
+  "namespace": "6f1a9c2e-0b3d-4f5a-8c7b-1d2e3f4a5b6c",
+  "schools": {
+    "school_a": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "school_b": "8e1e985f-ba74-5baa-82c6-b884525e416c"
+  },
+  "accounts": {
+    "O1": {
+      "id": "c0bc951f-e90c-51e4-a351-b1f0e171e43a",
+      "login_name": "owner.o1",
+      "password": "Owner-O1-test-only",
+      "display_name": "O1 Owner (synthetic)",
+      "school": "school_a",
+      "roles": [
+        "owner"
+      ],
+      "two_factor": "required",
+      "note": "The owner. Last-owner protection applies: this account cannot lose the owner role while it is the only active holder, and its required 2FA cannot be disabled."
+    },
+    "T1": {
+      "id": "5f1ecceb-0156-5373-a9b4-09336ee4a62b",
+      "login_name": "teacher.t1",
+      "password": "Teacher-T1-test-only",
+      "display_name": "T1 Teacher (synthetic)",
+      "school": "school_a",
+      "roles": [
+        "teacher"
+      ],
+      "two_factor": "required",
+      "person_id": "eda913d7-a893-5ecc-af4e-766d1332b2ee",
+      "note": "Staff, so 2FA is required by the proposed minimum. Starts WITHOUT a factor to exercise enrol_factor_required."
+    },
+    "G1": {
+      "id": "f5726bbe-6e5e-5e62-8d86-3898af258ba5",
+      "login_name": "guardian.g1",
+      "password": "Guardian-G1-test-only",
+      "display_name": "G1 Guardian (synthetic)",
+      "school": "school_a",
+      "roles": [
+        "guardian"
+      ],
+      "two_factor": "optional",
+      "person_id": "a98bf46f-c03f-59a9-96e4-5eb94f0cf4a7",
+      "note": "Guardian enforcement is school-configurable and NOT activated: optional here, pending owner policy. G1 enrols voluntarily so the optional path is covered."
+    },
+    "P1": {
+      "id": "46640cf1-9a18-5f6d-8498-3ebaec821fc6",
+      "login_name": "principal.p1",
+      "password": "Principal-P1-test-only",
+      "display_name": "P1 Principal (synthetic)",
+      "school": "school_a",
+      "roles": [
+        "administrator"
+      ],
+      "two_factor": "required",
+      "person_id": "5e101a6a-eca4-5a5f-b5ef-c2d776c939fe",
+      "note": "Holds auth.factor.reset_other, so it can approve T1's lost-device case. A different person from the subject, which the approval rule requires."
+    },
+    "O2_SCHOOL_B": {
+      "id": "85ef9f2e-a2d2-5091-b681-7fd2a463a8c5",
+      "login_name": "owner.o2",
+      "password": "Owner-O2-test-only",
+      "display_name": "O2 Owner at School B (synthetic)",
+      "school": "school_b",
+      "roles": [
+        "owner"
+      ],
+      "two_factor": "required",
+      "note": "Exists solely to prove two-school isolation: every read by a School A actor against this account must be 404, never 403."
+    }
+  },
+  "roles": {
+    "owner": {
+      "id": "a35e7f65-7e0a-5b5c-bb0f-1cf6674cad01",
+      "is_owner_role": true,
+      "requires_two_factor": true,
+      "grants": [
+        "roles.manage",
+        "roles.delegate",
+        "accounts.manage",
+        "auth.factor.manage_self",
+        "auth.factor.reset_other"
+      ]
+    },
+    "administrator": {
+      "id": "1713a03c-38de-5c65-b693-d9d277ba413e",
+      "is_owner_role": false,
+      "requires_two_factor": true,
+      "grants": [
+        "accounts.manage",
+        "auth.factor.manage_self",
+        "auth.factor.reset_other"
+      ]
+    },
+    "teacher": {
+      "id": "8f8dc587-89c2-5f7a-8179-77d867bf95a6",
+      "is_owner_role": false,
+      "requires_two_factor": true,
+      "grants": [
+        "auth.factor.manage_self"
+      ]
+    },
+    "guardian": {
+      "id": "d5373205-746f-5e0c-a403-add7b209b17f",
+      "is_owner_role": false,
+      "requires_two_factor": false,
+      "grants": [
+        "auth.factor.manage_self"
+      ]
+    }
+  },
+  "_two_factor_policy": {
+    "proposed_minimum": "Mandatory for owner, administrator and staff roles.",
+    "status": "PROPOSED, not an approved production policy.",
+    "parent_student": "School-configurable and shipped OFF pending owner policy. The seed exercises the configurable path through a fixture; a fixture cannot activate a production policy.",
+    "all_account_types_may_enrol": true
+  },
+  "preloaded_state": {
+    "expired_challenge": {
+      "id": "1f9409cc-9558-581c-bf79-38dda75cdf96",
+      "for_account": "G1",
+      "note": "Created already past its expiry so /auth/2fa/verify returns 401 error.challenge_expired without waiting five minutes."
+    },
+    "used_recovery_code": {
+      "code": "USED1-CODE1",
+      "for_account": "G1",
+      "note": "Already consumed, so replaying it returns 409 error.recovery_code_already_used."
+    },
+    "pending_reset_case": {
+      "id": "ee379e08-6527-5ad6-821b-5819f58c7b6b",
+      "for_account": "T1",
+      "state": "pending",
+      "note": "Open lost-device case awaiting P1's approval. Device-loss recovery with no SMS service."
+    }
+  }
+}

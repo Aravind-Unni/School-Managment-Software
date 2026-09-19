@@ -1,19 +1,22 @@
 # M01 access
 
-Status: **not started**. The foundation (B00) is built; this module is not.
+Status: **implemented, verification and contract review incomplete**. The module
+is not STANDALONE_VERIFIED and its contract artefacts are not frozen.
 
-- Contract packet: [`contracts/M01/PACKET.md`](../../../contracts/M01/PACKET.md)
-- Code will live in `backend/modules/access/` and `frontend/src/features/access/`
-- Nothing here is importable yet: `backend/modules/access/` deliberately has no
-  `__init__.py`, so no other module can accidentally depend on it and
-  `scripts/dev.py up M01` fails honestly rather than serving an empty app.
+- Current state and next action: [progress.md](progress.md)
+- Verification limits and open review questions: [handoff.md](handoff.md)
+- Proposed contract: [PACKET.md](../../../contracts/M01/PACKET.md)
+- Implementation: `backend/modules/access/`, `frontend/src/features/access/`
 
-## Before writing any code
+M01 uses real login, sessions, TOTP and recovery, with a deterministic fake
+Registry. It does not bind fake Access, because it owns Access.
 
-Produce the exact OpenAPI, JSON Schema, Protocol signatures, error enums and
-example fixtures listed in the packet, get them reviewed, and freeze them in
-`contracts/manifest.json`. Only then implement.
+After starting, migrating and seeding the M01 standalone stack, select its browser
+suite explicitly:
 
-## B00 note
+```bash
+MODULE_ID=M01 python3 scripts/dev.py check M01 --suite browser
+```
 
-Uses REAL login, sessions, TOTP and recovery, with a fake Registry ONLY. This is the one module that does not bind fake Access, because it IS Access.
+New endpoint or policy work must wait for review and freezing of the proposed
+contracts. See the handoff for shared interfaces already changed on this branch.

@@ -18,6 +18,7 @@ from contracts.errors import ContractError
 from .context import (
     DevPersona,
     SpoofedIdentityHeader,
+    assert_no_client_identity_headers,
     new_request_id,
     resolve_request_context,
 )
@@ -53,8 +54,57 @@ class RequestContextMiddleware:
         if request.path.startswith(UNAUTHENTICATED_PATHS):
             return self._get_response(request)
 
+        # Spoofed-identity and body guards run for EVERY request, before anything
+        # else, including requests a module has already authenticated. An earlier
+        # version yielded to a module-resolved context first, which meant a
+        # client-asserted X-School-Id was silently IGNORED rather than REJECTED on
+        # an authenticated request -- not exploitable, since the school comes from
+        # the session row, but it quietly dropped a guarantee B00 states plainly.
         try:
             self._guard_body(request)
+            assert_no_client_identity_headers(request.META)
+        except SpoofedIdentityHeader as exc:
+            logger.warning(
+                "rejected client-asserted identity header",
+                extra={"request_id": request.school_request_id, "header": exc.header},
+            )
+            return self._envelope_response(
+                request,
+                code="validation_failed",
+                message_key="error.client_asserted_identity",
+                status=400,
+                field_errors=[
+                    {"field": exc.header, "message_key": "error.header_not_accepted"}
+                ],
+            )
+        except ContractError as exc:
+            return self._envelope_response(
+                request,
+                code=str(exc.code),
+                message_key=exc.message_key,
+                status=exc.http_status,
+                field_errors=[
+                    {"field": fe.field, "message_key": fe.message_key}
+                    for fe in exc.field_errors
+                ],
+            )
+
+        # A module that owns authentication (M01) resolves identity in its own
+        # middleware, which runs first. Having passed the guards above, a trusted
+        # context it produced is accepted as-is.
+        if getattr(request, "school_context", None) is not None:
+            return self._get_response(request)
+
+        # Endpoints a module declared as reachable without any session -- login,
+        # 2FA verification, recovery. Still guarded against spoofed identity
+        # headers below, because "public" does not mean "trusts the client".
+        public_prefixes = tuple(getattr(settings, "SCHOOL_PUBLIC_PATH_PREFIXES", ()))
+        if public_prefixes and request.path.startswith(public_prefixes):
+            # Guards already ran above; a declared-public path simply needs no
+            # identity. "Public" never means "trusts the client".
+            return self._get_response(request)
+
+        try:
             request.school_context = resolve_request_context(
                 meta=request.META,
                 app_env=settings.APP_ENV,

@@ -1,0 +1,1568 @@
+openapi: 3.0.3
+info:
+  title: School platform API
+  version: school-contracts-v3-draft
+  description: Per-module REST API. One module is served per standalone profile.
+paths:
+  /api/v1/accounts:
+    get:
+      operationId: accounts_list
+      description: |-
+        Return a cursor page of accounts.
+
+        Requires ``accounts.manage``, which the catalogue marks as needing a fresh
+        second factor -- so a password-only session is refused here with 401. That is
+        the acceptance case "business API refused before 2FA completes".
+      summary: List accounts in the caller's school
+      parameters:
+      - in: query
+        name: cursor
+        schema:
+          type: string
+        description: Opaque keyset cursor. Do not parse.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Capped server-side.
+      tags:
+      - v1
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountCollectionResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Client asserted its own identity.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Unauthenticated, expired challenge, or step-up required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Action denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Absent, or not visible to you.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Version or state conflict.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Validation failed, or an unknown field.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Throttled; carries Retry-After.
+  /api/v1/auth/2fa/confirm:
+    post:
+      operationId: auth_factor_enrol_confirm
+      description: |-
+        Activate the pending factor and return ten single-use codes.
+
+        The codes appear here and nowhere else. Only hashes are stored.
+      summary: Activate the factor and receive recovery codes once
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrolConfirmRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EnrolConfirmRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EnrolConfirmRequestRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecoveryCodesResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Client asserted its own identity.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Unauthenticated, expired challenge, or step-up required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Action denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Absent, or not visible to you.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Version or state conflict.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Validation failed, or an unknown field.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Throttled; carries Retry-After.
+  /api/v1/auth/2fa/enroll:
+    post:
+      operationId: auth_factor_enrol_start
+      description: |-
+        Confirm the password, then return provisioning data once.
+
+        The response is the ONLY place the secret appears. It is never logged and
+        never retrievable again, including by an administrator.
+      summary: Begin factor enrolment
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordConfirmRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordConfirmRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordConfirmRequestRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrolStartResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Client asserted its own identity.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Unauthenticated, expired challenge, or step-up required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Action denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Absent, or not visible to you.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Version or state conflict.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Validation failed, or an unknown field.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Throttled; carries Retry-After.
+  /api/v1/auth/2fa/recover:
+    post:
+      operationId: auth_factor_recover
+      description: |-
+        Consume a recovery code and issue a recovery-level session.
+
+        Revokes the old factor and every session, and permits factor re-enrolment
+        only. There is no SMS fallback on this path or any other.
+      summary: Sign in with a single-use recovery code
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecoverRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecoverRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecoverRequestRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticatedResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Client asserted its own identity.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Unauthenticated, expired challenge, or step-up required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Action denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Absent, or not visible to you.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Version or state conflict.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Validation failed, or an unknown field.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Throttled; carries Retry-After.
+  /api/v1/auth/2fa/verify:
+    post:
+      operationId: auth_totp_verify
+      description: Verify a TOTP code and issue a business session.
+      summary: Complete the challenge with a TOTP code
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TotpVerifyRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TotpVerifyRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TotpVerifyRequestRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticatedResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Client asserted its own identity.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Unauthenticated, expired challenge, or step-up required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Action denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Absent, or not visible to you.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Version or state conflict.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Validation failed, or an unknown field.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Throttled; carries Retry-After.
+  /api/v1/auth/factor/reset-requests:
+    post:
+      operationId: auth_factor_reset_request
+      description: Open a pending case for a DIFFERENT person to approve.
+      summary: Open a lost-device case
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetRequestBodyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResetRequestBodyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResetRequestBodyRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecoveryCaseResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Client asserted its own identity.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Unauthenticated, expired challenge, or step-up required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Action denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Absent, or not visible to you.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Version or state conflict.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Validation failed, or an unknown field.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Throttled; carries Retry-After.
+  /api/v1/auth/factor/reset-requests/{case_id}/approve:
+    post:
+      operationId: auth_factor_reset_approve
+      description: |-
+        Approve a case, reset the factor and revoke every session it authorised.
+
+        Requires ``auth.factor.reset_other`` AND fresh 2FA. The approver may never be
+        the subject.
+      summary: Approve a lost-device case and reset the factor
+      parameters:
+      - in: path
+        name: case_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecoveryCaseResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Client asserted its own identity.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Unauthenticated, expired challenge, or step-up required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Action denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Absent, or not visible to you.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Version or state conflict.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Validation failed, or an unknown field.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Throttled; carries Retry-After.
+  /api/v1/auth/login:
+    post:
+      operationId: auth_login
+      description: |-
+        Verify the password and issue a pre-authentication challenge.
+
+        Returns 201: a challenge is a created resource, and deliberately not a
+        session. An unknown login and a wrong password are indistinguishable.
+      summary: Begin authentication and receive a challenge
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequestRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChallengeResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Client asserted its own identity.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Unauthenticated, expired challenge, or step-up required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Action denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Absent, or not visible to you.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Version or state conflict.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Validation failed, or an unknown field.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Throttled; carries Retry-After.
+  /api/v1/auth/logout:
+    post:
+      operationId: auth_logout
+      description: Revoke the caller's session and clear its cookies.
+      summary: Revoke the current session
+      tags:
+      - v1
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RevokedResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Client asserted its own identity.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Unauthenticated, expired challenge, or step-up required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Action denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Absent, or not visible to you.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Version or state conflict.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Validation failed, or an unknown field.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Throttled; carries Retry-After.
+  /api/v1/auth/session:
+    get:
+      operationId: auth_current_session
+      description: Return the caller's identity and auth level.
+      summary: Describe the calling session
+      tags:
+      - v1
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticatedResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Client asserted its own identity.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Unauthenticated, expired challenge, or step-up required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Action denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Absent, or not visible to you.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Version or state conflict.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Validation failed, or an unknown field.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Throttled; carries Retry-After.
+  /api/v1/roles:
+    get:
+      operationId: roles_list
+      description: Return a cursor page of roles in the caller's school.
+      summary: List roles in the caller's school
+      parameters:
+      - in: query
+        name: cursor
+        schema:
+          type: string
+        description: Opaque keyset cursor. Do not parse.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Capped server-side.
+      tags:
+      - v1
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleCollectionResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Client asserted its own identity.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Unauthenticated, expired challenge, or step-up required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Action denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Absent, or not visible to you.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Version or state conflict.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Validation failed, or an unknown field.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Throttled; carries Retry-After.
+    post:
+      operationId: roles_create
+      description: Create a role, rejecting escalation and unenforceable grants.
+      summary: Create a role
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleWriteRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RoleWriteRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RoleWriteRequestRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Client asserted its own identity.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Unauthenticated, expired challenge, or step-up required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Action denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Absent, or not visible to you.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Version or state conflict.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Validation failed, or an unknown field.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Throttled; carries Retry-After.
+  /api/v1/roles/{role_id}/grants:
+    put:
+      operationId: roles_replace_grants
+      description: Replace a role's grants under optimistic concurrency.
+      summary: Replace a role's grants
+      parameters:
+      - in: path
+        name: role_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleWriteRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RoleWriteRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RoleWriteRequestRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Client asserted its own identity.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Unauthenticated, expired challenge, or step-up required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Action denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Absent, or not visible to you.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Version or state conflict.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Validation failed, or an unknown field.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Throttled; carries Retry-After.
+  /api/v1/sessions:
+    get:
+      operationId: sessions_list
+      description: |-
+        Return a cursor page of the caller's sessions.
+
+        Scoped to the calling user in the query itself, so there is no parameter an
+        administrator could supply to view another user's sessions. An administrator
+        must never see another account's factor or session detail.
+      summary: List the caller's own sessions
+      parameters:
+      - in: query
+        name: cursor
+        schema:
+          type: string
+        description: Opaque keyset cursor. Do not parse.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Capped server-side.
+      tags:
+      - v1
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionCollectionResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Client asserted its own identity.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Unauthenticated, expired challenge, or step-up required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Action denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Absent, or not visible to you.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Version or state conflict.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Validation failed, or an unknown field.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Throttled; carries Retry-After.
+  /api/v1/sessions/{session_id}/revoke:
+    post:
+      operationId: sessions_revoke
+      description: |-
+        Revoke a session the caller owns.
+
+        A session belonging to another account yields 404, not 403: revealing that
+        the id is valid elsewhere would leak the existence of other sessions.
+      summary: Revoke one of the caller's sessions
+      parameters:
+      - in: path
+        name: session_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - v1
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Client asserted its own identity.
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Unauthenticated, expired challenge, or step-up required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Action denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Absent, or not visible to you.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Version or state conflict.
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Validation failed, or an unknown field.
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelopeResponse'
+          description: Throttled; carries Retry-After.
+components:
+  schemas:
+    AccountCollectionResponse:
+      type: object
+      description: Cursor page of accounts.
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountResponse'
+        next_cursor:
+          type: string
+          nullable: true
+      required:
+      - items
+      - next_cursor
+    AccountResponse:
+      type: object
+      description: An account. Never exposes credential material or another user's
+        factor.
+      properties:
+        id:
+          type: string
+          format: uuid
+        school_id:
+          type: string
+          format: uuid
+        login_name:
+          type: string
+        display_name:
+          type: string
+        active:
+          type: boolean
+        version:
+          type: integer
+        role_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        has_active_factor:
+          type: boolean
+        two_factor_required:
+          type: boolean
+      required:
+      - active
+      - display_name
+      - has_active_factor
+      - id
+      - login_name
+      - role_ids
+      - school_id
+      - two_factor_required
+      - version
+    AuthLevelEnum:
+      enum:
+      - password
+      - password_totp
+      - recovery
+      type: string
+      description: |-
+        * `password` - password
+        * `password_totp` - password_totp
+        * `recovery` - recovery
+    AuthenticatedResponse:
+      type: object
+      description: A live session's identity and level.
+      properties:
+        authenticated:
+          type: boolean
+        auth_level:
+          $ref: '#/components/schemas/AuthLevelEnum'
+        actor_id:
+          type: string
+          format: uuid
+          nullable: true
+        school_id:
+          type: string
+          format: uuid
+          nullable: true
+        auth_time:
+          type: string
+          format: date-time
+      required:
+      - actor_id
+      - auth_level
+      - auth_time
+      - authenticated
+      - school_id
+    ChallengeResponse:
+      type: object
+      description: A pre-authentication challenge. NOT a business session.
+      properties:
+        challenge_id:
+          type: string
+          format: uuid
+        expires_at:
+          type: string
+          format: date-time
+        next_action:
+          $ref: '#/components/schemas/NextActionEnum'
+      required:
+      - challenge_id
+      - expires_at
+      - next_action
+    CodeEnum:
+      enum:
+      - unauthenticated
+      - stale_auth
+      - action_denied
+      - object_inaccessible
+      - version_conflict
+      - state_conflict
+      - validation_failed
+      - rate_limited
+      type: string
+      description: |-
+        * `unauthenticated` - unauthenticated
+        * `stale_auth` - stale_auth
+        * `action_denied` - action_denied
+        * `object_inaccessible` - object_inaccessible
+        * `version_conflict` - version_conflict
+        * `state_conflict` - state_conflict
+        * `validation_failed` - validation_failed
+        * `rate_limited` - rate_limited
+    EnrolConfirmRequestRequest:
+      type: object
+      description: |-
+        Body for POST /auth/2fa/confirm.
+
+        On the first-enrolment path ``challenge_id`` is present and confirming the
+        factor also completes the login, so the account is not asked to authenticate
+        twice in a row for no reason.
+      properties:
+        factor_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+          minLength: 1
+          pattern: ^[0-9]{6}$
+        password:
+          type: string
+          minLength: 1
+          maxLength: 1024
+        challenge_id:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - code
+      - factor_id
+      - password
+    EnrolStartResponse:
+      type: object
+      description: One-time provisioning data. The ONLY place the secret appears.
+      properties:
+        factor_id:
+          type: string
+          format: uuid
+        secret_base32:
+          type: string
+        otpauth_uri:
+          type: string
+        digits:
+          type: integer
+        period_seconds:
+          type: integer
+        issuer:
+          type: string
+        account_name:
+          type: string
+      required:
+      - account_name
+      - digits
+      - factor_id
+      - issuer
+      - otpauth_uri
+      - period_seconds
+      - secret_base32
+    ErrorEnvelopeResponse:
+      type: object
+      description: The frozen error body returned by every non-2xx response.
+      properties:
+        code:
+          $ref: '#/components/schemas/CodeEnum'
+        message_key:
+          type: string
+        request_id:
+          type: string
+        field_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldErrorResponse'
+      required:
+      - code
+      - field_errors
+      - message_key
+      - request_id
+    FieldErrorResponse:
+      type: object
+      description: One field-scoped problem inside the frozen error envelope.
+      properties:
+        field:
+          type: string
+        message_key:
+          type: string
+      required:
+      - field
+      - message_key
+    GrantBodyRequest:
+      type: object
+      description: One grant inside a role write.
+      properties:
+        action:
+          type: string
+          minLength: 1
+          maxLength: 128
+        scope_type:
+          $ref: '#/components/schemas/ScopeTypeEnum'
+        scope_id:
+          type: string
+          format: uuid
+          nullable: true
+        valid_from:
+          type: string
+          format: date
+        valid_to:
+          type: string
+          format: date
+          nullable: true
+      required:
+      - action
+      - scope_type
+      - valid_from
+    GrantResponse:
+      type: object
+      description: One grant with its bounded scope and validity window.
+      properties:
+        action:
+          type: string
+        scope_type:
+          $ref: '#/components/schemas/ScopeTypeEnum'
+        scope_id:
+          type: string
+          format: uuid
+          nullable: true
+        valid_from:
+          type: string
+          format: date
+        valid_to:
+          type: string
+          format: date
+          nullable: true
+      required:
+      - action
+      - scope_id
+      - scope_type
+      - valid_from
+      - valid_to
+    LoginRequestRequest:
+      type: object
+      description: Body for POST /auth/login.
+      properties:
+        login_name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        password:
+          type: string
+          minLength: 1
+          maxLength: 1024
+      required:
+      - login_name
+      - password
+    NextActionEnum:
+      enum:
+      - totp_required
+      - enrol_factor_required
+      - authenticated
+      type: string
+      description: |-
+        * `totp_required` - totp_required
+        * `enrol_factor_required` - enrol_factor_required
+        * `authenticated` - authenticated
+    PasswordConfirmRequestRequest:
+      type: object
+      description: |-
+        Body for endpoints needing a fresh password confirmation.
+
+        ``challenge_id`` is supplied for a FIRST enrolment, where the account has no
+        session yet: a role that requires a factor cannot sign in without one, so
+        enrolment must be reachable from the challenge. Omitted when replacing a factor
+        from an existing session.
+      properties:
+        password:
+          type: string
+          minLength: 1
+          maxLength: 1024
+        challenge_id:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - password
+    RecoverRequestRequest:
+      type: object
+      description: Body for POST /auth/2fa/recover.
+      properties:
+        challenge_id:
+          type: string
+          format: uuid
+        recovery_code:
+          type: string
+          minLength: 1
+          maxLength: 32
+      required:
+      - challenge_id
+      - recovery_code
+    RecoveryCaseResponse:
+      type: object
+      description: A lost-device identity-verification case.
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        state:
+          $ref: '#/components/schemas/StateEnum'
+        reason:
+          type: string
+        approver_id:
+          type: string
+          format: uuid
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        decided_at:
+          type: string
+          format: date-time
+          nullable: true
+        version:
+          type: integer
+      required:
+      - approver_id
+      - created_at
+      - decided_at
+      - id
+      - reason
+      - state
+      - user_id
+      - version
+    RecoveryCodesResponse:
+      type: object
+      description: Returned exactly once, when a factor is activated.
+      properties:
+        codes:
+          type: array
+          items:
+            type: string
+        generated_at:
+          type: string
+          format: date-time
+        count:
+          type: integer
+      required:
+      - codes
+      - count
+      - generated_at
+    ResetRequestBodyRequest:
+      type: object
+      description: Body for POST /auth/factor/reset-requests.
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 1000
+      required:
+      - reason
+    RevokedResponse:
+      type: object
+      description: Logout acknowledgement.
+      properties:
+        revoked:
+          type: boolean
+      required:
+      - revoked
+    RoleCollectionResponse:
+      type: object
+      description: Cursor page of roles.
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleResponse'
+        next_cursor:
+          type: string
+          nullable: true
+      required:
+      - items
+      - next_cursor
+    RoleResponse:
+      type: object
+      description: A role and its grants.
+      properties:
+        id:
+          type: string
+          format: uuid
+        school_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        is_owner_role:
+          type: boolean
+        requires_two_factor:
+          type: boolean
+        version:
+          type: integer
+        grants:
+          type: array
+          items:
+            $ref: '#/components/schemas/GrantResponse'
+      required:
+      - grants
+      - id
+      - is_owner_role
+      - name
+      - requires_two_factor
+      - school_id
+      - version
+    RoleWriteRequestRequest:
+      type: object
+      description: Body for POST /roles and PUT /roles/{id}/grants.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        requires_two_factor:
+          type: boolean
+          default: false
+        grants:
+          type: array
+          items:
+            $ref: '#/components/schemas/GrantBodyRequest'
+        expected_version:
+          type: integer
+          minimum: 1
+      required:
+      - grants
+      - name
+    ScopeTypeEnum:
+      enum:
+      - school
+      - section
+      - subject
+      - self
+      type: string
+      description: |-
+        * `school` - school
+        * `section` - section
+        * `subject` - subject
+        * `self` - self
+    SessionCollectionResponse:
+      type: object
+      description: Cursor page of sessions.
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionResponse'
+        next_cursor:
+          type: string
+          nullable: true
+      required:
+      - items
+      - next_cursor
+    SessionResponse:
+      type: object
+      description: One of the CALLER's own sessions.
+      properties:
+        id:
+          type: string
+          format: uuid
+        auth_level:
+          type: string
+        auth_time:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        last_seen_at:
+          type: string
+          format: date-time
+        revoked_at:
+          type: string
+          format: date-time
+          nullable: true
+        is_current:
+          type: boolean
+        user_agent_family:
+          type: string
+      required:
+      - auth_level
+      - auth_time
+      - created_at
+      - id
+      - is_current
+      - last_seen_at
+      - revoked_at
+      - user_agent_family
+    StateEnum:
+      enum:
+      - pending
+      - approved
+      - rejected
+      type: string
+      description: |-
+        * `pending` - pending
+        * `approved` - approved
+        * `rejected` - rejected
+    TotpVerifyRequestRequest:
+      type: object
+      description: Body for POST /auth/2fa/verify.
+      properties:
+        challenge_id:
+          type: string
+          format: uuid
+        code:
+          type: string
+          minLength: 1
+          pattern: ^[0-9]{6}$
+      required:
+      - challenge_id
+      - code

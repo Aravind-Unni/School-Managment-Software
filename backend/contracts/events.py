@@ -40,6 +40,9 @@ class EventEnvelope:
     aggregate_version: int
     payload: Mapping[str, object] = field(default_factory=dict)
     envelope_version: int = EVENT_ENVELOPE_VERSION
+    #: Correlates every event emitted while handling one request. Added for M01.
+    #: None is allowed so a worker-originated event need not invent one.
+    correlation_id: str | None = None
 
     def __post_init__(self) -> None:
         """Freeze the payload and require a namespaced type and aware timestamp.
@@ -64,7 +67,13 @@ class EventEnvelope:
             "aggregate_id": str(self.aggregate_id),
             "aggregate_version": self.aggregate_version,
             "payload": dict(self.payload),
+            # Both keys carry the same number. M01 specifies "schema_version";
+            # B00 froze "envelope_version" and consumer fixtures assert it. Both
+            # are emitted for one revision so neither side breaks; the
+            # school-contracts-v4 revision should retire "envelope_version".
+            "schema_version": self.envelope_version,
             "envelope_version": self.envelope_version,
+            "correlation_id": self.correlation_id,
         }
 
 

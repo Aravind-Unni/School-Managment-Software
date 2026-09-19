@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/common/decision",
+  "title": "Decision",
+  "description": "The result of Access.authorize. SERVER-INTERNAL: reason codes are recorded in audit rows and never returned to a browser, because a precise refusal reason is an information leak to an actor who is already unauthorised. The HTTP layer maps a denial to the frozen error envelope instead.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "allowed",
+    "reason_code"
+  ],
+  "properties": {
+    "allowed": {
+      "type": "boolean"
+    },
+    "reason_code": {
+      "type": "string",
+      "description": "ALLOWED exactly when allowed is true. SCHOOL_MISMATCH renders 404 rather than 403. TWO_FACTOR_REQUIRED means never asserted; AUTH_STEP_UP_REQUIRED means asserted too long ago.",
+      "enum": [
+        "ALLOWED",
+        "SCHOOL_MISMATCH",
+        "NO_GRANT",
+        "GRANT_EXPIRED",
+        "RELATIONSHIP_REQUIRED",
+        "UNKNOWN_ACTION",
+        "ACCOUNT_INACTIVE",
+        "TWO_FACTOR_REQUIRED",
+        "AUTH_STEP_UP_REQUIRED",
+        "UNAUTHENTICATED"
+      ]
+    }
+  }
+}

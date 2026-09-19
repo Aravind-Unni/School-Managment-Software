@@ -18,7 +18,9 @@ describe("error envelope", () => {
     ],
   };
 
-  it("exposes the same seven codes as the backend", () => {
+  it("exposes the same codes as the backend", () => {
+    // rate_limited (429) was added in M01: a login endpoint without throttling is a
+    // credential-stuffing target, and the backend derives status from code.
     expect([...ERROR_CODES]).toEqual([
       "unauthenticated",
       "stale_auth",
@@ -27,7 +29,19 @@ describe("error envelope", () => {
       "version_conflict",
       "state_conflict",
       "validation_failed",
+      "rate_limited",
     ]);
+  });
+
+  it("flags a throttled response so the caller backs off", () => {
+    const throttled = new ApiError(429, {
+      code: "rate_limited",
+      message_key: "error.too_many_attempts",
+      request_id: "req-3",
+      field_errors: [],
+    });
+    expect(throttled.isThrottled).toBe(true);
+    expect(new ApiError(403, envelope).isThrottled).toBe(false);
   });
 
   it("recognises a well-formed envelope", () => {

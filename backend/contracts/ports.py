@@ -12,13 +12,15 @@ there is no HTTP between modules.
 from __future__ import annotations
 
 from collections.abc import Sequence
-from datetime import datetime
+from datetime import date, datetime
 from typing import Protocol, runtime_checkable
 from uuid import UUID
 
+from .decisions import Decision
 from .events import AuditRecord, EventEnvelope
 from .evidence import EvidenceRef, ResourceGrant
 from .identity import RequestContext
+from .people import RosterDTO, StudentDTO, TeachingAssignment
 from .scope import RelationshipFacts, ScopeFacts
 
 
@@ -37,7 +39,50 @@ class AccessPort(Protocol):
 
     Every implementation must default to deny: an action it has no rule for is
     denied, never allowed.
+
+    ``authorize`` is the primitive: it returns a Decision and never raises for a
+    policy outcome. ``check`` is a convenience wrapper that turns a denial into
+    the right exception. Implementations should define ``authorize`` and derive
+    ``check`` from it, so the two can never disagree.
     """
+
+    def authorize(
+        self,
+        context: RequestContext,
+        action: str,
+        scope_facts: ScopeFacts,
+    ) -> Decision:
+        """Return whether ``action`` is permitted, with a reason code.
+
+        Never raises for a policy outcome -- a denial is a return value, because
+        callers that need to record *why* (audit, telemetry, conditional UI)
+        should not have to catch an exception to learn it.
+
+        ``scope_facts`` is server-resolved. An implementation MUST NOT fetch a
+        consumer module's ORM models to fill it in; the host scope resolver has
+        already asked Registry.
+
+        Does not handle: freshness of the second factor. Ask
+        ``require_recent_2fa`` for that, so an action can require step-up without
+        every policy rule restating the window.
+        """
+        ...
+
+    def require_recent_2fa(
+        self,
+        context: RequestContext,
+        max_age_seconds: int = 300,
+    ) -> None:
+        """Return None if 2FA was asserted recently enough, else raise.
+
+        Raises StaleAuth (401) carrying AUTH_STEP_UP_REQUIRED. The default window
+        is five minutes, which is the proposed profile; a caller may demand a
+        shorter one for an especially sensitive write.
+
+        Does not handle: deciding whether the action needs step-up at all. The
+        call site decides, because only it knows how sensitive the write is.
+        """
+        ...
 
     def check(
         self,
@@ -72,7 +117,69 @@ class AccessPort(Protocol):
 
 @runtime_checkable
 class RegistryPort(Protocol):
-    """People, sections and relationships. Owned by M02 registry."""
+    """People, sections and relationships. Owned by M02 registry.
+
+    Extended additively for M01. Every method is read-only: no consumer may
+    mutate Registry state through this port.
+    """
+
+    def get_student(
+        self,
+        context: RequestContext,
+        student_id: UUID,
+    ) -> StudentDTO:
+        """Return one student.
+
+        Raises ObjectInaccessible (404) for an unknown student AND for one in
+        another school, deliberately conflating them so cross-tenant probing
+        cannot tell the difference.
+        """
+        ...
+
+    def get_roster(
+        self,
+        context: RequestContext,
+        section_id: UUID,
+        effective_date: date,
+        subject_id: UUID | None = None,
+    ) -> RosterDTO:
+        """Return the pupils in a section on a date.
+
+        When ``subject_id`` is supplied, only pupils enrolled in that subject
+        offering on that date are included, and that filtered roster is the one a
+        timetable period must use.
+
+        Does not handle: authorising the caller to see the section. Ask Access.
+        """
+        ...
+
+    def get_relationships(
+        self,
+        context: RequestContext,
+        actor_id: UUID,
+        student_id: UUID,
+        effective_date: date,
+    ) -> RelationshipFacts:
+        """Return how an actor relates to a student on a date.
+
+        Dated because a guardianship or a posting can lapse. Returns
+        Relationship.NONE rather than raising when unrelated, because 'unrelated'
+        is a normal policy input.
+        """
+        ...
+
+    def get_teaching_assignments(
+        self,
+        context: RequestContext,
+        staff_id: UUID,
+        effective_date: date,
+    ) -> tuple[TeachingAssignment, ...]:
+        """Return the assignments in force for a staff member on a date.
+
+        Returns an empty tuple for an unassigned staff member -- not an error,
+        because 'teaches nothing today' is a legitimate state.
+        """
+        ...
 
     def relationship_facts(
         self,

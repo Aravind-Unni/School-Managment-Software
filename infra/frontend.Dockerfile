@@ -8,17 +8,24 @@ FROM ${NODE_IMAGE}
 ENV CI=true
 WORKDIR /app/frontend
 
+# Everything is owned by the unprivileged `node` user from the start. Vite writes a
+# temporary bundle of its config NEXT TO vite.config.ts when loading it
+# (vite.config.ts.timestamp-*.mjs), so a root-owned working directory makes the dev
+# server die with EACCES the moment it starts -- which is exactly what the first
+# real container run did. Running as root would "fix" it and create root-owned files
+# in the developer's checkout through the bind mount, so ownership is the fix.
+RUN mkdir -p /app/frontend /app/contracts && chown -R node:node /app
+
+USER node
+
 # Lockfile first: a source change must not reinstall node_modules.
-COPY frontend/package.json frontend/package-lock.json ./
+COPY --chown=node:node frontend/package.json frontend/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 
-COPY frontend ./
-# The generated client is produced from the approved OpenAPI, which lives
-# outside frontend/, so it is copied in separately.
-COPY contracts /app/contracts
-
-# node's own unprivileged user, for the same bind-mount reason as the backend.
-USER node
+COPY --chown=node:node frontend ./
+# The generated client is produced from the approved OpenAPI, which lives outside
+# frontend/, so it is copied in separately.
+COPY --chown=node:node contracts /app/contracts
 
 EXPOSE 5173
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

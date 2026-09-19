@@ -1,5 +1,11 @@
 """Shared pytest fixtures for every suite.
 
+Collection is PROFILE-AWARE: a module suite under ``tests/modules/<ID>/`` is only
+collected when ``MODULE_ID`` selects that module. Standalone mode installs exactly
+one business app, so collecting M01's tests under the M00 profile would import a
+module the profile excluded -- and would break the very isolation assertion that
+proves only one business app is loaded.
+
 Provides the controlled clock, the bound fakes, and ready-made RequestContexts
 for each fixture persona, so no test has to assemble identity by hand -- which is
 how a test ends up asserting against a persona the runner would never produce.
@@ -7,6 +13,8 @@ how a test ends up asserting against a persona the runner would never produce.
 
 from __future__ import annotations
 
+import os
+import pathlib
 from datetime import timedelta
 
 import pytest
@@ -128,3 +136,26 @@ def teacher_t1_context(context_factory):
 def teacher_t2_context(context_factory):
     """RequestContext for T2, who is unassigned."""
     return context_factory(fixtures.TEACHER_T2)
+
+
+#: The module whose suite may be collected in this run.
+_ACTIVE_MODULE_ID = os.environ.get("MODULE_ID", "M00").upper()
+
+
+def collect_ignore_glob() -> list[str]:
+    """Return module-suite directories to skip for the active profile.
+
+    Implemented as a function rather than a module-level list purely for
+    readability; pytest accepts either.
+    """
+    modules_root = pathlib.Path(__file__).parent / "modules"
+    if not modules_root.is_dir():
+        return []
+    return [
+        f"modules/{entry.name}/*"
+        for entry in sorted(modules_root.iterdir())
+        if entry.is_dir() and entry.name.upper() != _ACTIVE_MODULE_ID
+    ]
+
+
+collect_ignore_glob = collect_ignore_glob()  # type: ignore[assignment]

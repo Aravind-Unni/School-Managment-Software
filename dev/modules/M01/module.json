@@ -1,8 +1,8 @@
 {
   "module_id": "M01",
   "slug": "access",
-  "_comment": "Real login, sessions, TOTP and recovery. Fake Registry only.",
-  "_status": "module not implemented; this declaration describes the stack `dev.py up` would start once it is",
+  "_comment": "M01 owns real login, sessions, TOTP and recovery. It binds a FAKE REGISTRY ONLY -- it provides the real Access, so it binds no fake Access. There is no synthetic persona in any profile, because a persona would bypass the login flow under test.",
+  "_no_sms": "No SMS or email provider is started or reachable. The notifications port is not even a declared consumer, so device-loss recovery is proved to work with no SMS service.",
   "resources": {
     "postgres": true,
     "frontend": true,
@@ -10,7 +10,9 @@
     "worker": false,
     "object_storage": false
   },
-  "seed_scenarios": [
-    "baseline"
-  ]
+  "seed_scenarios": ["baseline", "empty"],
+  "_scenario_notes": {
+    "baseline": "Owner O1, teacher T1 (staff, 2FA required), guardian G1 (optional 2FA), principal P1 (can approve resets), and an owner at School B that exists only to prove two-school isolation. Preloads an already-expired challenge, an already-used recovery code and a pending lost-device case, so those paths are testable without waiting five minutes.",
+    "empty": "No rows, for empty-state UI and migration-on-empty checks."
+  }
 }

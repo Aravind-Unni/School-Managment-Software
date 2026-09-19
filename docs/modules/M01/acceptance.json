@@ -1,0 +1,340 @@
+{
+  "module": "M01 access -- identity, permissions and two-factor authentication",
+  "recorded_at": "2026-09-19",
+  "standalone_verified": false,
+  "standalone_verified_note": "NOT recorded. The real-stack browser job now passes in CI, but contract review/freeze, second-developer fresh-checkout verification and the human phase exit gate remain open. Local container execution is unavailable.",
+  "source_identity": {
+    "repository": "https://github.com/Aravind-Unni/School-Managment-Software",
+    "branch": "m01/access-identity",
+    "head_commit": "4c55deba26dc3d7533b92cb83fb73c9b369ea2cb",
+    "started_from_commit": "1b01e7312e4bf4d0030c0623799863808d112ec2",
+    "started_from_note": "main with B00 merged. B00 itself was merged WITHOUT peer review and with 4 criteria unverified; see docs/foundation/acceptance.json.",
+    "contracts_manifest_revision": "school-contracts-v3-draft",
+    "m01_manifest_status": "not_started",
+    "m01_artefacts_frozen": false,
+    "working_tree_clean": false
+  },
+  "startup_commands": [
+    "python3 scripts/dev.py doctor",
+    "python3 scripts/dev.py up M01 --profile standalone",
+    "python3 scripts/dev.py migrate M01 --profile standalone",
+    "python3 scripts/dev.py seed M01 --scenario baseline",
+    "python3 scripts/dev.py check M01 --suite contracts",
+    "python3 scripts/dev.py check M01 --suite standalone",
+    "MODULE_ID=M01 python3 scripts/dev.py check M01 --suite browser",
+    "python3 scripts/dev.py evidence M01",
+    "python3 scripts/dev.py down M01"
+  ],
+  "printed_urls": {
+    "note": "Ports are ALLOCATED DYNAMICALLY; `up` prints the real ones. Do not assume these.",
+    "shape": {
+      "api": "http://127.0.0.1:<allocated>",
+      "api_schema": "http://127.0.0.1:<allocated>/api/schema/",
+      "health": "http://127.0.0.1:<allocated>/healthz",
+      "readiness": "http://127.0.0.1:<allocated>/readyz",
+      "frontend": "http://127.0.0.1:<allocated>",
+      "login_page": "http://127.0.0.1:<allocated>/login"
+    }
+  },
+  "fictional_login_instructions": {
+    "warning": "Synthetic accounts. These passwords are test-only strings that exist nowhere else and must never appear in a deployed environment. `seed` refuses any non-development target.",
+    "accounts": [
+      {
+        "who": "Owner O1",
+        "login_name": "owner.o1",
+        "password": "Owner-O1-test-only",
+        "expect": "Staff/owner role requires 2FA, so the first login returns next_action=enrol_factor_required. Set up the authenticator using the MANUAL key shown on screen, enter the code, and save the ten recovery codes. Afterwards /settings/roles and the accounts list work."
+      },
+      {
+        "who": "Teacher T1",
+        "login_name": "teacher.t1",
+        "password": "Teacher-T1-test-only",
+        "expect": "Same enrolment path. A pending lost-device case already exists for T1, so P1 can approve it and watch T1's sessions be revoked."
+      },
+      {
+        "who": "Guardian G1",
+        "login_name": "guardian.g1",
+        "password": "Guardian-G1-test-only",
+        "expect": "The guardian role requires NO factor (parent/student enforcement is school-configurable and shipped OFF), so login returns next_action=authenticated and a session is issued immediately. G1 may still enrol voluntarily. G1 does NOT hold accounts.manage, so /accounts returns 403."
+      },
+      {
+        "who": "Principal P1",
+        "login_name": "principal.p1",
+        "password": "Principal-P1-test-only",
+        "expect": "Holds auth.factor.reset_other, so it can approve T1's lost-device case. It cannot approve its own."
+      },
+      {
+        "who": "Owner O2 at School B",
+        "login_name": "owner.o2",
+        "password": "Owner-O2-test-only",
+        "expect": "CANNOT sign in to a School A deployment: the school comes from configuration, not the request. Exists only to prove two-school isolation."
+      }
+    ]
+  },
+  "manual_actions_and_expected_outcomes": [
+    {
+      "action": "Sign in as teacher.t1 and complete enrolment",
+      "expect": "Manual secret visible; a note stating a phone is not required; ten recovery codes shown once with a download button."
+    },
+    {
+      "action": "Switch the language selector to Malayalam",
+      "expect": "Every heading and label changes to Malayalam script. No key strings leak through."
+    },
+    {
+      "action": "Reload after switching language",
+      "expect": "The Malayalam choice persists."
+    },
+    {
+      "action": "Re-enter the SAME authenticator code immediately",
+      "expect": "Refused with error.totp_code_invalid -- the time step was consumed."
+    },
+    {
+      "action": "Wait 10 minutes, then open the accounts list",
+      "expect": "401 error.two_factor_stale; re-assert the factor."
+    },
+    {
+      "action": "Sign in as guardian.g1 and open /accounts",
+      "expect": "403 action_denied -- no grant. NOT a step-up prompt."
+    },
+    {
+      "action": "As principal.p1, approve T1's pending lost-device case",
+      "expect": "200; T1's factor revoked, all T1 sessions revoked, FactorReset.v1 in the outbox. No SMS is sent or attempted anywhere."
+    },
+    {
+      "action": "Try to remove the owner grant from the only owner role",
+      "expect": "409 error.last_owner_protected."
+    },
+    {
+      "action": "Save a role twice with the same expected_version",
+      "expect": "The second save is 409 version_conflict, with a recoverable on-screen message."
+    },
+    {
+      "action": "Send any write with an undeclared field",
+      "expect": "422 error.unknown_field naming the field."
+    }
+  ],
+  "migrations": {
+    "app": "access",
+    "files": [
+      "modules/access/migrations/0001_initial.py"
+    ],
+    "tables": 11,
+    "verified_on_empty": "YES -- CI m01-backend applies them to a fresh database.",
+    "verified_on_populated": "YES -- CI seeds baseline, re-runs migrate, then re-seeds.",
+    "drift_check": "makemigrations --check --dry-run passes locally and in CI.",
+    "irreversible_operations": "NONE. 0001_initial only creates tables, indexes and constraints; it is fully reversible by dropping them. No data migration and no destructive column change exists yet."
+  },
+  "actual_commands_and_results": {
+    "M01 suite (local SQLite profile)": {
+      "command": "MODULE_ID=M01 pytest tests/modules/M01 -q",
+      "passed": 53,
+      "failed": 0,
+      "skipped": 1,
+      "total": 54,
+      "exit_status": 0,
+      "caveat": "SQLite CANNOT prove PostgreSQL behaviour or a real concurrency race. The CI m01-backend job against PostgreSQL 17.11 is authoritative."
+    },
+    "B00 foundation suite (unchanged by M01)": {
+      "command": "pytest",
+      "passed": 294,
+      "failed": 0,
+      "total": 294,
+      "exit_status": 0
+    },
+    "frontend unit": {
+      "command": "npx vitest run",
+      "passed": 47,
+      "failed": 0,
+      "total": 47,
+      "exit_status": 0
+    },
+    "static gates": {
+      "ruff check .": 0,
+      "ruff format --check .": 0,
+      "scripts/arch_check.py": 0,
+      "scripts/contract_manifest.py --check": 0,
+      "eslint": 0,
+      "tsc --noEmit": 0,
+      "vite build": 0,
+      "manage.py check (M01)": 0,
+      "manage.py makemigrations --check (M01)": 0,
+      "manage.py spectacular --fail-on-warn (M01)": 0
+    },
+    "browser suite": {
+      "status": "PASSED IN CI; NOT RUN LOCALLY",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "run": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35453838095",
+      "commit": "135ee490b4e76444aa8e0be9490f5b206aa3104c",
+      "reason": "No local container engine; CI executed the real Compose stack with Chromium. All eight M01 tests passed in 7.0 seconds."
+    },
+    "M01 suite on real PostgreSQL (CI, AUTHORITATIVE)": {
+      "command": "pytest tests/modules/M01 tests/contracts -q --ds=config.settings.standalone",
+      "backend": "postgres-container 17.11-alpine (CI service)",
+      "passed": 159,
+      "failed": 0,
+      "skipped": 0,
+      "exit_status": 0,
+      "run": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35453838095",
+      "note": "159 passed, ZERO skipped. The two-connection recovery-code race RAN on PostgreSQL and passed, so concurrency is verified rather than claimed. Migrations applied to an EMPTY database, then baseline seeded, migrate re-run and re-seeded, verifying them on populated data."
+    }
+  },
+  "reviewed_interfaces_changed": {
+    "warning": "M01's specified interfaces conflicted with contracts B00 froze and merged. All changes are ADDITIVE and B00's suite passes unchanged, but they touch shared files outside M01's allowed paths and REQUIRE REVIEW.",
+    "changes": [
+      "AccessPort gained authorize()->Decision and require_recent_2fa(); check()/is_allowed() now derive from authorize().",
+      "ModuleRegistration: permission codes may be multi-segment; ownership declared as permission_prefixes (default '<slug>.'); added api_path_roots, middleware, public_paths and assert_no_registration_collisions().",
+      "RelationshipFacts gained school_id, section_ids, subject_ids, valid_until and is_active_on().",
+      "EventEnvelope gained correlation_id and schema_version (envelope_version retained one revision; retire in v4).",
+      "RegistryPort gained get_student, get_roster, get_relationships, get_teaching_assignments; the shared fake implements all four.",
+      "ErrorCode gained RATE_LIMITED -> 429 with a finite Retry-After.",
+      "New contract types: contracts/decisions.py (Decision, ReasonCode), contracts/people.py (Registry DTOs).",
+      "Shared middleware yields to a module-resolved context, AFTER running the spoofed-header and body guards for every request.",
+      "The port registry moved from settings.SCHOOL_PORTS to a process-level holder.",
+      "config/urls.py reads DJANGO_SETTINGS_MODULE instead of settings.SETTINGS_MODULE.",
+      "PlatformPort was NOT changed; M01 uses an internal facade."
+    ]
+  },
+  "pending_integration_tests": [
+    {
+      "test": "Real Registry relationships",
+      "status": "PENDING",
+      "why": "M02 does not exist; M01 runs against a deterministic fake. Re-run against the real provider in Section C.",
+      "consequence": "Independent approval does NOT imply relationship resolution works against real Registry data."
+    },
+    {
+      "test": "File download revocation after a role change",
+      "status": "PENDING",
+      "why": "M12 does not exist, so there is no private-file download to revoke. The acceptance case 'role removal affects evidence downloads' is therefore NOT covered.",
+      "consequence": "Access checks are implemented for API and service paths; the private-file path is unexercised."
+    },
+    {
+      "test": "Real worker crash and retry",
+      "status": "NOT APPLICABLE",
+      "why": "M01 declares no scheduled jobs and owns no asynchronous work, so no broker or worker is started. Nothing is claimed about retry behaviour."
+    },
+    {
+      "test": "Real 2FA integration for OTHER modules",
+      "status": "PENDING",
+      "why": "Every other module still binds fake Access with a synthetic persona. Wiring them to M01's real Access is Section C."
+    }
+  ],
+  "blockers": [
+    "Local container execution remains unavailable; CI startup, migrations, seeding and eight browser tests passed.",
+    "No second developer has verified from a fresh checkout, which the whole-module gate requires.",
+    "The proposed M01 contracts and shared interface changes are unreviewed and not frozen; the human phase exit gate remains open."
+  ],
+  "delivery": {
+    "merged": false,
+    "deployed": false,
+    "force_pushed": false,
+    "note": "Draft PR only. Do not merge or deploy under this prompt."
+  },
+  "ci_first_run": {
+    "run_id": 35451437482,
+    "url": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35451437482",
+    "results": {
+      "contracts and architecture": "success",
+      "guards reject real violations": "success",
+      "backend suite on real PostgreSQL": "success",
+      "frontend": "success",
+      "container images build": "success",
+      "M01 access suite on real PostgreSQL": "success (158 passed, 1 skipped)",
+      "M01 browser suite against a real stack": "failure -- see defects_found"
+    },
+    "defects_found": [
+      {
+        "defect": "m01-browser ran `doctor` before installing dependencies",
+        "detail": "doctor gates on .venv existing and correctly exited 2 on a bare runner, failing the job before it installed anything. doctor behaved as designed; the workflow step order was wrong.",
+        "fix": "doctor now runs twice: non-gating diagnostics first, then gating after the install."
+      },
+      {
+        "defect": "The requires_postgres race test could never run",
+        "detail": "It called pytest.skip() unconditionally, so the marker promised concurrency coverage that NO environment could deliver -- including the PostgreSQL job, where it still reported skipped.",
+        "fix": "Implemented as a real two-connection race with a threading.Barrier so both threads attempt the conditional UPDATE simultaneously. The skip is now decided from the live connection vendor."
+      }
+    ],
+    "useful_finding": "The GitHub runner reports 'container engine running (server 28.0.4)', so the browser suite genuinely can run in CI once the ordering is fixed."
+  },
+  "ci_second_run": {
+    "run_id": 35451755792,
+    "url": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35451755792",
+    "results": {
+      "contracts and architecture": "success",
+      "guards reject real violations": "success",
+      "backend suite on real PostgreSQL": "success",
+      "frontend": "success",
+      "container images build": "success",
+      "M01 access suite on real PostgreSQL": "success (159 passed, 0 skipped -- the real race ran)",
+      "M01 browser suite against a real stack": "failure -- Compose relative paths"
+    },
+    "defect_found": {
+      "defect": "Generated Compose files used the wrong relative path depth",
+      "detail": "Compose resolves build contexts and bind mounts against the directory CONTAINING the compose file, not the invocation directory. The generated file lives at dev/state/<stem>.compose.yaml, two levels below the root, but the context was '..' -- so infra/backend.Dockerfile resolved to dev/infra/backend.Dockerfile and Compose failed with 'lstat .../dev/infra: no such file or directory'.",
+      "why_it_survived_this_long": "YAML validation, digest pinning and service-selection tests all passed on this file. Only actually building could find it, and nothing had ever built it: this was the first execution of the Compose path anywhere.",
+      "fix": "A single REPO_ROOT_FROM_COMPOSE constant derived from the file's real depth, applied to the context and all three bind mounts. A regression test resolves every generated path for every module and asserts it exists; it was confirmed to FAIL with the old value."
+    }
+  },
+  "ci_third_run": {
+    "run_id": 35451968802,
+    "url": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35451968802",
+    "results": {
+      "contracts and architecture": "success",
+      "guards reject real violations": "success",
+      "backend suite on real PostgreSQL": "success",
+      "frontend": "success",
+      "container images build": "success",
+      "M01 browser suite against a real stack": "failure -- frontend container EACCES"
+    },
+    "defect_found": {
+      "defect": "Both container images copied source as root while running as an unprivileged user",
+      "detail": "Vite writes a temporary bundle of its config NEXT TO vite.config.ts when loading it (vite.config.ts.timestamp-*.mjs). /app/frontend was root-owned from the COPY, so the dev server died immediately with EACCES.",
+      "progress": "The images BUILT and the containers STARTED -- two steps further than the previous attempt. The build-context fix worked.",
+      "fix": "Both Dockerfiles now chown their tree to the runtime user and COPY --chown. Running as root would also 'fix' it, and would create root-owned files in the developer's checkout through the bind mount, so ownership is the correct fix rather than dropping the unprivileged user.",
+      "not_verifiable_locally": "There is no container engine on the development machine, so CI is the only place this can be confirmed."
+    }
+  },
+  "ci_browser_collection_repair": {
+    "starting_commit": "d87b30dd43d89a204c685e190830245b49988cf9",
+    "pr_url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/2",
+    "failed_run_id": 35452150849,
+    "observed_browser_result": {
+      "access_passed": 8,
+      "total_passed": 10,
+      "demo_failed": 2
+    },
+    "cause": "M00 browser tests collected against an M01-only stack; /demo is not mounted.",
+    "repair": "Select access.spec.ts when MODULE_ID=M01 and set that environment variable on the CI browser step. No test files changed.",
+    "local_checks": {
+      "M00_contracts_passed": 105,
+      "M01_contracts_passed": 16,
+      "M01_sqlite_passed": 53,
+      "M01_sqlite_skipped": 1,
+      "frontend_unit_passed": 47,
+      "lint": "passed",
+      "typecheck": "passed",
+      "M01_browser_discovered": 8,
+      "default_browser_discovered": 12,
+      "standalone": "not-run: no container engine",
+      "browser": "not-run: no container engine"
+    },
+    "repair_ci": {
+      "commit": "135ee490b4e76444aa8e0be9490f5b206aa3104c",
+      "run": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35453838095",
+      "jobs": {
+        "guards reject real violations": "success",
+        "container images build": "success",
+        "M01 browser suite against a real stack": "success",
+        "contracts and architecture": "success",
+        "frontend": "success",
+        "M01 access suite on real PostgreSQL": "success",
+        "backend suite on real PostgreSQL": "success"
+      },
+      "postgres_passed": 159,
+      "postgres_skipped": 0,
+      "browser_passed": 8,
+      "browser_skipped": 0
+    }
+  }
+}
