@@ -1,0 +1,119 @@
+{
+  "description": "The deterministic fixture cast, with the UUIDs every suite must produce. Derived as uuid5 over namespace 6f1a9c2e-0b3d-4f5a-8c7b-1d2e3f4a5b6c; see backend/shared/fixtures.py. Nothing here describes a real person.",
+  "namespace": "6f1a9c2e-0b3d-4f5a-8c7b-1d2e3f4a5b6c",
+  "schools": {
+    "school_a": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "school_b": "8e1e985f-ba74-5baa-82c6-b884525e416c"
+  },
+  "people": {
+    "S1": {
+      "label": "student S1",
+      "section": "C1",
+      "id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c"
+    },
+    "S2": {
+      "label": "student S2",
+      "section": "C1",
+      "id": "eceaa8ed-e2db-50cf-a649-557816565032"
+    },
+    "S3": {
+      "label": "student S3",
+      "section": "C2",
+      "id": "ed637961-b9dc-5669-be2d-8abe74934aa8"
+    },
+    "G1": {
+      "label": "guardian of S1 and S2",
+      "id": "a98bf46f-c03f-59a9-96e4-5eb94f0cf4a7"
+    },
+    "G2": {
+      "label": "guardian of S3 only; UNRELATED to S1",
+      "id": "7731fd5f-a464-53df-9429-a515f8a06301"
+    },
+    "T1": {
+      "label": "class teacher of C1",
+      "id": "eda913d7-a893-5ecc-af4e-766d1332b2ee"
+    },
+    "T2": {
+      "label": "teacher with no assignment",
+      "id": "428b0e24-5a46-5ad0-8bc3-0c805633ad48"
+    },
+    "P1": {
+      "label": "principal",
+      "id": "5e101a6a-eca4-5a5f-b5ef-c2d776c939fe"
+    }
+  },
+  "expected_relationships": [
+    {
+      "actor": "S1",
+      "subject": "S1",
+      "relationship": "self"
+    },
+    {
+      "actor": "G1",
+      "subject": "S1",
+      "relationship": "guardian"
+    },
+    {
+      "actor": "G1",
+      "subject": "S2",
+      "relationship": "guardian"
+    },
+    {
+      "actor": "G2",
+      "subject": "S1",
+      "relationship": "none"
+    },
+    {
+      "actor": "T1",
+      "subject": "S1",
+      "relationship": "class_teacher"
+    },
+    {
+      "actor": "T2",
+      "subject": "S1",
+      "relationship": "none"
+    },
+    {
+      "actor": "S3",
+      "subject": "S1",
+      "relationship": "none"
+    }
+  ],
+  "authorization_matrix": {
+    "note": "Action names are M00's. Each business module declares its own and must assert an equivalent matrix, including the deny rows.",
+    "demo.list_notes": {
+      "scope": "school",
+      "allowed": [
+        "any authenticated staff"
+      ],
+      "denied_cross_school": 404
+    },
+    "demo.read_note": {
+      "allowed": [
+        "self",
+        "guardian",
+        "assigned_teacher",
+        "class_teacher"
+      ],
+      "denied": [
+        "none"
+      ]
+    },
+    "demo.write_note": {
+      "allowed": [
+        "assigned_teacher",
+        "class_teacher"
+      ],
+      "denied": [
+        "self",
+        "guardian",
+        "none"
+      ],
+      "requires": "two_factor within 15 minutes"
+    }
+  },
+  "sections": {
+    "C1": "86847c87-bedd-505d-9e2f-3bb35275320c",
+    "C2": "f0650aea-6dc0-5f54-8f6e-f7bbb45ae3d6"
+  }
+}

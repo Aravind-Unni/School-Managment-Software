@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/common/audit-record",
+  "title": "AuditRecord",
+  "description": "Append-only record of a critical write, committed in the same transaction as the change. A rolled-back write leaves no audit row.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "audit_id",
+    "school_id",
+    "actor_id",
+    "action",
+    "resource_id",
+    "occurred_at",
+    "request_id",
+    "before",
+    "after"
+  ],
+  "properties": {
+    "audit_id": { "type": "string", "format": "uuid" },
+    "school_id": { "type": "string", "format": "uuid" },
+    "actor_id": { "type": "string", "format": "uuid" },
+    "action": { "type": "string", "minLength": 1 },
+    "resource_id": { "type": "string", "format": "uuid" },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "request_id": { "type": "string", "minLength": 1 },
+    "before": { "type": "object" },
+    "after": { "type": "object" }
+  }
+}

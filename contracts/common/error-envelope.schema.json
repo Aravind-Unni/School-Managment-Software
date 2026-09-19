@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/common/error-envelope",
+  "title": "ErrorEnvelope",
+  "description": "The body of every non-2xx response from every module. Frozen: adding a top-level property is a contract revision, never a per-module extension.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["code", "message_key", "request_id", "field_errors"],
+  "properties": {
+    "code": {
+      "description": "Stable machine-readable code. 401 unauthenticated/stale_auth, 403 action_denied, 404 object_inaccessible, 409 version_conflict/state_conflict, 422 validation_failed.",
+      "type": "string",
+      "enum": [
+        "unauthenticated",
+        "stale_auth",
+        "action_denied",
+        "object_inaccessible",
+        "version_conflict",
+        "state_conflict",
+        "validation_failed"
+      ]
+    },
+    "message_key": {
+      "description": "Lookup key the frontend renders in English or Malayalam. Never user-facing prose.",
+      "type": "string",
+      "minLength": 1
+    },
+    "request_id": {
+      "description": "Correlates the response with server logs and audit rows.",
+      "type": "string",
+      "minLength": 1
+    },
+    "field_errors": {
+      "description": "Always present; empty array when there are none, so clients never branch on key absence.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["field", "message_key"],
+        "properties": {
+          "field": {
+            "description": "Dotted path using wire field names, never ORM attribute names.",
+            "type": "string"
+          },
+          "message_key": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+.coverage.*
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Local secrets and generated env -- NEVER commit these
+.env
+.env.*
+!.env.example
+dev/secrets/
+*.pem
+*.key
+
+# Machine-readable test output and evidence bundles
+dev/evidence/
+reports/
+
+# OS
+.DS_Store
+
+# Generated per-module Compose files and port allocations
+dev/state/

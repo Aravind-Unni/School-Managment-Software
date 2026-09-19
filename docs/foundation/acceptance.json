@@ -1,0 +1,306 @@
+{
+  "artefact": "B00 shared development foundation",
+  "recorded_at": "2026-09-19",
+  "source_identity": {
+    "repository": "https://github.com/Aravind-Unni/School-Managment-Software",
+    "branch": "b00/shared-foundation",
+    "head_commit": "c885032a64c91bdd89f9143f7a91b308474efbee",
+    "started_from_commit": "d0df19de0e7172ea22fd0a85eed99dfe41e04ad9",
+    "started_from_note": "main at the time this work began; the repository contained only README.md",
+    "contracts_manifest_revision": "school-contracts-v3-draft",
+    "contracts_manifest_status": "draft",
+    "working_tree_clean_at_record_time": false
+  },
+  "environment_this_was_verified_on": {
+    "platform": "macOS 26.5.2 arm64",
+    "python": "3.12.14 (venv, from hash-pinned lockfiles)",
+    "node": "22.22.2",
+    "container_engine": "NONE AVAILABLE -- see unverified_criteria"
+  },
+  "setup_commands": [
+    "python3 scripts/dev.py doctor",
+    "uv venv --python 3.12 .venv",
+    "VIRTUAL_ENV=.venv uv pip install -r backend/requirements.txt -r backend/requirements-dev.txt",
+    "npm ci --prefix frontend",
+    "python3 scripts/dev.py up M00 --profile standalone",
+    "python3 scripts/dev.py migrate M00 --profile standalone",
+    "python3 scripts/dev.py seed M00 --scenario baseline",
+    "python3 scripts/dev.py check M00 --suite contracts",
+    "python3 scripts/dev.py check M00 --suite standalone",
+    "python3 scripts/dev.py check M00 --suite browser",
+    "python3 scripts/dev.py evidence M00",
+    "python3 scripts/dev.py down M00"
+  ],
+  "test_outcomes": {
+    "python": {
+      "command": ".venv/bin/python -m pytest tests -q",
+      "backend": "sqlite-local-only (config.settings.test_sqlite)",
+      "passed": 284,
+      "failed": 0,
+      "total": 284,
+      "exit_status": 0,
+      "caveat": "This profile CANNOT prove PostgreSQL behaviour, PostgreSQL migrations, worker/broker behaviour, or resource isolation. The CI backend job runs the same suite against real PostgreSQL and is authoritative.",
+      "note": "284 after adding the regression tests for the two defects CI found."
+    },
+    "frontend_unit": {
+      "command": "npx vitest run",
+      "passed": 38,
+      "failed": 0,
+      "total": 38,
+      "exit_status": 0
+    },
+    "static_gates": {
+      "ruff check .": 0,
+      "ruff format --check .": 0,
+      "scripts/arch_check.py (7 checks)": 0,
+      "scripts/contract_manifest.py --check": 0,
+      "eslint (type-aware)": 0,
+      "tsc --noEmit": 0,
+      "vite build": 0,
+      "manage.py makemigrations --check --dry-run": 0,
+      "manage.py spectacular --fail-on-warn": 0
+    },
+    "browser": {
+      "status": "NOT RUN",
+      "reason": "Playwright needs a running stack, which needs a container engine. dev.py records backend=not-run, passed=false; it is not reported as passing."
+    },
+    "python_postgres_ci": {
+      "command": "pytest tests -q --ds=config.settings.standalone",
+      "backend": "postgres-container (17.11-alpine, CI service)",
+      "passed": 284,
+      "failed": 0,
+      "total": 284,
+      "exit_status": 0,
+      "run": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35419072164",
+      "note": "AUTHORITATIVE. Identical count to the local SQLite run, so no test silently skipped on either backend."
+    }
+  },
+  "reviewed_interfaces": {
+    "frozen_in_manifest": [
+      "M00/fixtures/error-responses.json",
+      "M00/fixtures/events.json",
+      "M00/fixtures/personas.json",
+      "M00/openapi.yaml",
+      "common/audit-record",
+      "common/collection",
+      "common/error-envelope",
+      "common/event-envelope",
+      "common/relationship-facts",
+      "common/scope-facts",
+      "common/values"
+    ],
+    "shared_contracts_package": [
+      "ErrorEnvelope / ErrorCode -> 401 403 404 409 422",
+      "RequestContext (actor_id, school_id, request_id, auth_level, auth_time)",
+      "ScopeFacts + separate RelationshipFacts (breaks Access->Registry recursion)",
+      "EvidenceRef, ResourceGrant (server-internal, never from a browser)",
+      "EventEnvelope (v1), AuditRecord",
+      "Page{items,next_cursor} with opaque cursors",
+      "ModuleRegistration{id,slug,api_prefix,frontend_routes,permission_codes,consumers,scheduled_jobs,migration_dependencies,health_checks}",
+      "Ports: AccessPort, RegistryPort, PlatformPort, ObjectStoragePort, NotificationPort, ClockPort",
+      "Values: integer INR paise, decimal-string marks, UTC instants, Asia/Kolkata school dates"
+    ],
+    "business_modules_frozen": 0,
+    "business_modules_note": "All fourteen are status=not_started by design. Freezing one without its review gate is the failure mode the manifest exists to prevent."
+  },
+  "verified_criteria": [
+    {
+      "criterion": "CI rejects a forbidden cross-module import",
+      "how": "tests/integration/test_arch_check.py injects the import and asserts exit 1; the CI guards job repeats it as an explicit step that fails the build if the checker passes",
+      "status": "VERIFIED"
+    },
+    {
+      "criterion": "CI rejects a production fake configuration",
+      "how": "same mechanism, injecting `from shared.fakes import FakeAccess` into production settings",
+      "status": "VERIFIED"
+    },
+    {
+      "criterion": "Contract schema drift is rejected",
+      "how": "contract_manifest.py --check compares sha256 per artefact; a negative test mutates a schema and asserts rejection",
+      "status": "VERIFIED"
+    },
+    {
+      "criterion": "Commands fail honestly when code is absent",
+      "how": "dev.py up/migrate/seed/check for M01-M14 exit 3 naming the missing registration.py and pointing at the contract packet",
+      "status": "VERIFIED"
+    },
+    {
+      "criterion": "Deny-by-default authorisation matrix",
+      "how": "34 cases: G1->S1 allowed, G2->S1 denied 403, T2->C1 denied 403, unknown action denied, cross-school 404 not 403, stale and password-only 2FA 401",
+      "status": "VERIFIED"
+    },
+    {
+      "criterion": "Audit and outbox join the caller's transaction",
+      "how": "rollback test asserts rows exist inside the transaction and are gone after rollback",
+      "status": "VERIFIED"
+    },
+    {
+      "criterion": "Async behaviour is never faked",
+      "how": "TestPlatformAdapter.enqueue raises EagerModeNotAsserted with no real worker",
+      "status": "VERIFIED"
+    },
+    {
+      "criterion": "Production refuses fakes, personas and demo fixtures",
+      "how": "PortRegistry.register raises at bind time; assert_production_safe re-checks; arch_check covers the committed config",
+      "status": "VERIFIED"
+    },
+    {
+      "criterion": "Client-asserted identity is rejected, not ignored",
+      "how": "six forbidden headers each produce 400 with the offending header named",
+      "status": "VERIFIED"
+    },
+    {
+      "criterion": "ResourceGrant is never accepted from a browser",
+      "how": "body guard rejects server-internal keys at any nesting depth",
+      "status": "VERIFIED"
+    },
+    {
+      "criterion": "Machine-readable test results",
+      "how": "pytest --json-report and vitest --reporter=json; dev.py writes per-suite reports and an evidence bundle",
+      "status": "VERIFIED"
+    },
+    {
+      "criterion": "Repeatable installation from lockfiles",
+      "how": "hash-pinned requirements compiled with uv and installed into a clean 3.12 venv locally; CI installs with --require-hashes --no-deps and npm ci",
+      "status": "VERIFIED_LOCALLY_CI_PENDING_FIRST_RUN"
+    },
+    {
+      "criterion": "TypeScript client generated from approved OpenAPI",
+      "how": "openapi-typescript against contracts/M00/openapi.yaml, which is itself generated from the real DRF views with --fail-on-warn; CI diffs both",
+      "status": "VERIFIED"
+    },
+    {
+      "criterion": "Two simultaneous profiles get isolated resources",
+      "how": "namespacing is unit-tested across modules and worktrees for project, database, bucket, queue and volume names; generated Compose files were rendered and parsed for every module",
+      "status": "PARTIALLY_VERIFIED -- names and rendered files proven; two stacks were never actually run at once"
+    },
+    {
+      "criterion": "Both container images build from lockfiles",
+      "how": "CI containers job built infra/backend.Dockerfile (pip --require-hashes) and infra/frontend.Dockerfile (npm ci) on run 35418749812",
+      "status": "VERIFIED_IN_CI"
+    },
+    {
+      "criterion": "Every base image is pinned by digest",
+      "how": "CI containers job asserts all 5 digests are well-formed sha256",
+      "status": "VERIFIED_IN_CI"
+    },
+    {
+      "criterion": "Generated Compose files are valid for every module",
+      "how": "CI containers job renders all 15 module stacks and parses the YAML",
+      "status": "VERIFIED_IN_CI"
+    },
+    {
+      "criterion": "Migrations apply to real PostgreSQL with no model drift",
+      "how": "CI backend job ran makemigrations --check --dry-run and migrate --noinput against postgres 17.11; both passed",
+      "status": "VERIFIED_IN_CI"
+    },
+    {
+      "criterion": "CI passes end to end",
+      "how": "Run 35419072164 on commit e1f6704: all five jobs green (contracts, guards, backend-on-PostgreSQL, frontend, containers)",
+      "status": "VERIFIED_IN_CI"
+    },
+    {
+      "criterion": "The full suite passes against real PostgreSQL",
+      "how": "CI backend job: 284 passed in 6.30s against postgres 17.11 with --ds=config.settings.standalone -- the same 284 that pass locally on SQLite, so nothing was silently skipped",
+      "status": "VERIFIED_IN_CI"
+    },
+    {
+      "criterion": "The committed OpenAPI matches the code",
+      "how": "CI regenerates with spectacular --fail-on-warn and diffs against contracts/M00/openapi.yaml; the frontend job regenerates the TypeScript client and git-diffs it",
+      "status": "VERIFIED_IN_CI"
+    }
+  ],
+  "unverified_criteria": [
+    {
+      "criterion": "A fresh checkout boots the placeholder via doctor/up/migrate/seed",
+      "blocker": "No container engine on the verification machine. /usr/local/bin/docker is a dangling symlink from an uninstalled Docker Desktop; only the Homebrew docker-compose binary remains, and compose cannot start anything without a daemon.",
+      "what_exists": "The runner, both Dockerfiles, and the generated Compose files are written and their YAML validated. `doctor` detects the missing engine and exits 2 naming the dangling symlinks.",
+      "how_to_verify": "Install a container engine, then run the setup_commands above in order."
+    },
+    {
+      "criterion": "Its REST endpoint and React page work (in the container stack)",
+      "blocker": "Same.",
+      "what_exists": "Both work under the local profiles: 30 HTTP tests exercise the real DRF endpoints, and 38 frontend tests plus a production build exercise the React page against a mocked client.",
+      "how_to_verify": "After `up M00`, open the printed API and frontend URLs."
+    },
+    {
+      "criterion": "Browser tests produce machine-readable results",
+      "blocker": "Playwright needs a running stack; browsers were never installed.",
+      "what_exists": "playwright.config.ts with a JSON reporter and four specs. dev.py records not-run rather than passing.",
+      "how_to_verify": "npx playwright install chromium, then dev.py check M00 --suite browser."
+    },
+    {
+      "criterion": "Worker crash and retry behaviour",
+      "blocker": "No broker, and no module owns async work yet.",
+      "what_exists": "A real worker service is rendered for declaring modules; eager mode is never configured and enqueue refuses without a real worker.",
+      "how_to_verify": "First module that declares a worker must assert this against the real broker."
+    }
+  ],
+  "known_gaps": [
+    "Integrated mode (C02) is scaffolded: APPROVED_MODULE_IDS contains only M00, and build_port_registry refuses to start rather than falling back to a fake when a real provider is missing. It has no real providers to wire yet, by construction.",
+    "Real authentication and 2FA are explicitly PENDING. Every profile except M01's will use the fixed synthetic persona on loopback until M01 lands.",
+    "No data-fetching library on the frontend. The placeholder fetches in an effect and flags the react-hooks warning inline rather than hiding it; the first real module should choose a library.",
+    "Production deployment is M14's, not B00's. production.py exists and refuses unsafe configuration, but no real adapters are wired."
+  ],
+  "human_gates_not_yet_passed": [
+    "Peer review of this foundation",
+    "Review and freeze of every module contract packet (all fourteen are not_started)",
+    "Approval of the actual contract revision replacing school-contracts-v3-draft",
+    "Phase exit gate"
+  ],
+  "delivery": {
+    "merged": true,
+    "merged_at": "2026-09-19",
+    "merged_by": "AbhinavM2000 (author of the change)",
+    "deployed": false,
+    "peer_reviewed": false,
+    "review_count_at_merge": 0,
+    "gate_deviation": "B00 requires peer review plus ALL Foundation acceptance checks before approval, and says never to merge automatically. Merged on explicit instruction from the collaborator after the gate, the zero review count and the four unverified criteria were raised and restated. This is self-approval by the change's author.",
+    "unverified_at_merge": [
+      "A fresh checkout boots the placeholder via doctor/up/migrate/seed",
+      "Its REST endpoint and React page work (in the container stack)",
+      "Browser tests produce machine-readable results",
+      "Worker crash and retry behaviour"
+    ],
+    "note": "Never deployed. Deployment remains M14's and is still gated."
+  },
+  "ci_first_run": {
+    "run_id": 35418749812,
+    "url": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35418749812",
+    "results": {
+      "contracts and architecture": "success",
+      "guards reject real violations": "success",
+      "frontend": "success",
+      "container images build": "success",
+      "backend suite on real PostgreSQL": "failure"
+    },
+    "defects_it_found": [
+      {
+        "defect": "Resource namespace collision -- CRITICAL",
+        "detail": "ResourceNames.stem sanitised the joined developer_worktree_module string and truncated it to 40 characters. On CI the checkout path is long, so the module id was chopped off the end and M00, M04 and M14 all resolved to the SAME Compose project and database. This directly violated 'two simultaneous module profiles have isolated resources'. It passed locally only because this machine's worktree name is short.",
+        "fix": "The namespace is now composed from individually-bounded components, so the joined string is never truncated and both discriminators -- the worktree hash and the module id -- always survive. stem() raises rather than returning a name that lost either.",
+        "regression_tests": "15 modules x 5 resource kinds x 5 developer/path shapes asserted distinct; module-id survival, worktree-hash survival, PostgreSQL identifier limits, and an over-budget namespace raising instead of colliding."
+      },
+      {
+        "defect": "dev.py assumed a .venv existed",
+        "detail": "check --suite contracts reported the contract tests as 'not run' on every CI machine, because CI installs from the lockfiles into the runner's Python rather than into .venv. The build failed for the wrong reason.",
+        "fix": "test_interpreter() prefers .venv and falls back to the current interpreter when it can import pytest, still returning None (an honest 'not run') when neither can.",
+        "regression_tests": "test_the_suites_resolve_an_interpreter_without_a_venv"
+      }
+    ]
+  },
+  "ci_green_run": {
+    "run_id": 35419072164,
+    "run_number": 3,
+    "commit": "e1f67045df21",
+    "conclusion": "success",
+    "url": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35419072164",
+    "jobs": {
+      "contracts and architecture": "success",
+      "guards reject real violations": "success",
+      "backend suite on real PostgreSQL": "success",
+      "frontend": "success",
+      "container images build": "success"
+    }
+  }
+}

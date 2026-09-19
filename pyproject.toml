@@ -1,0 +1,69 @@
+# Tooling configuration for the school platform foundation.
+# Runtime dependencies are pinned in backend/requirements*.txt, not here.
+
+[tool.pytest.ini_options]
+# backend/ is the import root: `contracts`, `shared`, `config` and `modules`
+# are all top-level packages under it.
+pythonpath = ["backend"]
+DJANGO_SETTINGS_MODULE = "config.settings.test_sqlite"
+testpaths = ["tests", "backend"]
+python_files = ["test_*.py"]
+addopts = "-ra --strict-markers --strict-config"
+markers = [
+    "contract: asserts a frozen interface in contracts/manifest.json",
+    "requires_postgres: needs a real PostgreSQL server; skipped on the SQLite profile",
+    "requires_worker: needs a real broker and worker; never satisfied by eager mode",
+    "browser: Playwright browser test; needs a running frontend and API",
+]
+filterwarnings = ["error::DeprecationWarning:shared.*", "error::DeprecationWarning:modules.*"]
+
+[tool.ruff]
+line-length = 96
+target-version = "py312"
+extend-exclude = [".venv", "**/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "DTZ", "RUF", "D"]
+ignore = [
+    "D203",  # conflicts with D211
+    "D213",  # conflicts with D212
+    # Exception class names intentionally match the wire error codes they render
+    # as (ActionDenied -> "action_denied"). An "Error" suffix would make the
+    # taxonomy and the contract disagree, which is worse than the convention.
+    "N818",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests: module/function docstrings are not required, and several tests build
+# deliberately naive datetimes to assert that they are rejected.
+"tests/**" = ["D100", "D103", "DTZ001"]
+# Settings modules use star imports from base by design, after validation.
+"**/settings/*.py" = ["F403", "F405", "E402"]
+# Django models: `class Meta` needs no docstring, and Meta's ordering/indexes
+# are class-level lists by framework contract, not accidental mutable defaults.
+"**/models.py" = ["D106", "RUF012"]
+
+[tool.ruff.lint.isort]
+# backend/ is the import root, so these are first-party despite having no
+# common prefix. Without this, ruff sorts them as third-party.
+known-first-party = ["contracts", "shared", "modules", "config"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "backend"
+packages = ["contracts", "shared", "modules", "config"]
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+strict_equality = true
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "config.settings.test_sqlite"
+
+[[tool.mypy.overrides]]
+module = ["modules.*.migrations.*", "shared.harness.migrations.*"]
+ignore_errors = true

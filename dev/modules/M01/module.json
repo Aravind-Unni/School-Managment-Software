@@ -1,0 +1,16 @@
+{
+  "module_id": "M01",
+  "slug": "access",
+  "_comment": "Real login, sessions, TOTP and recovery. Fake Registry only.",
+  "_status": "module not implemented; this declaration describes the stack `dev.py up` would start once it is",
+  "resources": {
+    "postgres": true,
+    "frontend": true,
+    "broker": false,
+    "worker": false,
+    "object_storage": false
+  },
+  "seed_scenarios": [
+    "baseline"
+  ]
+}

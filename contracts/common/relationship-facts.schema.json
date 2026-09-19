@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/common/relationship-facts",
+  "title": "RelationshipFacts",
+  "description": "Registry's ONLY answer about actor-to-subject linkage. Deliberately narrower than ScopeFacts and carries no school id: the caller already knows the school, and keeping this type minimal is what stops modules growing a hidden dependency on Registry internals.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["actor_id", "subject_person_id", "relationship"],
+  "properties": {
+    "actor_id": { "type": "string", "format": "uuid" },
+    "subject_person_id": { "type": "string", "format": "uuid" },
+    "relationship": {
+      "type": "string",
+      "enum": ["none", "self", "guardian", "assigned_teacher", "class_teacher"]
+    },
+    "section_id": { "type": ["string", "null"], "format": "uuid" },
+    "effective_date": { "type": ["string", "null"], "format": "date" }
+  }
+}

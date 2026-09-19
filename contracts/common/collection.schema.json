@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/common/collection",
+  "title": "Collection",
+  "description": "Every list endpoint returns this envelope. Offset pagination is deliberately unsupported: a roster shifts under pagination and offsets silently skip rows.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["items", "next_cursor"],
+  "properties": {
+    "items": { "type": "array" },
+    "next_cursor": {
+      "description": "Opaque keyset cursor. Clients must not parse it. Null exactly when there are no further rows.",
+      "type": ["string", "null"]
+    }
+  }
+}

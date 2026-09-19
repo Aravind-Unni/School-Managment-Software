@@ -1,0 +1,207 @@
+{
+  "common": [
+    {
+      "frozen": true,
+      "id": "common/audit-record",
+      "kind": "json-schema",
+      "owner": "foundation (B00)",
+      "path": "contracts/common/audit-record.schema.json",
+      "sha256": "aa7cdd83af11b98a69300dcab2ad045229d28cb91027ae0ee0e4d44db009a6ee"
+    },
+    {
+      "frozen": true,
+      "id": "common/collection",
+      "kind": "json-schema",
+      "owner": "foundation (B00)",
+      "path": "contracts/common/collection.schema.json",
+      "sha256": "c411fcea58fc947823dc57494befa68511bfb5d348b1a3d16ed781000e12e94d"
+    },
+    {
+      "frozen": true,
+      "id": "common/error-envelope",
+      "kind": "json-schema",
+      "owner": "foundation (B00)",
+      "path": "contracts/common/error-envelope.schema.json",
+      "sha256": "e6952e7781b1b2a9f91ebedff52b2267fa3fbc9c39647e1462011ab8297e94b4"
+    },
+    {
+      "frozen": true,
+      "id": "common/event-envelope",
+      "kind": "json-schema",
+      "owner": "foundation (B00)",
+      "path": "contracts/common/event-envelope.schema.json",
+      "sha256": "dd0672f26e89d3b4f8997b0519bef84f16f5b68090f5350eccaee8b02a5d7015"
+    },
+    {
+      "frozen": true,
+      "id": "common/relationship-facts",
+      "kind": "json-schema",
+      "owner": "foundation (B00)",
+      "path": "contracts/common/relationship-facts.schema.json",
+      "sha256": "d3e65843595e0a7b91219913acf6ec5da1c0124d80279795a0213d9bc04e20e7"
+    },
+    {
+      "frozen": true,
+      "id": "common/scope-facts",
+      "kind": "json-schema",
+      "owner": "foundation (B00)",
+      "path": "contracts/common/scope-facts.schema.json",
+      "sha256": "3225d65134e785bce96b4ab61fd3145bdafc0c645d16fe8a44ce609e066db254"
+    },
+    {
+      "frozen": true,
+      "id": "common/values",
+      "kind": "json-schema",
+      "owner": "foundation (B00)",
+      "path": "contracts/common/values.schema.json",
+      "sha256": "73df7020fc1e880ad87fe19959d32249208761a225907aa0d5be6d98a48187b6"
+    }
+  ],
+  "envelope_versions": {
+    "event_envelope": 1
+  },
+  "modules": {
+    "M00": {
+      "artefacts": [
+        {
+          "frozen": true,
+          "id": "M00/openapi.yaml",
+          "kind": "openapi",
+          "owner": "M00 demo",
+          "path": "contracts/M00/openapi.yaml",
+          "sha256": "f151bc39f938abf41207f6ce5878e151e0bb7ac949229163ac8fac246b52bcb8"
+        }
+      ],
+      "fixtures": [
+        {
+          "frozen": true,
+          "id": "M00/fixtures/error-responses.json",
+          "kind": "consumer-fixture",
+          "owner": "M00 demo",
+          "path": "contracts/M00/fixtures/error-responses.json",
+          "sha256": "a8fd8af8f0523e39f3aab7d8b0b51fc2a78f4fe7ccfee7fd840693070013b252"
+        },
+        {
+          "frozen": true,
+          "id": "M00/fixtures/events.json",
+          "kind": "consumer-fixture",
+          "owner": "M00 demo",
+          "path": "contracts/M00/fixtures/events.json",
+          "sha256": "aad195fe65864a63460a8bc467f2ef2d6ebfc45903df23946f76b4a78eb3b325"
+        },
+        {
+          "frozen": true,
+          "id": "M00/fixtures/personas.json",
+          "kind": "consumer-fixture",
+          "owner": "M00 demo",
+          "path": "contracts/M00/fixtures/personas.json",
+          "sha256": "12cdcbc4e2644805631eeb9f64419fda326d4b525eaef2d11415ce37d5ba2aee"
+        }
+      ],
+      "packet": null,
+      "slug": "demo",
+      "status": "frozen"
+    },
+    "M01": {
+      "artefacts": [],
+      "fixtures": [],
+      "packet": "contracts/M01/PACKET.md",
+      "slug": "access",
+      "status": "not_started"
+    },
+    "M02": {
+      "artefacts": [],
+      "fixtures": [],
+      "packet": "contracts/M02/PACKET.md",
+      "slug": "registry",
+      "status": "not_started"
+    },
+    "M03": {
+      "artefacts": [],
+      "fixtures": [],
+      "packet": "contracts/M03/PACKET.md",
+      "slug": "timetable",
+      "status": "not_started"
+    },
+    "M04": {
+      "artefacts": [],
+      "fixtures": [],
+      "packet": "contracts/M04/PACKET.md",
+      "slug": "attendance",
+      "status": "not_started"
+    },
+    "M05": {
+      "artefacts": [],
+      "fixtures": [],
+      "packet": "contracts/M05/PACKET.md",
+      "slug": "assessment",
+      "status": "not_started"
+    },
+    "M06": {
+      "artefacts": [],
+      "fixtures": [],
+      "packet": "contracts/M06/PACKET.md",
+      "slug": "performance",
+      "status": "not_started"
+    },
+    "M07": {
+      "artefacts": [],
+      "fixtures": [],
+      "packet": "contracts/M07/PACKET.md",
+      "slug": "fees",
+      "status": "not_started"
+    },
+    "M08": {
+      "artefacts": [],
+      "fixtures": [],
+      "packet": "contracts/M08/PACKET.md",
+      "slug": "transport",
+      "status": "not_started"
+    },
+    "M09": {
+      "artefacts": [],
+      "fixtures": [],
+      "packet": "contracts/M09/PACKET.md",
+      "slug": "library",
+      "status": "not_started"
+    },
+    "M10": {
+      "artefacts": [],
+      "fixtures": [],
+      "packet": "contracts/M10/PACKET.md",
+      "slug": "alumni",
+      "status": "not_started"
+    },
+    "M11": {
+      "artefacts": [],
+      "fixtures": [],
+      "packet": "contracts/M11/PACKET.md",
+      "slug": "communications",
+      "status": "not_started"
+    },
+    "M12": {
+      "artefacts": [],
+      "fixtures": [],
+      "packet": "contracts/M12/PACKET.md",
+      "slug": "files",
+      "status": "not_started"
+    },
+    "M13": {
+      "artefacts": [],
+      "fixtures": [],
+      "packet": "contracts/M13/PACKET.md",
+      "slug": "exchange",
+      "status": "not_started"
+    },
+    "M14": {
+      "artefacts": [],
+      "fixtures": [],
+      "packet": "contracts/M14/PACKET.md",
+      "slug": "platform",
+      "status": "not_started"
+    }
+  },
+  "note": "Starting revision for the B00 foundation. No final v2 executable contract is assumed to exist. Replace 'revision' with the actual approved revision once contract review completes, and flip an entry's 'frozen' to true only after its human review gate.",
+  "revision": "school-contracts-v3-draft",
+  "status": "draft"
+}
