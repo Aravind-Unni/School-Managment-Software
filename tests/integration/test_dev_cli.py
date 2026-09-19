@@ -617,3 +617,53 @@ def test_the_suites_resolve_an_interpreter_without_a_venv():
         subprocess.run([str(resolved), "-c", "import pytest"], capture_output=True).returncode
         == 0
     )
+
+
+def test_compose_relative_paths_resolve_from_the_compose_files_own_directory():
+    """Regression: Compose resolves relative paths against the FILE's directory.
+
+    The generated file lives at dev/state/<stem>.compose.yaml, two levels below the
+    root, so a build context of ".." pointed at dev/ and the first real Compose run
+    failed with `lstat .../dev/infra: no such file or directory`. YAML validation
+    cannot catch this; only actually building can. This asserts every path a
+    generated file references resolves to something that exists.
+    """
+    import yaml
+    from harness import compose
+    from harness.modules import KNOWN_MODULE_IDS, load
+    from harness.naming import ResourceNames
+
+    # The constant must match the file's real depth below the repo root.
+    compose_dir = (REPO_ROOT / "dev" / "state").resolve()
+    depth = len(compose_dir.relative_to(REPO_ROOT).parts)
+    assert compose.REPO_ROOT_FROM_COMPOSE == "/".join([".."] * depth)
+
+    for module_id in KNOWN_MODULE_IDS:
+        declaration = load(REPO_ROOT, module_id)
+        names = ResourceNames(module_id=module_id, repo_root=REPO_ROOT)
+        allocated = {
+            name: 50000 + index
+            for index, name in enumerate(compose.required_port_names(declaration))
+        }
+        spec = yaml.safe_load(
+            compose.render(
+                repo_root=REPO_ROOT,
+                declaration=declaration,
+                names=names,
+                ports=allocated,
+                profile="standalone",
+            )
+        )
+        for service, body in spec["services"].items():
+            build = body.get("build")
+            if build:
+                context = (compose_dir / build["context"]).resolve()
+                assert context.is_dir(), (module_id, service, build["context"])
+                dockerfile = (context / build["dockerfile"]).resolve()
+                assert dockerfile.is_file(), (module_id, service, build["dockerfile"])
+            for mount in body.get("volumes", []):
+                source = mount.split(":")[0]
+                # Named volumes have no path separator; only bind mounts do.
+                if source.startswith("."):
+                    resolved = (compose_dir / source).resolve()
+                    assert resolved.exists(), (module_id, service, source)

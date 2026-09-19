@@ -30,11 +30,13 @@ Verified against a real database (SQLite locally, PostgreSQL in CI) by 53 tests.
 
 ## 2. Verified in CI
 
-Run [35451437482](https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35451437482):
-**158 passed, 1 skipped against real PostgreSQL 17.11** (M01's suite plus the shared
-contract suite). Migrations applied to an **empty** database, then baseline seeded,
-`migrate` re-run and re-seeded — verifying them on **populated** data. Both container
-images build. The committed OpenAPI matches freshly generated output.
+Run [35451755792](https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35451755792):
+**159 passed, ZERO skipped against real PostgreSQL 17.11** (M01's suite plus the
+shared contract suite). The **two-connection recovery-code race ran and passed**, so
+concurrency is verified rather than claimed. Migrations applied to an **empty**
+database, then baseline seeded, `migrate` re-run and re-seeded — verifying them on
+**populated** data. Both container images build. The committed OpenAPI matches freshly
+generated output.
 
 ## 3. What is NOT verified — do not claim these
 
@@ -104,6 +106,11 @@ B00's DTO contract and the harness test adapter are untouched.
   the live `connection.vendor`.
 - **`doctor` gates on `.venv`, so it cannot be the first CI step.** It exits nonzero
   on a bare runner, correctly. Run it as diagnostics first and gate after installing.
+- **Compose resolves relative paths against the compose FILE's directory**, not the
+  invocation directory. Generated files live two levels down in `dev/state/`, so every
+  context and bind mount needs `../..`. A `..` passed YAML validation, digest pinning
+  and service-selection tests, and failed the instant anything actually built. Use
+  `REPO_ROOT_FROM_COMPOSE`; a test resolves every generated path for every module.
 
 ## 7. Open questions for the humans
 

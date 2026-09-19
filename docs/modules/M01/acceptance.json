@@ -168,12 +168,12 @@
     "M01 suite on real PostgreSQL (CI, AUTHORITATIVE)": {
       "command": "pytest tests/modules/M01 tests/contracts -q --ds=config.settings.standalone",
       "backend": "postgres-container 17.11-alpine (CI service)",
-      "passed": 158,
+      "passed": 159,
       "failed": 0,
-      "skipped": 1,
+      "skipped": 0,
       "exit_status": 0,
-      "run": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35451437482",
-      "note": "158 = M01's suite plus the shared contract suite. Migrations were applied to an EMPTY database, then baseline seeded, migrate re-run and re-seeded, verifying them on populated data."
+      "run": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35451755792",
+      "note": "159 passed, ZERO skipped. The two-connection recovery-code race RAN on PostgreSQL and passed, so concurrency is verified rather than claimed. Migrations applied to an EMPTY database, then baseline seeded, migrate re-run and re-seeded, verifying them on populated data."
     }
   },
   "reviewed_interfaces_changed": {
@@ -252,5 +252,24 @@
       }
     ],
     "useful_finding": "The GitHub runner reports 'container engine running (server 28.0.4)', so the browser suite genuinely can run in CI once the ordering is fixed."
+  },
+  "ci_second_run": {
+    "run_id": 35451755792,
+    "url": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35451755792",
+    "results": {
+      "contracts and architecture": "success",
+      "guards reject real violations": "success",
+      "backend suite on real PostgreSQL": "success",
+      "frontend": "success",
+      "container images build": "success",
+      "M01 access suite on real PostgreSQL": "success (159 passed, 0 skipped -- the real race ran)",
+      "M01 browser suite against a real stack": "failure -- Compose relative paths"
+    },
+    "defect_found": {
+      "defect": "Generated Compose files used the wrong relative path depth",
+      "detail": "Compose resolves build contexts and bind mounts against the directory CONTAINING the compose file, not the invocation directory. The generated file lives at dev/state/<stem>.compose.yaml, two levels below the root, but the context was '..' -- so infra/backend.Dockerfile resolved to dev/infra/backend.Dockerfile and Compose failed with 'lstat .../dev/infra: no such file or directory'.",
+      "why_it_survived_this_long": "YAML validation, digest pinning and service-selection tests all passed on this file. Only actually building could find it, and nothing had ever built it: this was the first execution of the Compose path anywhere.",
+      "fix": "A single REPO_ROOT_FROM_COMPOSE constant derived from the file's real depth, applied to the context and all three bind mounts. A regression test resolves every generated path for every module and asserts it exists; it was confirmed to FAIL with the old value."
+    }
   }
 }

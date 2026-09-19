@@ -21,6 +21,19 @@ import pathlib
 from .modules import ModuleDeclaration
 from .naming import ResourceNames
 
+#: How to reach the repository root FROM THE GENERATED COMPOSE FILE.
+#:
+#: Compose resolves every relative path -- build contexts and bind mounts -- against
+#: the directory containing the compose file, NOT the working directory it was
+#: invoked from. The generated file lives at ``dev/state/<stem>.compose.yaml``, two
+#: levels below the root, so this is "../..".
+#:
+#: An earlier version used ".." and the first real Compose run failed with
+#: ``lstat .../dev/infra: no such file or directory``. No amount of YAML validation
+#: catches this -- only actually building does.
+#: tests/integration/test_dev_cli.py asserts this matches the file's real depth.
+REPO_ROOT_FROM_COMPOSE = "../.."
+
 #: Container-internal ports. Host ports are allocated dynamically.
 POSTGRES_PORT = 5432
 REDIS_PORT = 6379
@@ -258,7 +271,7 @@ def _api(
     lines = [
         "  api:",
         "    build:",
-        "      context: ..",
+        f"      context: {REPO_ROOT_FROM_COMPOSE}",
         "      dockerfile: infra/backend.Dockerfile",
         "      args:",
         f"        PYTHON_IMAGE: {_quote(images['python'])}",
@@ -270,8 +283,8 @@ def _api(
         "    volumes:",
         "      # Bind-mounted for autoreload. Read-only: the API has no reason to",
         "      # write into the developer's checkout.",
-        "      - ../backend:/app/backend:ro",
-        "      - ../contracts:/app/contracts:ro",
+        f"      - {REPO_ROOT_FROM_COMPOSE}/backend:/app/backend:ro",
+        f"      - {REPO_ROOT_FROM_COMPOSE}/contracts:/app/contracts:ro",
         "    depends_on:",
         "      postgres:",
         "        condition: service_healthy",
@@ -307,7 +320,7 @@ def _worker(
     lines = [
         "  worker:",
         "    build:",
-        "      context: ..",
+        f"      context: {REPO_ROOT_FROM_COMPOSE}",
         "      dockerfile: infra/backend.Dockerfile",
         "      args:",
         f"        PYTHON_IMAGE: {_quote(images['python'])}",
@@ -323,8 +336,8 @@ def _worker(
     lines += _backend_environment(declaration, names, ports, profile)
     lines += [
         "    volumes:",
-        "      - ../backend:/app/backend:ro",
-        "      - ../contracts:/app/contracts:ro",
+        f"      - {REPO_ROOT_FROM_COMPOSE}/backend:/app/backend:ro",
+        f"      - {REPO_ROOT_FROM_COMPOSE}/contracts:/app/contracts:ro",
         "    depends_on:",
         "      broker:",
         "        condition: service_healthy",
@@ -349,7 +362,7 @@ def _frontend(
     return [
         "  frontend:",
         "    build:",
-        "      context: ..",
+        f"      context: {REPO_ROOT_FROM_COMPOSE}",
         "      dockerfile: infra/frontend.Dockerfile",
         "      args:",
         f"        NODE_IMAGE: {_quote(images['node'])}",
@@ -364,8 +377,8 @@ def _frontend(
         "    ports:",
         f'      - "127.0.0.1:{ports["frontend"]}:{FRONTEND_PORT}"',
         "    volumes:",
-        "      - ../frontend/src:/app/frontend/src:ro",
-        "      - ../contracts:/app/contracts:ro",
+        f"      - {REPO_ROOT_FROM_COMPOSE}/frontend/src:/app/frontend/src:ro",
+        f"      - {REPO_ROOT_FROM_COMPOSE}/contracts:/app/contracts:ro",
         "    depends_on:",
         "      api:",
         "        condition: service_started",
