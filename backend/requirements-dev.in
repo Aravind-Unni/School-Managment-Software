@@ -1,0 +1,12 @@
+# B00 foundation — development/test dependencies.
+-c requirements.txt
+pytest
+pytest-django
+pytest-cov
+pytest-json-report
+freezegun
+jsonschema
+ruff
+mypy
+django-stubs[compatible-mypy]
+djangorestframework-stubs

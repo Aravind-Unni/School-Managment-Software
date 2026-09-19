@@ -1,0 +1,16 @@
+# B00 foundation — direct backend dependencies only.
+# Pins are resolved into requirements.txt by: uv pip compile (see scripts/lock.sh).
+# Do not hand-edit requirements.txt.
+
+Django
+djangorestframework
+psycopg[binary]
+drf-spectacular
+django-cors-headers
+celery
+redis
+boto3
+gunicorn
+pyotp
+cryptography
+python-json-logger
