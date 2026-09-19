@@ -97,8 +97,25 @@ B00 foundation 294 passed             (unchanged by M01)
 frontend        47 passed
 static         ruff, arch_check, manifest, eslint, tsc, vite build,
                django check, makemigrations --check, spectacular --fail-on-warn
-browser        NOT RUN -- blocker, see below
+browser        NOT PASSED -- blocker, see below
 ```
+
+## CI run 35451437482
+
+| job | result |
+|---|---|
+| contracts and architecture | success |
+| guards reject real violations | success |
+| backend suite on real PostgreSQL | success |
+| frontend | success |
+| container images build | success |
+| **M01 access suite on real PostgreSQL** | **success — 158 passed, 1 skipped** |
+| M01 browser suite against a real stack | **failure** (ordering bug, fixed) |
+
+Migrations verified on an **empty** database and then on **populated** data. Two
+defects the run exposed, both fixed: the browser job ran `doctor` before installing
+dependencies, and the `requires_postgres` race test called `pytest.skip()`
+unconditionally so it could never run in any environment.
 
 ## Incomplete behaviour
 

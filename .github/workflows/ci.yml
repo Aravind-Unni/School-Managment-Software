@@ -404,8 +404,12 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: doctor
-        run: python3 scripts/dev.py doctor
+      # Diagnostics only. doctor legitimately FAILS on a bare runner because
+      # .venv does not exist yet, so it must not gate the build here -- it gates
+      # after the install, below. `|| true` is deliberate and narrow: the same
+      # command runs for real two steps later.
+      - name: doctor (diagnostics, before install)
+        run: python3 scripts/dev.py doctor || true
 
       - name: install backend dependencies from lockfiles
         run: |
@@ -418,6 +422,11 @@ jobs:
         run: |
           npm ci --no-audit --no-fund --prefix frontend
           npx --prefix frontend playwright install --with-deps chromium
+
+      # Now it must pass: the venv exists, node is present, and the runner has a
+      # container engine. A failure here is a real prerequisite problem.
+      - name: doctor (gating, after install)
+        run: python3 scripts/dev.py doctor
 
       # This is what makes the browser suite REAL rather than recorded as not-run:
       # the generated Compose file brings up PostgreSQL, the Django API and the Vite

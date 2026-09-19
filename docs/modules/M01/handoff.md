@@ -28,18 +28,31 @@ Verified against a real database (SQLite locally, PostgreSQL in CI) by 53 tests.
 | CSRF double-submit on every cookie-authenticated write | `middleware.py` |
 | Device-loss recovery works with **no SMS service** | `notifications` is not even a declared consumer |
 
-## 2. What is NOT verified — do not claim these
+## 2. Verified in CI
 
-1. **The browser suite has never run.** No container engine on this machine. M01's
-   own rule is that a required skipped check is a **blocker**, so this is one. A CI
-   job (`m01-browser`) brings up the real stack via Compose and runs the seven
-   journeys; it has not executed.
-2. **`up` / `migrate` / `seed` against real containers** — written, never run here.
-3. **A real two-thread recovery-code race** — marked `requires_postgres` and
-   SKIPPED on SQLite. A green tick there would be a false claim about concurrency.
-4. **A second developer from a fresh checkout** — required by the whole-module gate.
+Run [35451437482](https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35451437482):
+**158 passed, 1 skipped against real PostgreSQL 17.11** (M01's suite plus the shared
+contract suite). Migrations applied to an **empty** database, then baseline seeded,
+`migrate` re-run and re-seeded — verifying them on **populated** data. Both container
+images build. The committed OpenAPI matches freshly generated output.
 
-## 3. Pending integration — NOT passing
+## 3. What is NOT verified — do not claim these
+
+1. **The browser suite still has not passed.** Its first CI attempt failed because
+   the job ran `doctor` before installing dependencies (`doctor` gated on `.venv` and
+   was right to); the ordering is fixed but the job has not gone green yet. M01's rule
+   makes a required check that has not passed a **blocker**.
+2. **`up` / `migrate` / `seed` against real containers on a developer machine** —
+   never run here, because there is no container engine. The GitHub runner does have
+   one (`server 28.0.4`), so CI is the only place this path exists.
+3. **A second developer from a fresh checkout** — required by the whole-module gate.
+
+The real two-connection recovery-code race now runs on PostgreSQL. It previously
+called `pytest.skip()` unconditionally, so the `requires_postgres` marker promised
+coverage **no environment could deliver**; the skip is now decided from the live
+connection vendor.
+
+## 4. Pending integration — NOT passing
 
 - **Real Registry relationships.** M01 runs against a deterministic fake. Re-run in
   Section C against M02.
@@ -51,7 +64,7 @@ Verified against a real database (SQLite locally, PostgreSQL in CI) by 53 tests.
 - Worker crash/retry is **not applicable**: M01 declares no jobs, so no broker or
   worker starts and nothing is claimed.
 
-## 4. Shared contracts M01 changed — THESE NEED REVIEW
+## 5. Shared contracts M01 changed — THESE NEED REVIEW
 
 M01's specified interfaces conflicted with contracts B00 froze and merged. Every
 change is additive and B00's 294 tests pass unchanged, but they touch files outside
@@ -68,7 +81,7 @@ M01's allowed paths and affect **every future module**. Full list in
 **`PlatformPort` was deliberately NOT changed** — M01 uses an internal facade, so
 B00's DTO contract and the harness test adapter are untouched.
 
-## 5. Traps
+## 6. Traps
 
 - **Do not increment a counter inside a transaction you are about to roll back.**
   The attempt counter did exactly that, so a challenge was never invalidated and an
@@ -85,8 +98,14 @@ B00's DTO contract and the harness test adapter are untouched.
   `override_settings` block pops. Use `shared.ports.runtime`.
 - **`MODULE_ID` selects the profile AND test collection.** `pytest` alone runs the
   M00 suite; M01's needs `MODULE_ID=M01` and its own path.
+- **Never write `pytest.skip()` unconditionally under a capability marker.** A
+  `requires_postgres` test that always skips claims coverage no environment can
+  deliver, and it reported "skipped" even in the PostgreSQL job. Decide the skip from
+  the live `connection.vendor`.
+- **`doctor` gates on `.venv`, so it cannot be the first CI step.** It exits nonzero
+  on a bare runner, correctly. Run it as diagnostics first and gate after installing.
 
-## 6. Open questions for the humans
+## 7. Open questions for the humans
 
 1. **Approve or revise the shared contract changes in §4.** Everything else waits on
    this: a later revision would ripple into every module built meanwhile.

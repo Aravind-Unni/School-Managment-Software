@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import threading
+
 import pytest
 from m01_helpers import LOGINS, PASSWORDS, enrol_and_activate
 
@@ -37,15 +39,60 @@ def test_concurrent_reuse_of_one_recovery_code_succeeds_exactly_once(api, seeded
 
 
 @pytest.mark.requires_postgres
-def test_two_real_threads_racing_one_recovery_code(api, seeded, clock, django_db_blocker):
-    """The same race with real threads.
+@pytest.mark.django_db(transaction=True)
+def test_two_real_threads_racing_one_recovery_code(api, seeded, clock):
+    """The same race with two REAL connections, contending at the same instant.
 
-    Marked requires_postgres and SKIPPED on SQLite: an in-memory SQLite database is
-    shared per-connection in a way that makes a genuine two-connection race
-    meaningless. Recording it as skipped rather than passing is the point -- a green
-    tick here on SQLite would be a false claim about concurrency.
+    Skipped on SQLite because an in-memory database cannot stage a genuine
+    two-connection race -- but the skip is decided from the LIVE connection vendor,
+    not hardcoded. An earlier version called pytest.skip() unconditionally, which
+    meant the test could never run even on PostgreSQL: a marker promising coverage
+    that no environment could deliver.
+
+    Both threads wait on a barrier so they attempt the conditional UPDATE
+    simultaneously, which is the only way to exercise the row-level contention
+    rather than two sequential calls.
     """
-    pytest.skip("needs PostgreSQL; the SQLite profile cannot stage a real race")
+    from django.db import connection, connections
+
+    if connection.vendor != "postgresql":
+        pytest.skip(f"needs PostgreSQL; this run is on {connection.vendor}")
+
+    from modules.access.models import RecoveryCode
+    from modules.access.services.crypto import hash_recovery_code
+
+    codes = enrol_and_activate(api, seeded["t1"], "t1", clock)
+    target = RecoveryCode.objects.get(
+        user=seeded["t1"],
+        code_hash=hash_recovery_code(codes[0], school_id=fixtures.SCHOOL_A),
+    )
+
+    barrier = threading.Barrier(2)
+    outcomes: list[int] = []
+    lock = threading.Lock()
+
+    def contend() -> None:
+        try:
+            barrier.wait(timeout=10)
+            updated = RecoveryCode.objects.filter(pk=target.pk, used_at__isnull=True).update(
+                used_at=clock.now()
+            )
+            with lock:
+                outcomes.append(updated)
+        finally:
+            # Each thread owns its own connection and must close it, or the test
+            # database cannot be torn down.
+            connections.close_all()
+
+    threads = [threading.Thread(target=contend) for _ in range(2)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=30)
+
+    assert sorted(outcomes) == [0, 1], f"exactly one thread must win the race, got {outcomes}"
+    target.refresh_from_db()
+    assert target.used_at is not None
 
 
 def test_a_failed_recovery_leaves_the_code_unused(api, seeded, clock):
