@@ -1,1 +1,1 @@
-# Student-Managment-Software
+# School-Managment-Software
