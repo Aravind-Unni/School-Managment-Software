@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M02/events-proposed",
+  "$defs": {
+    "StudentEnrolled.v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "enrolment_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "year_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "student_id",
+        "enrolment_id",
+        "year_id"
+      ]
+    },
+    "StudentSectionChanged.v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "effective_date": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "required": [
+        "student_id",
+        "effective_date"
+      ]
+    },
+    "StudentLeft.v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "effective_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "outcome": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "student_id",
+        "effective_date",
+        "outcome"
+      ]
+    },
+    "GuardianLinkChanged.v1": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "guardian_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "student_id",
+        "guardian_id",
+        "version"
+      ]
+    }
+  }
+}
