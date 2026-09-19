@@ -45,10 +45,16 @@ const FORBIDDEN_HEADERS = [
 ] as const;
 
 interface RequestOptions {
-  readonly method?: "GET" | "POST" | "PATCH" | "DELETE";
+  readonly method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   readonly body?: unknown;
   readonly query?: Record<string, string | number | undefined>;
   readonly signal?: AbortSignal;
+  /**
+   * Extra headers, for a module that needs one the shared client does not know
+   * about -- M01 echoes the double-submit CSRF token here. Identity headers remain
+   * forbidden and are rejected below regardless of what a caller passes.
+   */
+  readonly headers?: Record<string, string>;
 }
 
 /**
@@ -62,20 +68,25 @@ export async function request<Result>(
   path: string,
   options: RequestOptions = {},
 ): Promise<Result> {
-  const { method = "GET", body, query, signal } = options;
+  const { method = "GET", body, query, signal, headers: extraHeaders } = options;
 
   const url = new URL(`${apiBaseUrl()}${path}`, globalThis.location?.href ?? "http://127.0.0.1");
   for (const [key, value] of Object.entries(query ?? {})) {
     if (value !== undefined) url.searchParams.set(key, String(value));
   }
 
-  const headers: Record<string, string> = { Accept: "application/json" };
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    ...(extraHeaders ?? {}),
+  };
   if (body !== undefined) headers["Content-Type"] = "application/json";
 
-  // Defence in depth: the server rejects these outright, and no code path here
-  // sets them. This assertion catches a future caller trying to.
+  // Defence in depth. The server REJECTS these outright; this catches a caller
+  // trying to set one via `headers`, which is now an open door for CSRF tokens.
+  // Compared case-insensitively, because HTTP header names are.
+  const lowercased = new Set(Object.keys(headers).map((name) => name.toLowerCase()));
   for (const forbidden of FORBIDDEN_HEADERS) {
-    if (forbidden in headers) {
+    if (lowercased.has(forbidden)) {
       throw new Error(`refusing to send client-asserted identity header: ${forbidden}`);
     }
   }

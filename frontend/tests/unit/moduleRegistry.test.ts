@@ -6,14 +6,31 @@ import { REGISTERED_MODULES } from "@app/registeredModules";
 import { DEMO_PERMISSIONS, demoModule } from "@features/demo/module";
 
 describe("module registry", () => {
-  it("registers exactly one module in a standalone build", () => {
-    expect(REGISTERED_MODULES).toHaveLength(1);
-    expect(REGISTERED_MODULES[0]?.id).toBe("M00");
+  it("registers every implemented module when none is selected", () => {
+    // A standalone build sets VITE_SCHOOL_MODULE_ID to serve one module; with no
+    // selection (the integrated case) every implemented module is registered.
+    expect(REGISTERED_MODULES.map((module) => module.id)).toEqual(["M00", "M01"]);
+  });
+
+  it("every registered module declares a valid shape", () => {
+    for (const module of REGISTERED_MODULES) {
+      expect(() => validateModule(module)).not.toThrow();
+    }
   });
 
   it("builds navigation from each feature's own metadata", () => {
     const routes = navigationRoutes(REGISTERED_MODULES);
-    expect(routes.map((route) => route.navLabelKey)).toEqual(["nav.demo"]);
+    expect(routes.map((route) => route.navLabelKey)).toEqual([
+      "nav.demo",
+      "nav.security",
+      "nav.roles",
+    ]);
+  });
+
+  it("omits routes that carry no nav label", () => {
+    // Login is reached when unauthenticated, not chosen from a menu.
+    const paths = navigationRoutes(REGISTERED_MODULES).map((route) => route.path);
+    expect(paths).not.toContain("/login");
   });
 
   it.each([
@@ -23,13 +40,32 @@ describe("module registry", () => {
     expect(() => validateModule(broken as FeatureModule)).toThrow();
   });
 
-  it("rejects a route requiring another module's permission", () => {
+  it("rejects a route requiring a permission outside the module's prefixes", () => {
+    // Ownership is declared as prefixes now, matching the backend registration.
     expect(() =>
       validateModule({
         ...demoModule,
         routes: [{ path: "/demo", component: () => null, requiredPermission: "fees.read_invoice" }],
       }),
-    ).toThrow(/namespaced/);
+    ).toThrow(/owned/);
+  });
+
+  it("accepts a multi-segment permission inside a declared prefix", () => {
+    expect(() =>
+      validateModule({
+        id: "M01",
+        slug: "access",
+        apiPrefix: "/api/v1/",
+        permissionPrefixes: ["auth."],
+        routes: [
+          {
+            path: "/settings/security",
+            component: () => null,
+            requiredPermission: "auth.factor.manage_self",
+          },
+        ],
+      }),
+    ).not.toThrow();
   });
 
   it("rejects a relative route path", () => {
