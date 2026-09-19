@@ -57,9 +57,7 @@ class FakeRegistry:
             relationship = (
                 Relationship.CLASS_TEACHER
                 if any(
-                    a.teacher_id == actor
-                    and a.section_id == section_id
-                    and a.is_class_teacher
+                    a.teacher_id == actor and a.section_id == section_id and a.is_class_teacher
                     for a in fixtures.TEACHER_ASSIGNMENTS
                 )
                 else Relationship.ASSIGNED_TEACHER

@@ -8,8 +8,9 @@ from __future__ import annotations
 
 import base64
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Generic, Sequence, TypeVar
+from typing import TypeVar
 
 ItemT = TypeVar("ItemT")
 
@@ -20,7 +21,7 @@ DEFAULT_PAGE_SIZE = 50
 
 
 @dataclass(frozen=True, slots=True)
-class Page(Generic[ItemT]):
+class Page[ItemT]:
     """One page of results plus the cursor for the next.
 
     ``next_cursor`` is None exactly when there are no further rows.
@@ -65,7 +66,10 @@ def decode_cursor(cursor: str) -> dict[str, object]:
         decoded = json.loads(raw)
     except Exception as exc:
         raise ValueError("malformed cursor") from exc
-    if not isinstance(decoded, dict):
+    if not isinstance(decoded, dict) or not decoded:
+        # An empty object is not a position. Rejecting it here makes a
+        # hand-edited cursor a 422 at the boundary rather than a KeyError deep
+        # inside the keyset comparison.
         raise ValueError("malformed cursor")
     return decoded
 

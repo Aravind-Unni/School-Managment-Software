@@ -69,7 +69,7 @@ class ScopeFacts:
         resource_school_id: UUID,
         facts: RelationshipFacts,
         subject_id: UUID | None = None,
-    ) -> "ScopeFacts":
+    ) -> ScopeFacts:
         """Fold Registry's RelationshipFacts into ScopeFacts.
 
         This is the only sanctioned way to populate ``relationship``; doing it

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 
 class FixedClock:
@@ -18,7 +18,7 @@ class FixedClock:
         The default is inside the fixture school term so date-sensitive code
         behaves the same in every test that does not care about the date.
         """
-        self._instant = instant or datetime(2026, 7, 15, 4, 30, tzinfo=timezone.utc)
+        self._instant = instant or datetime(2026, 7, 15, 4, 30, tzinfo=UTC)
         if self._instant.tzinfo is None:
             raise ValueError("clock instant must be timezone-aware UTC")
 

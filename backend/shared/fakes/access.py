@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import timedelta
-from uuid import UUID
 
 from contracts.errors import ActionDenied, ObjectInaccessible, StaleAuth
 from contracts.identity import AuthLevel, RequestContext
@@ -43,24 +42,37 @@ class PolicyRule:
 
 
 #: The fake's entire policy. Deliberately small: it exists to exercise the
-#: shapes (self / guardian / assigned teacher / staff, fresh vs stale 2FA), not
-#: to model the real school's permission set, which M01 owns.
+#: shapes -- school-scoped staff action, relationship-gated read, and a write
+#: needing fresh 2FA -- not to model the real school's permission set, which M01
+#: owns.
+#:
+#: An empty ``allowed_relationships`` means the rule is school-scoped and does
+#: not consider the actor-subject relationship at all. That distinction matters:
+#: a collection endpoint has no single subject, so a relationship-gated rule
+#: would deny every list call.
 POLICY_RULES: tuple[PolicyRule, ...] = (
-    # A person, or their guardian, may read that person's own records.
+    # Listing is school-scoped staff work: no subject, so no relationship.
     PolicyRule(
-        action="demo.read_own_note",
-        allowed_relationships=frozenset({Relationship.SELF, Relationship.GUARDIAN}),
+        action="demo.list_notes",
+        allowed_relationships=frozenset(),
     ),
-    # An assigned teacher may read notes for a section they teach.
+    # Reading one note: the subject, their guardian, or a teacher of their
+    # section. This is the rule that makes G2 -> S1 a 403.
     PolicyRule(
-        action="demo.read_section_note",
+        action="demo.read_note",
         allowed_relationships=frozenset(
-            {Relationship.ASSIGNED_TEACHER, Relationship.CLASS_TEACHER}
+            {
+                Relationship.SELF,
+                Relationship.GUARDIAN,
+                Relationship.ASSIGNED_TEACHER,
+                Relationship.CLASS_TEACHER,
+            }
         ),
     ),
-    # Writing requires an assigned teacher AND recently asserted 2FA.
+    # Writing: teachers only, and only with recently asserted 2FA. A guardian
+    # who may read is deliberately still denied here.
     PolicyRule(
-        action="demo.write_section_note",
+        action="demo.write_note",
         allowed_relationships=frozenset(
             {Relationship.ASSIGNED_TEACHER, Relationship.CLASS_TEACHER}
         ),
@@ -173,7 +185,9 @@ class FakeAccess:
         return now_utc()
 
 
-def stale_context(context: RequestContext, *, older_than: timedelta | None = None) -> RequestContext:
+def stale_context(
+    context: RequestContext, *, older_than: timedelta | None = None
+) -> RequestContext:
     """Return a copy of ``context`` whose 2FA is deliberately too old.
 
     Convenience for tests asserting the 401 path. Default age is one minute

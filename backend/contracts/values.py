@@ -11,7 +11,7 @@ proration (M07 owns that and must declare it in its own contract).
 
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from decimal import Decimal, InvalidOperation
 from zoneinfo import ZoneInfo
 
@@ -29,7 +29,7 @@ def now_utc() -> datetime:
     Does not handle: test freezing. Tests inject a ClockPort instead of
     monkeypatching this, so that frozen time is explicit at the call site.
     """
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def school_date(instant: datetime) -> date:

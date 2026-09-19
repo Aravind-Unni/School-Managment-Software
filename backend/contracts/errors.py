@@ -11,9 +11,9 @@ or logging.
 from __future__ import annotations
 
 import enum
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Mapping
 
 
 class ErrorCode(enum.StrEnum):
@@ -79,6 +79,7 @@ class ContractError(Exception):
         *,
         field_errors: tuple[FieldError, ...] = (),
     ) -> None:
+        """Record the stable message key and any field-scoped problems."""
         super().__init__(message_key)
         self.message_key = message_key
         self.field_errors = field_errors
@@ -136,6 +137,7 @@ class VersionConflict(ContractError):
         expected_version: int | None = None,
         actual_version: int | None = None,
     ) -> None:
+        """Record both versions so the client can show a useful conflict."""
         super().__init__(message_key)
         self.expected_version = expected_version
         self.actual_version = actual_version
@@ -177,7 +179,6 @@ class ErrorEnvelope:
             "message_key": self.message_key,
             "request_id": self.request_id,
             "field_errors": [
-                {"field": fe.field, "message_key": fe.message_key}
-                for fe in self.field_errors
+                {"field": fe.field, "message_key": fe.message_key} for fe in self.field_errors
             ],
         }

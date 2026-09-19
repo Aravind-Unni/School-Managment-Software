@@ -8,7 +8,7 @@ grant checks would let a module ship an unauthorised download path.
 from __future__ import annotations
 
 import hashlib
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from contracts.errors import ActionDenied
@@ -62,7 +62,7 @@ class FakeObjectStorage:
             content_type=content_type,
             byte_size=len(body),
             sha256=hashlib.sha256(body).hexdigest(),
-            uploaded_at=datetime.now(timezone.utc),
+            uploaded_at=datetime.now(UTC),
         )
 
     def signed_read_url(
@@ -79,7 +79,7 @@ class FakeObjectStorage:
         mistakes a module makes when it treats a grant as a formality.
         """
         self._failures.maybe_fail("storage.signed_read_url")
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         if not grant.is_valid_at(now):
             raise ActionDenied("error.grant_expired")
         if grant.school_id != ref.school_id:
@@ -87,8 +87,7 @@ class FakeObjectStorage:
         if grant.resource_id != ref.evidence_id:
             raise ActionDenied("error.grant_resource_mismatch")
         return (
-            f"memory://{ref.storage_key}"
-            f"?grant={grant.grant_id}&expires_in={expires_in_seconds}"
+            f"memory://{ref.storage_key}?grant={grant.grant_id}&expires_in={expires_in_seconds}"
         )
 
     def read(self, ref: EvidenceRef) -> bytes:

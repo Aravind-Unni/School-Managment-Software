@@ -11,7 +11,7 @@ declared here, so an unapproved module cannot self-install by side effect.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 #: Permission codes are '<module_slug>.<verb>_<noun>', lowercase snake.
 PERMISSION_CODE_PATTERN = re.compile(r"^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$")
@@ -87,9 +87,7 @@ class ModuleRegistration:
         if not MODULE_ID_PATTERN.match(self.id):
             raise ValueError(f"module id must be M00..M14: {self.id!r}")
         if not API_PREFIX_PATTERN.match(self.api_prefix):
-            raise ValueError(
-                f"api_prefix must look like '/api/<slug>/': {self.api_prefix!r}"
-            )
+            raise ValueError(f"api_prefix must look like '/api/<slug>/': {self.api_prefix!r}")
         for code in self.permission_codes:
             if not PERMISSION_CODE_PATTERN.match(code):
                 raise ValueError(f"malformed permission code: {code!r}")

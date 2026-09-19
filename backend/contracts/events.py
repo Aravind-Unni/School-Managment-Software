@@ -10,9 +10,10 @@ owns those; this is only the record shape.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Mapping
+from types import MappingProxyType
 from uuid import UUID
 
 #: Bumped only by a reviewed contract revision.
@@ -41,11 +42,15 @@ class EventEnvelope:
     envelope_version: int = EVENT_ENVELOPE_VERSION
 
     def __post_init__(self) -> None:
-        """Require a dotted, module-namespaced event_type and aware timestamp."""
+        """Freeze the payload and require a namespaced type and aware timestamp.
+
+        The payload is copied into a read-only mapping: a frozen dataclass still
+        shares a mutable dict with its caller, so without this an event already
+        appended to the outbox could be altered through the caller's reference.
+        """
+        object.__setattr__(self, "payload", MappingProxyType(dict(self.payload)))
         if "." not in self.event_type:
-            raise ValueError(
-                f"event_type must be '<module>.<event>': {self.event_type!r}"
-            )
+            raise ValueError(f"event_type must be '<module>.<event>': {self.event_type!r}")
         if self.occurred_at.tzinfo is None:
             raise ValueError("occurred_at must be timezone-aware UTC")
 
@@ -80,6 +85,11 @@ class AuditRecord:
     request_id: str
     before: Mapping[str, object] = field(default_factory=dict)
     after: Mapping[str, object] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        """Freeze the before/after mappings against later caller mutation."""
+        object.__setattr__(self, "before", MappingProxyType(dict(self.before)))
+        object.__setattr__(self, "after", MappingProxyType(dict(self.after)))
 
     def to_wire(self) -> dict[str, object]:
         """Serialise for the audit table and rollback assertions."""

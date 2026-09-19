@@ -7,8 +7,8 @@ than a disabled credential.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 from uuid import UUID, uuid4
 
 from contracts.identity import RequestContext

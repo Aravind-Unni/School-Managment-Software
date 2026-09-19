@@ -13,8 +13,8 @@ supplies factories, so this registry stays free of module imports.
 from __future__ import annotations
 
 import enum
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from typing import Callable, Mapping
 
 
 class AdapterKind(enum.StrEnum):
@@ -91,8 +91,7 @@ class PortRegistry:
         """
         if self.is_production and kind is AdapterKind.FAKE:
             raise ProductionSafetyError(
-                f"refusing to bind fake adapter for port {port_name!r} "
-                "under APP_ENV=production"
+                f"refusing to bind fake adapter for port {port_name!r} under APP_ENV=production"
             )
         if port_name in self._bindings:
             raise ValueError(f"port {port_name!r} is already bound")
@@ -148,6 +147,4 @@ class PortRegistry:
         if demo_fixtures_enabled:
             problems.append("demo fixtures are enabled")
         if problems:
-            raise ProductionSafetyError(
-                "production startup refused: " + "; ".join(problems)
-            )
+            raise ProductionSafetyError("production startup refused: " + "; ".join(problems))

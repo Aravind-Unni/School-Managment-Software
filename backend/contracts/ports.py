@@ -11,8 +11,9 @@ there is no HTTP between modules.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime
-from typing import Protocol, Sequence, runtime_checkable
+from typing import Protocol, runtime_checkable
 from uuid import UUID
 
 from .events import AuditRecord, EventEnvelope

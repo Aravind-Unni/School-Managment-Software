@@ -149,6 +149,5 @@ def guards(guardian_id: uuid.UUID, student_id: uuid.UUID) -> bool:
 def teaches(teacher_id: uuid.UUID, section_id: uuid.UUID) -> bool:
     """Return whether the fixture set assigns this teacher to this section."""
     return any(
-        a.teacher_id == teacher_id and a.section_id == section_id
-        for a in TEACHER_ASSIGNMENTS
+        a.teacher_id == teacher_id and a.section_id == section_id for a in TEACHER_ASSIGNMENTS
     )
