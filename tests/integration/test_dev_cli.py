@@ -498,3 +498,117 @@ def test_the_ci_workflow_runs_the_suite_against_real_postgres():
     workflow = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text()
     assert "postgres:17.11-alpine" in workflow
     assert "--ds=config.settings.standalone" in workflow
+
+
+# --- namespace collision regressions --------------------------------------
+#
+# CI caught a real collision that passed locally: with a long checkout path the
+# joined namespace was truncated to a fixed length, chopping the module id off the
+# end, so M00 and M04 received the SAME database and Compose project. A short
+# local path hid it. These tests pin every part of the fix.
+
+
+@pytest.mark.parametrize(
+    ("developer_name", "checkout_path"),
+    [
+        ("runner", "/home/runner/work/School-Managment-Software/School-Managment-Software"),
+        ("abnvm", "/Users/abnvm/Downloads/aumspro"),
+        ("a-very-long-developer-name-that-overflows", "/tmp/an-extremely-long-worktree-dir"),
+        ("x", "/a"),
+        ("Developer.With-Dots_And-Dashes", "/srv/Some Repo With Spaces"),
+    ],
+)
+def test_every_module_gets_a_distinct_namespace(monkeypatch, developer_name, checkout_path):
+    from harness.naming import ResourceNames
+
+    monkeypatch.setenv("SCHOOL_DEV_NAME", developer_name)
+    root = pathlib.Path(checkout_path)
+    for attribute in ("compose_project", "database", "bucket", "queue", "volume_prefix"):
+        values = {
+            getattr(ResourceNames(module_id=f"M{index:02d}", repo_root=root), attribute)
+            for index in range(0, 15)
+        }
+        assert len(values) == 15, f"{attribute} collided for {developer_name}"
+
+
+@pytest.mark.parametrize(
+    "checkout_path",
+    [
+        "/home/runner/work/School-Managment-Software/School-Managment-Software",
+        "/tmp/an-extremely-long-worktree-directory-name-goes-right-here",
+    ],
+)
+def test_the_module_id_always_survives_namespacing(monkeypatch, checkout_path):
+    from harness.naming import ResourceNames
+
+    monkeypatch.setenv("SCHOOL_DEV_NAME", "a-very-long-developer-name-that-overflows")
+    for index in range(0, 15):
+        module_id = f"M{index:02d}"
+        names = ResourceNames(module_id=module_id, repo_root=pathlib.Path(checkout_path))
+        assert names.stem.endswith(module_id.lower()), names.stem
+
+
+def test_the_worktree_hash_always_survives_namespacing(monkeypatch):
+    """Two worktrees sharing a directory name differ only by the hash."""
+    from harness.naming import ResourceNames
+
+    monkeypatch.setenv("SCHOOL_DEV_NAME", "a-very-long-developer-name-that-overflows")
+    first = ResourceNames(
+        module_id="M14", repo_root=pathlib.Path("/home/dev/one/School-Managment-Software")
+    )
+    second = ResourceNames(
+        module_id="M14", repo_root=pathlib.Path("/home/dev/two/School-Managment-Software")
+    )
+    assert first.database != second.database
+
+
+@pytest.mark.parametrize(
+    "developer_name",
+    ["runner", "abnvm", "a-very-long-developer-name-that-overflows", "ci"],
+)
+def test_every_derived_name_fits_postgres_identifier_limits(monkeypatch, developer_name):
+    from harness.naming import ResourceNames
+
+    monkeypatch.setenv("SCHOOL_DEV_NAME", developer_name)
+    root = pathlib.Path("/home/runner/work/School-Managment-Software/School-Managment-Software")
+    for index in range(0, 15):
+        names = ResourceNames(module_id=f"M{index:02d}", repo_root=root)
+        # The longest identifier actually created is the postgres volume name.
+        assert len(f"{names.volume_prefix}_postgres") <= 63
+        assert len(names.database) <= 63
+
+
+def test_an_over_budget_namespace_raises_rather_than_colliding(monkeypatch):
+    """Refusing to start beats two stacks silently sharing one database."""
+    from harness import naming
+
+    monkeypatch.setattr(naming, "MAX_STEM_LENGTH", 8)
+    monkeypatch.setenv("SCHOOL_DEV_NAME", "developer")
+    names = naming.ResourceNames(module_id="M04", repo_root=pathlib.Path("/tmp/some-repo"))
+    with pytest.raises(ValueError, match="over the 8 budget"):
+        _ = names.stem
+
+
+# --- interpreter resolution regression ------------------------------------
+
+
+def test_the_suites_resolve_an_interpreter_without_a_venv():
+    """CI installs from the lockfiles into the runner's Python, not into .venv.
+
+    Without a fallback, `check --suite contracts` reported the contract tests as
+    "not run" on every CI machine, which failed the build for the wrong reason.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("dev_cli_interp", DEV_PY)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+
+    resolved = module.test_interpreter()
+    assert resolved is not None
+    # Whatever it picked must actually be able to run pytest.
+    assert (
+        subprocess.run([str(resolved), "-c", "import pytest"], capture_output=True).returncode
+        == 0
+    )

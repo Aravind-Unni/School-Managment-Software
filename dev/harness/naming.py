@@ -23,7 +23,28 @@ import subprocess
 #: effectively limited to 63 bytes. Bucket names are stricter still, so the
 #: sanitiser targets the intersection.
 SAFE_CHARS = re.compile(r"[^a-z0-9]+")
+
+#: Budget for the composed stem. PostgreSQL identifiers are limited to 63 bytes,
+#: and the longest thing built from a stem is
+#: "school_" + stem + "_data_postgres" = 7 + 40 + 14 = 61.
+MAX_STEM_LENGTH = 40
+#: Per-component budgets. These sum to 36, leaving headroom inside MAX_STEM_LENGTH.
+#: They are enforced individually so that truncation can NEVER reach the module
+#: id, which is the part that distinguishes one stack from another.
+MAX_DEVELOPER_LENGTH = 12
+MAX_WORKTREE_NAME_LENGTH = 12
+WORKTREE_HASH_LENGTH = 6
+#: Retained for callers that sanitise a single free-form token.
 MAX_IDENTIFIER_LENGTH = 40
+
+
+def _bounded(raw: str, limit: int, fallback: str) -> str:
+    """Sanitise ``raw`` and truncate it to ``limit``, never returning empty.
+
+    Truncation happens per component, not on the joined namespace. Trimming the
+    joined string is what allowed the module id to be chopped off entirely.
+    """
+    return SAFE_CHARS.sub("_", raw.strip().lower()).strip("_")[:limit].strip("_") or fallback
 
 
 def developer() -> str:
@@ -35,9 +56,9 @@ def developer() -> str:
     """
     explicit = os.environ.get("SCHOOL_DEV_NAME", "").strip()
     if explicit:
-        return sanitise(explicit)
+        return _bounded(explicit, MAX_DEVELOPER_LENGTH, "anon")
     try:
-        return sanitise(getpass.getuser())
+        return _bounded(getpass.getuser(), MAX_DEVELOPER_LENGTH, "anon")
     except Exception:
         return "anon"
 
@@ -45,16 +66,19 @@ def developer() -> str:
 def worktree_label(repo_root: pathlib.Path) -> str:
     """Return a short, stable label for this checkout or worktree.
 
-    Combines the directory name with a hash of its absolute path. The hash is
-    what distinguishes two worktrees that happen to share a directory name, which
-    the bare name alone would not.
+    Combines a BOUNDED directory name with a hash of the absolute path. The hash
+    is the real discriminator -- two worktrees sharing a directory name differ
+    only there -- so the name is truncated and the hash never is.
 
     Does not handle: renaming a worktree. That produces a new label and therefore
     new resources; the old ones remain until ``down`` is run, which is the safe
     direction to fail.
     """
-    digest = hashlib.sha256(str(repo_root.resolve()).encode()).hexdigest()[:6]
-    return f"{sanitise(repo_root.name)}_{digest}"
+    digest = hashlib.sha256(str(repo_root.resolve()).encode()).hexdigest()[
+        :WORKTREE_HASH_LENGTH
+    ]
+    name = sanitise(repo_root.name)[:MAX_WORKTREE_NAME_LENGTH].strip("_") or "wt"
+    return f"{name}_{digest}"
 
 
 def git_branch(repo_root: pathlib.Path) -> str:
@@ -100,11 +124,36 @@ class ResourceNames:
         self.developer = developer()
         self.worktree = worktree_label(repo_root)
         self.repo_root = repo_root
+        self._worktree_digest = self.worktree.rsplit("_", 1)[-1]
 
     @property
     def stem(self) -> str:
-        """Return the shared prefix all this triple's resources derive from."""
-        return sanitise(f"{self.developer}_{self.worktree}_{self.module_id}")
+        """Return the shared prefix all this triple's resources derive from.
+
+        Composed from parts that are each already within budget, so the joined
+        string is never truncated. Every discriminating component survives: the
+        worktree hash (which is what separates two worktrees sharing a directory
+        name) and the module id (which separates two modules).
+
+        An earlier version sanitised the whole joined string and trimmed it to a
+        fixed length. With a long checkout path that chopped the module id off, so
+        M00 and M04 received the SAME database and Compose project. CI caught it;
+        a short local path had hidden it entirely.
+
+        Raises ValueError if a discriminator is missing, because silently sharing
+        a database between two stacks is worse than refusing to start.
+        """
+        composed = f"{self.developer}_{self.worktree}_{self.module_id.lower()}"
+        if len(composed) > MAX_STEM_LENGTH:
+            raise ValueError(
+                f"resource namespace {composed!r} is {len(composed)} characters, "
+                f"over the {MAX_STEM_LENGTH} budget; component caps are wrong"
+            )
+        if not composed.endswith(self.module_id.lower()):
+            raise ValueError(f"module id lost while composing {composed!r}")
+        if self._worktree_digest not in composed:
+            raise ValueError(f"worktree hash lost while composing {composed!r}")
+        return composed
 
     @property
     def compose_project(self) -> str:

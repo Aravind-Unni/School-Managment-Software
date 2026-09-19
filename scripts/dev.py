@@ -133,6 +133,27 @@ def venv_python() -> pathlib.Path | None:
     return candidate if candidate.exists() else None
 
 
+def test_interpreter() -> pathlib.Path | None:
+    """Return an interpreter that can run the suites, or None.
+
+    Prefers the project virtual environment. Falls back to the CURRENT
+    interpreter when it already has pytest importable -- which is the situation in
+    CI, where dependencies are installed from the lockfiles into the runner's
+    Python rather than into a .venv. Without this fallback `check` reported the
+    contract tests as "not run" on every CI machine.
+
+    Returns None when neither can run pytest, so the caller still records an
+    honest "not run" rather than skipping silently.
+    """
+    candidate = venv_python()
+    if candidate is not None:
+        return candidate
+    probe = subprocess.run(
+        [sys.executable, "-c", "import pytest"], capture_output=True, text=True
+    )
+    return pathlib.Path(sys.executable) if probe.returncode == 0 else None
+
+
 def resolve(module_id: str) -> modules.ModuleDeclaration:
     """Load a module declaration, exiting cleanly on a bad id."""
     try:
@@ -226,10 +247,10 @@ def run_django(
     running Django from the system interpreter would ignore the committed
     lockfiles and make a result unreproducible.
     """
-    interpreter = venv_python()
+    interpreter = test_interpreter()
     if interpreter is None:
         fail(
-            "the project virtual environment is missing (.venv/bin/python).",
+            "no interpreter with the project dependencies installed.",
             hint=(
                 "uv venv --python 3.12 .venv\n"
                 "VIRTUAL_ENV=.venv uv pip install -r backend/requirements.txt "
@@ -314,8 +335,14 @@ def command_doctor(_arguments: argparse.Namespace) -> int:
         warnings.append("Node is absent; frontend checks cannot run on the host.")
 
     interpreter_path = venv_python()
-    say(f"  .venv            {'present' if interpreter_path else 'MISSING'}")
-    if interpreter_path is None:
+    resolved = test_interpreter()
+    if interpreter_path is not None:
+        say("  .venv            present")
+    elif resolved is not None:
+        # CI installs from the lockfiles into the runner's Python; that is fine.
+        say(f"  .venv            absent, using {resolved} (has pytest)")
+    else:
+        say("  .venv            MISSING")
         problems.append("Create .venv and install from the committed lockfiles.")
 
     say("")
@@ -696,7 +723,7 @@ def _check_contracts(declaration, names) -> int:
         ("contract manifest", [sys.executable, "scripts/contract_manifest.py", "--check"]),
         ("architecture", [sys.executable, "scripts/arch_check.py"]),
     ]
-    interpreter = venv_python()
+    interpreter = test_interpreter()
     if interpreter is not None:
         steps.append(
             (
@@ -713,7 +740,10 @@ def _check_contracts(declaration, names) -> int:
         outcomes[label] = "passed" if status == 0 else f"failed (exit {status})"
         ok = ok and status == 0
     if interpreter is None:
-        outcomes["contract tests"] = "not run (.venv missing)"
+        outcomes["contract tests"] = (
+            "not run (no interpreter with pytest: neither .venv nor the current "
+            "interpreter can import it)"
+        )
         ok = False
 
     path = evidence.write_report(
@@ -740,13 +770,13 @@ def _check_standalone(declaration, names, profile: str) -> int:
     require_implemented(declaration)
 
     allocated = ports.PortAllocation(repo_root=REPO_ROOT, stem=names.stem).load()
-    interpreter = venv_python()
+    interpreter = test_interpreter()
 
     if "postgres" not in allocated or interpreter is None:
         reason = (
             "no running stack; start it with dev.py up"
             if "postgres" not in allocated
-            else "the project virtual environment is missing"
+            else "no interpreter with pytest available"
         )
         evidence.write_report(
             repo_root=REPO_ROOT,

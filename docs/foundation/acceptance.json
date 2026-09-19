@@ -35,11 +35,12 @@
     "python": {
       "command": ".venv/bin/python -m pytest tests -q",
       "backend": "sqlite-local-only (config.settings.test_sqlite)",
-      "passed": 270,
+      "passed": 284,
       "failed": 0,
-      "total": 270,
+      "total": 284,
       "exit_status": 0,
-      "caveat": "This profile CANNOT prove PostgreSQL behaviour, PostgreSQL migrations, worker/broker behaviour, or resource isolation. The CI backend job runs the same suite against real PostgreSQL and is authoritative."
+      "caveat": "This profile CANNOT prove PostgreSQL behaviour, PostgreSQL migrations, worker/broker behaviour, or resource isolation. The CI backend job runs the same suite against real PostgreSQL and is authoritative.",
+      "note": "284 after adding the regression tests for the two defects CI found."
     },
     "frontend_unit": {
       "command": "npx vitest run",
@@ -162,6 +163,26 @@
       "criterion": "Two simultaneous profiles get isolated resources",
       "how": "namespacing is unit-tested across modules and worktrees for project, database, bucket, queue and volume names; generated Compose files were rendered and parsed for every module",
       "status": "PARTIALLY_VERIFIED -- names and rendered files proven; two stacks were never actually run at once"
+    },
+    {
+      "criterion": "Both container images build from lockfiles",
+      "how": "CI containers job built infra/backend.Dockerfile (pip --require-hashes) and infra/frontend.Dockerfile (npm ci) on run 35418749812",
+      "status": "VERIFIED_IN_CI"
+    },
+    {
+      "criterion": "Every base image is pinned by digest",
+      "how": "CI containers job asserts all 5 digests are well-formed sha256",
+      "status": "VERIFIED_IN_CI"
+    },
+    {
+      "criterion": "Generated Compose files are valid for every module",
+      "how": "CI containers job renders all 15 module stacks and parses the YAML",
+      "status": "VERIFIED_IN_CI"
+    },
+    {
+      "criterion": "Migrations apply to real PostgreSQL with no model drift",
+      "how": "CI backend job ran makemigrations --check --dry-run and migrate --noinput against postgres 17.11; both passed",
+      "status": "VERIFIED_IN_CI"
     }
   ],
   "unverified_criteria": [
@@ -191,9 +212,9 @@
     },
     {
       "criterion": "CI passes end to end",
-      "blocker": "The workflow has never executed; it runs on first push.",
-      "what_exists": ".github/workflows/ci.yml with five jobs. Its YAML is validated and every flag it depends on was verified locally.",
-      "how_to_verify": "Push the branch and read the run."
+      "blocker": "First run (35418749812) had 4 of 5 jobs green; the backend job failed and exposed two real defects, now fixed. A re-run is needed to confirm all five.",
+      "what_exists": "contracts, guards, frontend and containers all passed. backend reached and passed migration checks, then failed in the suite.",
+      "how_to_verify": "Read the run triggered by the follow-up push."
     }
   ],
   "known_gaps": [
@@ -212,5 +233,30 @@
     "merged": false,
     "deployed": false,
     "note": "Never merge or deploy automatically. After explicit review and merge, normal module work starts from main."
+  },
+  "ci_first_run": {
+    "run_id": 35418749812,
+    "url": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35418749812",
+    "results": {
+      "contracts and architecture": "success",
+      "guards reject real violations": "success",
+      "frontend": "success",
+      "container images build": "success",
+      "backend suite on real PostgreSQL": "failure"
+    },
+    "defects_it_found": [
+      {
+        "defect": "Resource namespace collision -- CRITICAL",
+        "detail": "ResourceNames.stem sanitised the joined developer_worktree_module string and truncated it to 40 characters. On CI the checkout path is long, so the module id was chopped off the end and M00, M04 and M14 all resolved to the SAME Compose project and database. This directly violated 'two simultaneous module profiles have isolated resources'. It passed locally only because this machine's worktree name is short.",
+        "fix": "The namespace is now composed from individually-bounded components, so the joined string is never truncated and both discriminators -- the worktree hash and the module id -- always survive. stem() raises rather than returning a name that lost either.",
+        "regression_tests": "15 modules x 5 resource kinds x 5 developer/path shapes asserted distinct; module-id survival, worktree-hash survival, PostgreSQL identifier limits, and an over-budget namespace raising instead of colliding."
+      },
+      {
+        "defect": "dev.py assumed a .venv existed",
+        "detail": "check --suite contracts reported the contract tests as 'not run' on every CI machine, because CI installs from the lockfiles into the runner's Python rather than into .venv. The build failed for the wrong reason.",
+        "fix": "test_interpreter() prefers .venv and falls back to the current interpreter when it can import pytest, still returning None (an honest 'not run') when neither can.",
+        "regression_tests": "test_the_suites_resolve_an_interpreter_without_a_venv"
+      }
+    ]
   }
 }

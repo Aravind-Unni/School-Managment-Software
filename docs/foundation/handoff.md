@@ -88,6 +88,17 @@ type either way. **Your module needs no change for this**, which is the point.
   aliased the caller's payload dict. Copy into a read-only mapping.
 - **zsh does not word-split unquoted variables.** A `for x in $LIST` loop in a
   setup script creates one directory with spaces in its name.
+- **Never truncate a composed identifier.** `ResourceNames.stem` originally
+  sanitised `developer_worktree_module` and trimmed the result to 40 characters.
+  On a long checkout path that silently removed the module id, so **M00 and M04
+  shared one database** — the exact opposite of the isolation the namespacing
+  exists to provide. It passed on a short local path and was caught only by CI.
+  Bound each component individually and keep every discriminator; `stem()` now
+  raises if the module id or the worktree hash is missing. If you add a component,
+  add it to the budget, do not trim the join.
+- **Do not assume `.venv` exists.** CI installs from the lockfiles into the
+  runner's own Python. `dev.py` resolves an interpreter via `test_interpreter()`;
+  use it rather than hardcoding the venv path.
 
 ## 5. Starting a business module
 

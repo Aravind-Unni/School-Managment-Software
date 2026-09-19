@@ -40,12 +40,44 @@ Exact outcomes, source identity and the verified/unverified split live in
 ## Test numbers as last recorded
 
 ```
-python   270 passed / 270    (local SQLite profile)
+python   284 passed / 284    (local SQLite profile)
 frontend  38 passed / 38
 static   ruff check, ruff format, arch_check (7), manifest, eslint, tsc,
          vite build, makemigrations --check, spectacular --fail-on-warn  -- all clean
 browser  NOT RUN (no container engine; recorded as not-run, not as passing)
 ```
+
+## CI first run — and the two defects it caught
+
+Run [35418749812](https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35418749812):
+**4 of 5 jobs green.** `contracts`, `guards`, `frontend` and `containers` passed.
+`backend` failed — and it was right to.
+
+**1. Resource namespace collision (critical).** `ResourceNames.stem` sanitised the
+joined `developer_worktree_module` string and truncated it to 40 characters. CI's
+checkout path is long, so the module id was chopped off the end and **M00, M04 and
+M14 all resolved to the same Compose project and database.** That is a direct
+violation of "two simultaneous module profiles have isolated resources". It passed
+locally only because this machine's worktree name is short.
+
+Fixed: the namespace is composed from individually-bounded components, so the
+joined string is never truncated and both discriminators — the worktree hash and
+the module id — always survive. `stem()` now raises rather than returning a name
+that lost either, because refusing to start beats two stacks silently sharing one
+database.
+
+**2. `dev.py` assumed a `.venv` existed.** CI installs from the lockfiles into the
+runner's Python, so `check --suite contracts` reported the contract tests as "not
+run" and failed the build for the wrong reason. `test_interpreter()` now falls back
+to the current interpreter when it can import pytest, and still returns an honest
+"not run" when nothing can.
+
+14 regression tests cover both, including 15 modules × 5 resource kinds × 5
+developer/path shapes asserted mutually distinct.
+
+Also now genuinely verified **in CI**: both Dockerfiles build from lockfiles, all
+five images are digest-pinned, every module's generated Compose file parses, and
+migrations apply to real PostgreSQL 17.11 with no model drift.
 
 ## What is NOT verified
 
@@ -63,7 +95,8 @@ claiming them:
 - worker crash/retry behaviour
 - two simultaneous stacks actually running at once (names and rendered Compose
   files are proven; running them is not)
-- CI passing end to end — the workflow has never executed
+- CI passing end to end — 4 of 5 jobs are green; the `backend` job needs a
+  re-run to confirm the two fixes
 
 `doctor` reports the missing engine and exits 2, which is the honest-failure
 behaviour B00 asks for.
