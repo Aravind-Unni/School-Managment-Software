@@ -180,8 +180,14 @@ def test_no_business_module_contract_is_frozen_yet():
         if module_id == "M00":
             assert module["status"] == "frozen"
             continue
-        assert module["status"] == "not_started", module_id
-        assert module["artefacts"] == [], module_id
+        # A module in progress legitimately has artefacts; what must not happen is
+        # any of them being FROZEN, because freezing is a human review gate.
+        for entry in module["artefacts"] + module["fixtures"]:
+            assert entry["frozen"] is False, (module_id, entry["id"])
+        if module["artefacts"]:
+            assert module["status"] in {"not_started", "in_progress"}, module_id
+        else:
+            assert module["status"] == "not_started", module_id
 
 
 @pytest.mark.parametrize("module_id", [f"M{index:02d}" for index in range(1, 15)])

@@ -727,20 +727,42 @@ def _check_contracts(declaration, names) -> int:
     if interpreter is not None:
         steps.append(
             (
-                "contract tests",
+                "shared contract tests",
                 [str(interpreter), "-m", "pytest", "tests/contracts", "-q"],
             )
         )
+        # The module's OWN contract tests, if it has any. Running only the shared
+        # ones would report a green contracts suite while a module's schema, fixture
+        # or permission assertions were never executed.
+        module_suite = REPO_ROOT / "tests" / "modules" / declaration.module_id
+        if module_suite.is_dir():
+            steps.append(
+                (
+                    f"{declaration.module_id} contract tests",
+                    [
+                        str(interpreter),
+                        "-m",
+                        "pytest",
+                        str(module_suite.relative_to(REPO_ROOT)),
+                        "-q",
+                        "-m",
+                        "contract",
+                    ],
+                )
+            )
 
     outcomes: dict[str, object] = {}
     ok = True
+    # MODULE_ID selects both the settings profile and which module suite pytest
+    # collects, so it must be present for the module's own contract tests.
+    environment = {**os.environ, "MODULE_ID": declaration.module_id}
     for label, command in steps:
         say(f"  {label} ...")
-        status = subprocess.run(command, cwd=REPO_ROOT).returncode
+        status = subprocess.run(command, cwd=REPO_ROOT, env=environment).returncode
         outcomes[label] = "passed" if status == 0 else f"failed (exit {status})"
         ok = ok and status == 0
     if interpreter is None:
-        outcomes["contract tests"] = (
+        outcomes["shared contract tests"] = (
             "not run (no interpreter with pytest: neither .venv nor the current "
             "interpreter can import it)"
         )

@@ -18,7 +18,7 @@ modules or invent school policy.
 | Started from | `1b01e7312e4bf4d0030c0623799863808d112ec2` (`main`, B00 merged) |
 | Manifest revision at start | `school-contracts-v3-draft`, M01 `status: not_started`, zero artefacts |
 | Manifest revision now | `school-contracts-v3-draft` (unchanged); M01 fixtures recorded, **not frozen** |
-| PR | not yet opened |
+| PR | to be opened as a draft |
 
 ## Prerequisite state
 
@@ -49,7 +49,7 @@ Also added `ErrorCode.RATE_LIMITED -> 429` with a finite `Retry-After`. B00's
 invariant is that the code determines the status, so returning 429 under a 422 code
 was not possible.
 
-## Completed behaviour
+## Completed behaviour (steps 1-4)
 
 - **Contract artefacts, authored before coding**: `openapi-seed.yaml` (15
   operations), `schemas/dtos.schema.json` (14 DTOs, every write shape
@@ -73,30 +73,72 @@ was not possible.
 - **Module-aware profiles**: `MODULE_ID` selects the app; **M01 gets no synthetic
   persona** in any profile, because a persona would bypass the login flow.
 
+- **Step 1 — accounts and sessions**: all 11 tables migrated, login with a
+  pre-authentication challenge, session creation and rotation, CSRF double-submit,
+  Secure/HttpOnly/SameSite cookies, throttling by account and address with a
+  progressive but always FINITE cooldown.
+- **Step 2 — TOTP and recovery**: enrolment (including the first-enrolment path for
+  an account that cannot sign in without a factor), activation returning ten
+  one-time recovery codes, replay-proof verification, recovery-code sign-in,
+  lost-device cases approved by a different person.
+- **Step 3 — permissions and delegation**: closed catalogue, pure policy, real
+  Access service, escalation/cycle/last-owner protection, optimistic concurrency,
+  `RoleGrantsChanged.v1` and `FactorReset.v1`.
+- **Step 4 — frontend**: seven screens, 49 message keys in English and Malayalam,
+  generated TypeScript client, seven Playwright journeys.
+- 15 REST endpoints; generated `openapi.yaml` asserted to match the pre-written seed
+  in both directions.
+
+## Test results as last recorded
+
+```
+M01 suite      53 passed, 1 skipped   (SQLite profile; the skip needs PostgreSQL)
+B00 foundation 294 passed             (unchanged by M01)
+frontend        47 passed
+static         ruff, arch_check, manifest, eslint, tsc, vite build,
+               django check, makemigrations --check, spectacular --fail-on-warn
+browser        NOT RUN -- blocker, see below
+```
+
 ## Incomplete behaviour
 
-Not yet written: login/challenge, session, enrolment, recovery and role services;
-the platform facade; throttling; migrations; the 15 REST endpoints; seed scenario;
-`tests/modules/M01/`; the React feature with English/Malayalam screens; the
-Playwright specs; the CI Compose+Playwright job; `handoff.md`; `acceptance.json`;
-generated `openapi.yaml` diffed against the seed.
+- The **browser suite has never executed** (no container engine). A CI
+  `m01-browser` job brings up the real stack via Compose and runs it; it has not run.
+- `up`/`migrate`/`seed` against real containers never executed here.
+- No account-creation or deactivation endpoint yet: `/accounts` is read-only, which
+  is all the acceptance tests need. `accounts.manage` covers the write path when it
+  is added.
+- Factor **replacement** from an existing session is implemented in the service
+  (`disable_factor`, then enrol) but has no REST endpoint or screen yet.
 
 ## Exact next step
 
-Write `services/login.py` (pre-auth challenge, throttling, session creation with
-rotation) and `services/sessions.py`, then `migrations/0001_initial.py`, then
-verify the atomic TOTP replay and the concurrent recovery-code race against a real
-database.
+1. Get the shared contract changes reviewed — see `handoff.md` §4. Everything else
+   waits on that, because a later revision ripples into every module built meanwhile.
+2. Install a container engine, then:
+   ```bash
+   python3 scripts/dev.py up M01 --profile standalone
+   python3 scripts/dev.py migrate M01 --profile standalone
+   python3 scripts/dev.py seed M01 --scenario baseline
+   python3 scripts/dev.py check M01 --suite standalone
+   python3 scripts/dev.py check M01 --suite browser
+   python3 scripts/dev.py evidence M01
+   ```
+3. Move each item from `acceptance.json` → `blockers` only after observing it.
 
 ## Blockers
 
 1. **No container engine.** `up`/`migrate`/`seed` and the browser suite cannot run
-   on this machine (`/usr/local/bin/docker` is a dangling symlink from an
-   uninstalled Docker Desktop). Mitigation agreed: a CI Compose+Playwright job.
-   Until it runs, the browser suite is a **required check that has not passed**, so
-   M01 cannot be marked STANDALONE_VERIFIED.
-2. **Second developer verification from a fresh checkout has not happened** — also
-   required for STANDALONE_VERIFIED.
+   here (`/usr/local/bin/docker` is a dangling symlink from an uninstalled Docker
+   Desktop). A CI `m01-browser` job was built as the agreed mitigation but has not
+   executed. Until it passes, the browser suite is a **required check that has not
+   passed**, which M01 defines as a blocker.
+2. **No second developer has verified from a fresh checkout** — required by the
+   whole-module gate.
+3. **The shared contract changes are unreviewed.** They affect every future module.
+
+**`STANDALONE_VERIFIED` is therefore NOT recorded.** Completed steps do not imply
+it.
 
 ## Pending integration tests (never run against real modules)
 

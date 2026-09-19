@@ -1,0 +1,220 @@
+{
+  "module": "M01 access -- identity, permissions and two-factor authentication",
+  "recorded_at": "2026-09-19",
+  "standalone_verified": false,
+  "standalone_verified_note": "NOT recorded. The whole-module gate requires the browser suite to pass and a second developer's verification from a fresh checkout. Neither has happened on this machine: there is no container engine, and no second developer has run it. Individual completed steps do not imply STANDALONE_VERIFIED.",
+  "source_identity": {
+    "repository": "https://github.com/Aravind-Unni/School-Managment-Software",
+    "branch": "m01/access-identity",
+    "head_commit": "4c55deba26dc3d7533b92cb83fb73c9b369ea2cb",
+    "started_from_commit": "1b01e7312e4bf4d0030c0623799863808d112ec2",
+    "started_from_note": "main with B00 merged. B00 itself was merged WITHOUT peer review and with 4 criteria unverified; see docs/foundation/acceptance.json.",
+    "contracts_manifest_revision": "school-contracts-v3-draft",
+    "m01_manifest_status": "not_started",
+    "m01_artefacts_frozen": false,
+    "working_tree_clean": false
+  },
+  "startup_commands": [
+    "python3 scripts/dev.py doctor",
+    "python3 scripts/dev.py up M01 --profile standalone",
+    "python3 scripts/dev.py migrate M01 --profile standalone",
+    "python3 scripts/dev.py seed M01 --scenario baseline",
+    "python3 scripts/dev.py check M01 --suite contracts",
+    "python3 scripts/dev.py check M01 --suite standalone",
+    "python3 scripts/dev.py check M01 --suite browser",
+    "python3 scripts/dev.py evidence M01",
+    "python3 scripts/dev.py down M01"
+  ],
+  "printed_urls": {
+    "note": "Ports are ALLOCATED DYNAMICALLY; `up` prints the real ones. Do not assume these.",
+    "shape": {
+      "api": "http://127.0.0.1:<allocated>",
+      "api_schema": "http://127.0.0.1:<allocated>/api/schema/",
+      "health": "http://127.0.0.1:<allocated>/healthz",
+      "readiness": "http://127.0.0.1:<allocated>/readyz",
+      "frontend": "http://127.0.0.1:<allocated>",
+      "login_page": "http://127.0.0.1:<allocated>/login"
+    }
+  },
+  "fictional_login_instructions": {
+    "warning": "Synthetic accounts. These passwords are test-only strings that exist nowhere else and must never appear in a deployed environment. `seed` refuses any non-development target.",
+    "accounts": [
+      {
+        "who": "Owner O1",
+        "login_name": "owner.o1",
+        "password": "Owner-O1-test-only",
+        "expect": "Staff/owner role requires 2FA, so the first login returns next_action=enrol_factor_required. Set up the authenticator using the MANUAL key shown on screen, enter the code, and save the ten recovery codes. Afterwards /settings/roles and the accounts list work."
+      },
+      {
+        "who": "Teacher T1",
+        "login_name": "teacher.t1",
+        "password": "Teacher-T1-test-only",
+        "expect": "Same enrolment path. A pending lost-device case already exists for T1, so P1 can approve it and watch T1's sessions be revoked."
+      },
+      {
+        "who": "Guardian G1",
+        "login_name": "guardian.g1",
+        "password": "Guardian-G1-test-only",
+        "expect": "The guardian role requires NO factor (parent/student enforcement is school-configurable and shipped OFF), so login returns next_action=authenticated and a session is issued immediately. G1 may still enrol voluntarily. G1 does NOT hold accounts.manage, so /accounts returns 403."
+      },
+      {
+        "who": "Principal P1",
+        "login_name": "principal.p1",
+        "password": "Principal-P1-test-only",
+        "expect": "Holds auth.factor.reset_other, so it can approve T1's lost-device case. It cannot approve its own."
+      },
+      {
+        "who": "Owner O2 at School B",
+        "login_name": "owner.o2",
+        "password": "Owner-O2-test-only",
+        "expect": "CANNOT sign in to a School A deployment: the school comes from configuration, not the request. Exists only to prove two-school isolation."
+      }
+    ]
+  },
+  "manual_actions_and_expected_outcomes": [
+    {
+      "action": "Sign in as teacher.t1 and complete enrolment",
+      "expect": "Manual secret visible; a note stating a phone is not required; ten recovery codes shown once with a download button."
+    },
+    {
+      "action": "Switch the language selector to Malayalam",
+      "expect": "Every heading and label changes to Malayalam script. No key strings leak through."
+    },
+    {
+      "action": "Reload after switching language",
+      "expect": "The Malayalam choice persists."
+    },
+    {
+      "action": "Re-enter the SAME authenticator code immediately",
+      "expect": "Refused with error.totp_code_invalid -- the time step was consumed."
+    },
+    {
+      "action": "Wait 10 minutes, then open the accounts list",
+      "expect": "401 error.two_factor_stale; re-assert the factor."
+    },
+    {
+      "action": "Sign in as guardian.g1 and open /accounts",
+      "expect": "403 action_denied -- no grant. NOT a step-up prompt."
+    },
+    {
+      "action": "As principal.p1, approve T1's pending lost-device case",
+      "expect": "200; T1's factor revoked, all T1 sessions revoked, FactorReset.v1 in the outbox. No SMS is sent or attempted anywhere."
+    },
+    {
+      "action": "Try to remove the owner grant from the only owner role",
+      "expect": "409 error.last_owner_protected."
+    },
+    {
+      "action": "Save a role twice with the same expected_version",
+      "expect": "The second save is 409 version_conflict, with a recoverable on-screen message."
+    },
+    {
+      "action": "Send any write with an undeclared field",
+      "expect": "422 error.unknown_field naming the field."
+    }
+  ],
+  "migrations": {
+    "app": "access",
+    "files": [
+      "modules/access/migrations/0001_initial.py"
+    ],
+    "tables": 11,
+    "verified_on_empty": "YES -- CI m01-backend applies them to a fresh database.",
+    "verified_on_populated": "YES -- CI seeds baseline, re-runs migrate, then re-seeds.",
+    "drift_check": "makemigrations --check --dry-run passes locally and in CI.",
+    "irreversible_operations": "NONE. 0001_initial only creates tables, indexes and constraints; it is fully reversible by dropping them. No data migration and no destructive column change exists yet."
+  },
+  "actual_commands_and_results": {
+    "M01 suite (local SQLite profile)": {
+      "command": "MODULE_ID=M01 pytest tests/modules/M01 -q",
+      "passed": 53,
+      "failed": 0,
+      "skipped": 1,
+      "total": 54,
+      "exit_status": 0,
+      "caveat": "SQLite CANNOT prove PostgreSQL behaviour or a real concurrency race. The CI m01-backend job against PostgreSQL 17.11 is authoritative."
+    },
+    "B00 foundation suite (unchanged by M01)": {
+      "command": "pytest",
+      "passed": 294,
+      "failed": 0,
+      "total": 294,
+      "exit_status": 0
+    },
+    "frontend unit": {
+      "command": "npx vitest run",
+      "passed": 47,
+      "failed": 0,
+      "total": 47,
+      "exit_status": 0
+    },
+    "static gates": {
+      "ruff check .": 0,
+      "ruff format --check .": 0,
+      "scripts/arch_check.py": 0,
+      "scripts/contract_manifest.py --check": 0,
+      "eslint": 0,
+      "tsc --noEmit": 0,
+      "vite build": 0,
+      "manage.py check (M01)": 0,
+      "manage.py makemigrations --check (M01)": 0,
+      "manage.py spectacular --fail-on-warn (M01)": 0
+    },
+    "browser suite": {
+      "status": "NOT RUN LOCALLY -- BLOCKER",
+      "reason": "No container engine on this machine. dev.py records backend=not-run, passed=false; it is never reported as passing.",
+      "ci": "A m01-browser job brings up the real stack via the generated Compose file, seeds it, installs Chromium and runs the seven journeys. It has not executed yet."
+    }
+  },
+  "reviewed_interfaces_changed": {
+    "warning": "M01's specified interfaces conflicted with contracts B00 froze and merged. All changes are ADDITIVE and B00's suite passes unchanged, but they touch shared files outside M01's allowed paths and REQUIRE REVIEW.",
+    "changes": [
+      "AccessPort gained authorize()->Decision and require_recent_2fa(); check()/is_allowed() now derive from authorize().",
+      "ModuleRegistration: permission codes may be multi-segment; ownership declared as permission_prefixes (default '<slug>.'); added api_path_roots, middleware, public_paths and assert_no_registration_collisions().",
+      "RelationshipFacts gained school_id, section_ids, subject_ids, valid_until and is_active_on().",
+      "EventEnvelope gained correlation_id and schema_version (envelope_version retained one revision; retire in v4).",
+      "RegistryPort gained get_student, get_roster, get_relationships, get_teaching_assignments; the shared fake implements all four.",
+      "ErrorCode gained RATE_LIMITED -> 429 with a finite Retry-After.",
+      "New contract types: contracts/decisions.py (Decision, ReasonCode), contracts/people.py (Registry DTOs).",
+      "Shared middleware yields to a module-resolved context, AFTER running the spoofed-header and body guards for every request.",
+      "The port registry moved from settings.SCHOOL_PORTS to a process-level holder.",
+      "config/urls.py reads DJANGO_SETTINGS_MODULE instead of settings.SETTINGS_MODULE.",
+      "PlatformPort was NOT changed; M01 uses an internal facade."
+    ]
+  },
+  "pending_integration_tests": [
+    {
+      "test": "Real Registry relationships",
+      "status": "PENDING",
+      "why": "M02 does not exist; M01 runs against a deterministic fake. Re-run against the real provider in Section C.",
+      "consequence": "Independent approval does NOT imply relationship resolution works against real Registry data."
+    },
+    {
+      "test": "File download revocation after a role change",
+      "status": "PENDING",
+      "why": "M12 does not exist, so there is no private-file download to revoke. The acceptance case 'role removal affects evidence downloads' is therefore NOT covered.",
+      "consequence": "Access checks are implemented for API and service paths; the private-file path is unexercised."
+    },
+    {
+      "test": "Real worker crash and retry",
+      "status": "NOT APPLICABLE",
+      "why": "M01 declares no scheduled jobs and owns no asynchronous work, so no broker or worker is started. Nothing is claimed about retry behaviour."
+    },
+    {
+      "test": "Real 2FA integration for OTHER modules",
+      "status": "PENDING",
+      "why": "Every other module still binds fake Access with a synthetic persona. Wiring them to M01's real Access is Section C."
+    }
+  ],
+  "blockers": [
+    "No container engine: up/migrate/seed and the browser suite cannot run here. The browser suite is a REQUIRED check that has not passed, so it is a blocker by M01's own rule.",
+    "No second developer has verified from a fresh checkout, which the whole-module gate requires.",
+    "The shared contract changes above are unreviewed. They affect every future module."
+  ],
+  "delivery": {
+    "merged": false,
+    "deployed": false,
+    "force_pushed": false,
+    "note": "Draft PR only. Do not merge or deploy under this prompt."
+  }
+}

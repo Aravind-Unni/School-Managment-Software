@@ -109,7 +109,7 @@ def render(
     if declaration.needs_worker:
         lines += _worker(images, declaration, names, ports, profile)
     if declaration.needs_frontend:
-        lines += _frontend(images, ports)
+        lines += _frontend(images, ports, declaration)
 
     lines += ["", "volumes:"]
     lines += [
@@ -335,7 +335,11 @@ def _worker(
     return lines
 
 
-def _frontend(images: dict[str, str], ports: dict[str, int]) -> list[str]:
+def _frontend(
+    images: dict[str, str],
+    ports: dict[str, int],
+    declaration: ModuleDeclaration | None = None,
+) -> list[str]:
     """Return the Vite dev server block.
 
     VITE_SCHOOL_API_URL points at the HOST-published API port, not the container
@@ -352,6 +356,11 @@ def _frontend(images: dict[str, str], ports: dict[str, int]) -> list[str]:
         "    environment:",
         "      VITE_SCHOOL_API_URL: " + _quote(f"http://127.0.0.1:{ports['api']}"),
         f"      SCHOOL_FRONTEND_PORT: {_quote(FRONTEND_PORT)}",
+        # Tells the bundle which module's feature routes to register. A standalone
+        # profile serves ONE module; without this the frontend would mount every
+        # implemented module's routes while the backend served only one.
+        "      VITE_SCHOOL_MODULE_ID: "
+        + _quote(declaration.module_id if declaration is not None else ""),
         "    ports:",
         f'      - "127.0.0.1:{ports["frontend"]}:{FRONTEND_PORT}"',
         "    volumes:",
