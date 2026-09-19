@@ -66,8 +66,11 @@ def test_each_contract_error_maps_to_its_contracted_status(exception, status):
 
 
 def test_status_map_covers_every_code_and_uses_only_contracted_statuses():
+    # 429 was added with rate_limited in M01. The invariant that matters is
+    # unchanged: every code has exactly one status, and the renderer derives the
+    # status from the code rather than the two being set independently.
     assert set(HTTP_STATUS_BY_CODE) == set(ErrorCode)
-    assert set(HTTP_STATUS_BY_CODE.values()) <= {401, 403, 404, 409, 422}
+    assert set(HTTP_STATUS_BY_CODE.values()) <= {401, 403, 404, 409, 422, 429}
 
 
 def test_code_values_are_stable_strings():
@@ -80,6 +83,7 @@ def test_code_values_are_stable_strings():
         "version_conflict",
         "state_conflict",
         "validation_failed",
+        "rate_limited",
     ]
 
 
@@ -92,3 +96,24 @@ def test_envelope_is_immutable():
     envelope = ErrorEnvelope(ErrorCode.ACTION_DENIED, "error.x", "req-1")
     with pytest.raises(dataclasses.FrozenInstanceError):
         envelope.code = ErrorCode.VALIDATION_FAILED  # type: ignore[misc]
+
+
+def test_rate_limited_renders_429_and_carries_a_finite_retry_hint():
+    """A throttled client must be told how long to wait.
+
+    The cooldown is always finite: a permanent lockout would let an attacker deny
+    a legitimate user access to their own account.
+    """
+    from contracts.errors import RateLimited
+
+    error = RateLimited(retry_after_seconds=45)
+    assert error.http_status == 429
+    assert error.code is ErrorCode.RATE_LIMITED
+    assert error.retry_after_seconds == 45
+    assert error.message_key == "error.too_many_attempts"
+
+
+def test_rate_limited_has_a_default_cooldown():
+    from contracts.errors import RateLimited
+
+    assert RateLimited().retry_after_seconds > 0

@@ -30,7 +30,7 @@
       "kind": "json-schema",
       "owner": "foundation (B00)",
       "path": "contracts/common/error-envelope.schema.json",
-      "sha256": "e6952e7781b1b2a9f91ebedff52b2267fa3fbc9c39647e1462011ab8297e94b4"
+      "sha256": "c027e337923de01ca12ba319a44d99df7a4ebe4db44d09e47ca789d90bf9240a"
     },
     {
       "frozen": true,
@@ -120,7 +120,24 @@
     },
     "M01": {
       "artefacts": [],
-      "fixtures": [],
+      "fixtures": [
+        {
+          "frozen": false,
+          "id": "M01/fixtures/expected-results.json",
+          "kind": "consumer-fixture",
+          "owner": "M01 access",
+          "path": "contracts/M01/fixtures/expected-results.json",
+          "sha256": "93d4b7619ece904c8e892aec9f0296cd2466227fc0edaf0446ed5e81f19fa5e7"
+        },
+        {
+          "frozen": false,
+          "id": "M01/fixtures/personas.json",
+          "kind": "consumer-fixture",
+          "owner": "M01 access",
+          "path": "contracts/M01/fixtures/personas.json",
+          "sha256": "869f0cfa8971f2daf858994f21962db559ad6edfb2ace66bede7866bfe4e2404"
+        }
+      ],
       "packet": "contracts/M01/PACKET.md",
       "slug": "access",
       "status": "not_started"

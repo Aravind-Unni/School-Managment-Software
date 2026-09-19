@@ -1,6 +1,19 @@
 # Contract packet -- M01 access
 
-Status: **NOT STARTED**. No executable contract exists for this module yet.
+Status: **CONTRACT PROPOSED, IMPLEMENTATION IN PROGRESS.**
+
+| Artefact | State |
+|---|---|
+| `openapi-seed.yaml` | Authored BEFORE coding. 15 operations. `openapi.yaml` is generated from the implementation and diffed against this seed. |
+| `schemas/dtos.schema.json` | 14 DTOs, every write shape `additionalProperties: false`. |
+| `error-codes.json` | 20 (status, code, message_key) rows. |
+| `fixtures/personas.json` | 5 accounts, 4 roles, preloaded expired challenge / used code / pending case. |
+| `fixtures/expected-results.json` | 18 acceptance outcomes. |
+
+**Shared contracts were changed additively to accommodate this module** -- see
+`docs/modules/M01/progress.md` for the six conflicts and their reconciliation. The
+manifest revision is still `school-contracts-v3-draft`; these entries are **not
+frozen** until reviewed.
 
 Manifest revision this packet targets: `school-contracts-v3-draft`
 (the current draft in `contracts/manifest.json`; replace with the approved

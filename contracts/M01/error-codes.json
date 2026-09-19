@@ -1,0 +1,127 @@
+{
+  "_comment": "The complete error surface of M01. Every response body is the frozen envelope from contracts/common/error-envelope.schema.json; this file fixes which (code, message_key) pairs M01 may return and at which status. Adding a pair is a contract revision.",
+  "_rule": "A refusal reason is never elaborated to the client. 'error.action_denied' is returned for every authorisation failure regardless of which grant or relationship was missing, because a precise reason tells an unauthorised actor what to acquire. The precise ReasonCode is recorded in the audit row instead.",
+  "responses": [
+    {
+      "status": 401,
+      "code": "unauthenticated",
+      "message_key": "error.unauthenticated",
+      "when": "No session, or a session that has been revoked."
+    },
+    {
+      "status": 401,
+      "code": "unauthenticated",
+      "message_key": "error.challenge_expired",
+      "when": "The pre-authentication challenge passed its expiry. The client must restart at /auth/login."
+    },
+    {
+      "status": 401,
+      "code": "unauthenticated",
+      "message_key": "error.challenge_invalid",
+      "when": "Unknown challenge id, already-consumed challenge, or too many failed attempts. Deliberately one key for all three so an attacker cannot enumerate challenge ids."
+    },
+    {
+      "status": 401,
+      "code": "stale_auth",
+      "message_key": "error.two_factor_required",
+      "when": "A business endpoint was called with a password-only session. Enrol or complete the factor."
+    },
+    {
+      "status": 401,
+      "code": "stale_auth",
+      "message_key": "error.two_factor_stale",
+      "when": "A sensitive write was called and the factor was asserted longer ago than the action allows. Re-assert."
+    },
+    {
+      "status": 401,
+      "code": "stale_auth",
+      "message_key": "error.password_confirmation_required",
+      "when": "Factor enrolment, replacement or disable was attempted without a recent password confirmation."
+    },
+    {
+      "status": 403,
+      "code": "action_denied",
+      "message_key": "error.action_denied",
+      "when": "Authorisation failed. Covers no grant, expired grant, missing relationship and unknown action."
+    },
+    {
+      "status": 403,
+      "code": "action_denied",
+      "message_key": "error.required_factor_protected",
+      "when": "An attempt to disable 2FA on an account whose role requires it."
+    },
+    {
+      "status": 404,
+      "code": "object_inaccessible",
+      "message_key": "error.object_inaccessible",
+      "when": "The object does not exist, OR exists in another school. Deliberately indistinguishable."
+    },
+    {
+      "status": 409,
+      "code": "version_conflict",
+      "message_key": "error.version_conflict",
+      "when": "expected_version did not match the stored aggregate version."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "error.factor_already_active",
+      "when": "Enrolment confirmation attempted when an active factor already exists."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "error.recovery_code_already_used",
+      "when": "A recovery code was replayed. Exactly one concurrent use wins."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "error.last_owner_protected",
+      "when": "The change would leave the school with no active owner."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "error.case_not_pending",
+      "when": "A recovery case was approved or rejected more than once."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.validation_failed",
+      "when": "Malformed or missing input, or an unknown write field."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.unknown_field",
+      "when": "The request body carried a field the endpoint does not accept. Named in field_errors."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.grant_escalation",
+      "when": "The actor tried to grant a permission or scope broader than their own."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.role_cycle",
+      "when": "The proposed role graph contains a cycle."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.totp_code_invalid",
+      "when": "A TOTP code did not validate, was outside the accepted step window, or was replayed."
+    },
+    {
+      "status": 429,
+      "code": "rate_limited",
+      "message_key": "error.too_many_attempts",
+      "when": "Throttled by account or by IP. Carries a progressive cooldown; never a permanent attacker-triggered lockout."
+    }
+  ],
+  "_status_note": "429 is outside B00's original 401/403/404/409/422 set. It is added as a real ErrorCode (rate_limited -> 429) rather than by returning 429 with a 422 code, because B00's invariant is that the code determines the status and the shared renderer derives one from the other. The response carries Retry-After."
+}

@@ -1,0 +1,298 @@
+# M01 access -- CONTRACT SEED, authored before implementation.
+#
+# This is the specified surface. After implementation, `openapi.yaml` is GENERATED
+# from the real DRF views and diffed against this seed, so the implementation is
+# proved to match what was specified rather than the spec being back-filled from
+# the code.
+#
+# Paths are relative to /api/v1. M01 owns the path roots auth/, sessions/, roles/
+# and accounts/ (declared in its ModuleRegistration and collision-checked).
+openapi: 3.0.3
+info:
+  title: M01 access -- identity, permissions and two-factor authentication
+  version: school-contracts-v3-draft
+  description: >-
+    School-scoped accounts, configurable roles, relationship-aware authorization,
+    secure sessions and the full 2FA lifecycle. Every error body is the frozen
+    envelope; see error-codes.json for the complete (status, code, message_key) set.
+
+tags:
+  - name: auth
+    description: Login, 2FA lifecycle and recovery. Unauthenticated entry points.
+  - name: sessions
+    description: The caller's own sessions. Never another user's.
+  - name: roles
+    description: Role and grant administration.
+  - name: accounts
+    description: Account administration. Used as the protected business endpoint.
+
+paths:
+  /auth/login:
+    post:
+      operationId: auth_login
+      tags: [auth]
+      summary: Begin authentication and receive a pre-authentication challenge
+      description: >-
+        Returns a short-lived challenge, NOT a business session. No session cookie
+        is issued and no business endpoint accepts the challenge until the required
+        factor succeeds. An unknown login and a wrong password are indistinguishable.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: 'schemas/dtos.schema.json#/$defs/LoginRequest' }
+      responses:
+        '201': { description: Challenge created, content: { application/json: { schema: { $ref: 'schemas/dtos.schema.json#/$defs/ChallengeResponse' } } } }
+        '401': { description: Bad credentials (error.challenge_invalid) }
+        '422': { description: Malformed or unknown field }
+        '429': { description: Throttled by account or IP; carries Retry-After }
+
+  /auth/2fa/verify:
+    post:
+      operationId: auth_totp_verify
+      tags: [auth]
+      summary: Complete the challenge with a TOTP code
+      description: >-
+        On success the challenge is consumed, a business session is created and the
+        session identifier is ROTATED. Replaying an accepted code fails even inside
+        its time window, because validation is atomic against last_accepted_step.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: 'schemas/dtos.schema.json#/$defs/TotpVerifyRequest' }
+      responses:
+        '200': { description: Authenticated, content: { application/json: { schema: { $ref: 'schemas/dtos.schema.json#/$defs/AuthenticatedResponse' } } } }
+        '401': { description: Expired or invalid challenge }
+        '422': { description: Invalid or replayed code (error.totp_code_invalid) }
+        '429': { description: Too many attempts on this challenge }
+
+  /auth/2fa/enroll:
+    post:
+      operationId: auth_factor_enrol_start
+      tags: [auth]
+      summary: Begin factor enrolment and receive one-time provisioning data
+      description: >-
+        Requires a recent password confirmation. The secret is returned ONCE and is
+        never retrievable again, by anyone, including an administrator.
+      responses:
+        '201': { description: Provisioning data, content: { application/json: { schema: { $ref: 'schemas/dtos.schema.json#/$defs/EnrolStartResponse' } } } }
+        '401': { description: Unauthenticated, or password confirmation too old }
+        '403': { description: Not permitted (auth.factor.manage_self) }
+        '409': { description: An active factor already exists }
+
+  /auth/2fa/confirm:
+    post:
+      operationId: auth_factor_enrol_confirm
+      tags: [auth]
+      summary: Activate the pending factor and receive recovery codes once
+      description: >-
+        Activates the factor and returns ten single-use recovery codes. Only hashes
+        are stored, so the codes can never be re-displayed or recovered by support.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: 'schemas/dtos.schema.json#/$defs/EnrolConfirmRequest' }
+      responses:
+        '201': { description: Factor active; codes returned once, content: { application/json: { schema: { $ref: 'schemas/dtos.schema.json#/$defs/RecoveryCodesResponse' } } } }
+        '401': { description: Unauthenticated or password confirmation too old }
+        '409': { description: Factor already active }
+        '422': { description: Invalid code }
+
+  /auth/2fa/recover:
+    post:
+      operationId: auth_factor_recover
+      tags: [auth]
+      summary: Complete a challenge with a single-use recovery code
+      description: >-
+        Atomically consumes the code, notifies the account, revokes existing
+        sessions and factors, and returns a recovery-level session that permits
+        factor re-enrolment only. Concurrent use of one code succeeds exactly once.
+        There is no SMS fallback.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: 'schemas/dtos.schema.json#/$defs/RecoverRequest' }
+      responses:
+        '200': { description: Recovery session, content: { application/json: { schema: { $ref: 'schemas/dtos.schema.json#/$defs/AuthenticatedResponse' } } } }
+        '401': { description: Expired or invalid challenge }
+        '409': { description: Code already used (error.recovery_code_already_used) }
+        '422': { description: Malformed code }
+        '429': { description: Throttled }
+
+  /auth/logout:
+    post:
+      operationId: auth_logout
+      tags: [auth]
+      summary: Revoke the current session
+      responses:
+        '200': { description: Revoked }
+        '401': { description: No session }
+
+  /auth/session:
+    get:
+      operationId: auth_current_session
+      tags: [auth]
+      summary: Describe the calling session
+      responses:
+        '200': { description: Current session, content: { application/json: { schema: { $ref: 'schemas/dtos.schema.json#/$defs/AuthenticatedResponse' } } } }
+        '401': { description: No session }
+
+  /auth/factor/reset-requests:
+    post:
+      operationId: auth_factor_reset_request
+      tags: [auth]
+      summary: Open a lost-device identity-verification case
+      description: >-
+        For an account with no usable recovery code. Creates a pending case that a
+        DIFFERENT authorised person must approve. A password reset alone never
+        disables 2FA.
+      responses:
+        '201': { description: Case opened, content: { application/json: { schema: { $ref: 'schemas/dtos.schema.json#/$defs/RecoveryCaseDTO' } } } }
+        '401': { description: Unauthenticated }
+        '409': { description: A pending case already exists }
+
+  /auth/factor/reset-requests/{case_id}/approve:
+    post:
+      operationId: auth_factor_reset_approve
+      tags: [auth]
+      summary: Approve a lost-device case and reset the factor
+      description: >-
+        Requires auth.factor.reset_other and fresh 2FA. Revokes the old factor, all
+        sessions and trusted-device tokens, notifies the account and emits
+        FactorReset.v1. The approver may not be the subject.
+      parameters:
+        - { name: case_id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Reset applied, content: { application/json: { schema: { $ref: 'schemas/dtos.schema.json#/$defs/RecoveryCaseDTO' } } } }
+        '401': { description: Step-up required }
+        '403': { description: Not permitted, or approver is the subject }
+        '404': { description: Unknown case, or another school's }
+        '409': { description: Case is not pending }
+
+  /sessions:
+    get:
+      operationId: sessions_list
+      tags: [sessions]
+      summary: List the caller's own sessions
+      parameters:
+        - { name: cursor, in: query, schema: { type: string }, description: Opaque keyset cursor. Do not parse. }
+        - { name: page_size, in: query, schema: { type: integer }, description: Capped server-side. }
+      responses:
+        '200':
+          description: Cursor page of the caller's sessions
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [items, next_cursor]
+                properties:
+                  items: { type: array, items: { $ref: 'schemas/dtos.schema.json#/$defs/SessionDTO' } }
+                  next_cursor: { type: [string, 'null'] }
+        '401': { description: No session }
+
+  /sessions/{session_id}/revoke:
+    post:
+      operationId: sessions_revoke
+      tags: [sessions]
+      summary: Revoke one of the caller's own sessions
+      parameters:
+        - { name: session_id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200': { description: Revoked, content: { application/json: { schema: { $ref: 'schemas/dtos.schema.json#/$defs/SessionDTO' } } } }
+        '401': { description: No session }
+        '404': { description: Not the caller's session, or unknown }
+
+  /roles:
+    get:
+      operationId: roles_list
+      tags: [roles]
+      summary: List roles in the caller's school
+      parameters:
+        - { name: cursor, in: query, schema: { type: string } }
+        - { name: page_size, in: query, schema: { type: integer } }
+      responses:
+        '200':
+          description: Cursor page of roles
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [items, next_cursor]
+                properties:
+                  items: { type: array, items: { $ref: 'schemas/dtos.schema.json#/$defs/RoleDTO' } }
+                  next_cursor: { type: [string, 'null'] }
+        '401': { description: Step-up required }
+        '403': { description: Not permitted (roles.manage) }
+    post:
+      operationId: roles_create
+      tags: [roles]
+      summary: Create a role
+      description: Rejects self-escalation, grant cycles, and unknown actions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: 'schemas/dtos.schema.json#/$defs/RoleWriteRequest' }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: 'schemas/dtos.schema.json#/$defs/RoleDTO' } } } }
+        '401': { description: Step-up required }
+        '403': { description: Not permitted }
+        '422': { description: Escalation, cycle or invalid grant }
+
+  /roles/{role_id}/grants:
+    put:
+      operationId: roles_replace_grants
+      tags: [roles]
+      summary: Replace a role's grants under optimistic concurrency
+      description: >-
+        Rejects escalation, cycles, and any change that would leave the school with
+        no active owner. Emits RoleGrantsChanged.v1 so permission decisions
+        invalidate promptly.
+      parameters:
+        - { name: role_id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: 'schemas/dtos.schema.json#/$defs/RoleWriteRequest' }
+      responses:
+        '200': { description: Updated, content: { application/json: { schema: { $ref: 'schemas/dtos.schema.json#/$defs/RoleDTO' } } } }
+        '401': { description: Step-up required }
+        '403': { description: Not permitted, or delegation outside the caller's scope }
+        '404': { description: Unknown role, or another school's }
+        '409': { description: Stale expected_version, or last-owner protection }
+        '422': { description: Escalation, cycle or invalid grant }
+
+  /accounts:
+    get:
+      operationId: accounts_list
+      tags: [accounts]
+      summary: List accounts in the caller's school
+      description: >-
+        The protected business endpoint used by the acceptance tests to prove that a
+        password-only session is refused before 2FA completes.
+      parameters:
+        - { name: cursor, in: query, schema: { type: string } }
+        - { name: page_size, in: query, schema: { type: integer } }
+      responses:
+        '200':
+          description: Cursor page of accounts
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [items, next_cursor]
+                properties:
+                  items: { type: array, items: { $ref: 'schemas/dtos.schema.json#/$defs/AccountDTO' } }
+                  next_cursor: { type: [string, 'null'] }
+        '401': { description: Unauthenticated, or 2FA required }
+        '403': { description: Not permitted (accounts.manage) }

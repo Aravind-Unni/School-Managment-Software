@@ -15,6 +15,7 @@ export const ERROR_CODES = [
   "version_conflict",
   "state_conflict",
   "validation_failed",
+  "rate_limited",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
@@ -70,6 +71,11 @@ export class ApiError extends Error {
   /** True when the remedy is to re-assert two-factor authentication. */
   get needsFreshTwoFactor(): boolean {
     return this.envelope.code === "stale_auth";
+  }
+
+  /** True when the caller should back off and retry later. */
+  get isThrottled(): boolean {
+    return this.envelope.code === "rate_limited";
   }
 
   /** Field path -> message keys, for rendering beside form inputs. */
