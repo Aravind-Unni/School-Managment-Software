@@ -1,0 +1,13 @@
+{
+  "module_id": "M00",
+  "slug": "demo",
+  "_comment": "The placeholder. Postgres and the frontend only: it owns no asynchronous work and no files, so no broker, worker or bucket is started. This is what a minimal standalone stack looks like.",
+  "resources": {
+    "postgres": true,
+    "frontend": true,
+    "broker": false,
+    "worker": false,
+    "object_storage": false
+  },
+  "seed_scenarios": ["baseline", "paging", "empty"]
+}

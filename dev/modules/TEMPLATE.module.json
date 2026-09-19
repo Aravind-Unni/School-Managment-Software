@@ -1,0 +1,20 @@
+{
+  "_comment": "Copy to dev/modules/<ID>/module.json and edit. Declares which containers `dev.py up <ID>` starts. Declare ONLY what the module needs: a module with no asynchronous work must not start a broker, so that several standalone stacks can run at once.",
+  "module_id": "M00",
+  "slug": "demo",
+  "resources": {
+    "postgres": true,
+    "frontend": true,
+    "broker": false,
+    "worker": false,
+    "object_storage": false
+  },
+  "seed_scenarios": ["baseline"],
+  "_resource_notes": {
+    "postgres": "Required for every module. Real migrations, isolated database.",
+    "frontend": "Vite dev server serving this module's React feature routes.",
+    "broker": "Only if the module owns asynchronous work.",
+    "worker": "Implies broker. Required to assert crash/retry behaviour; eager mode must never be used to claim those results.",
+    "object_storage": "S3-compatible private storage, for modules handling files or evidence."
+  }
+}
