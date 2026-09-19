@@ -43,9 +43,7 @@ def test_follow_up_get_supplies_the_versioned_browser_record(api):
 
 def test_admission_number_trims_outer_whitespace_and_keeps_case(api):
     """The reviewed normalisation is an outer trim only; no case folding."""
-    created = api.post(
-        "/students", {**MINIMAL_STUDENT, "admission_no": "  2026/AB01  "}
-    ).json()
+    created = api.post("/students", {**MINIMAL_STUDENT, "admission_no": "  2026/AB01  "}).json()
 
     assert created["admission_no"] == "2026/AB01"
 
@@ -54,30 +52,40 @@ def test_duplicate_admission_number_is_a_state_conflict(api):
     """Admission numbers are unique per school and cannot be overridden."""
     api.post("/students", MINIMAL_STUDENT)
 
-    response = api.post(
-        "/students", {**MINIMAL_STUDENT, "display_name": "A different child"}
-    )
+    response = api.post("/students", {**MINIMAL_STUDENT, "display_name": "A different child"})
 
     assert response.status_code == 409
-    assert response.json()["error"]["code"] == "state_conflict"
-    assert response.json()["error"]["message_key"] == "registry.error.admission_number_exists"
+    assert response.json()["code"] == "state_conflict"
+    assert response.json()["message_key"] == "registry.error.admission_number_exists"
 
 
 def test_admission_number_comparison_is_case_sensitive(api):
-    """Case is preserved and significant, so these are two different numbers."""
+    """Case is preserved and significant, so these are two different numbers.
+
+    The second child is given a different name deliberately: an identical name
+    and birth date would raise the duplicate-review candidate instead, and the
+    test would pass for the wrong reason.
+    """
     api.post("/students", {**MINIMAL_STUDENT, "admission_no": "2026/ab01"})
 
-    response = api.post("/students", {**MINIMAL_STUDENT, "admission_no": "2026/AB01"})
+    response = api.post(
+        "/students",
+        {
+            **MINIMAL_STUDENT,
+            "admission_no": "2026/AB01",
+            "display_name": "Bhavana Nair",
+        },
+    )
 
     assert response.status_code == 201
 
 
 def test_student_write_rejects_a_client_supplied_school(api):
-    """school is not an accepted field; a closed object refuses it outright."""
+    """School is not an accepted field; a closed object refuses it outright."""
     response = api.post("/students", {**MINIMAL_STUDENT, "school_id": "attacker-chosen"})
 
     assert response.status_code == 422
-    assert response.json()["error"]["code"] == "validation_failed"
+    assert response.json()["code"] == "validation_failed"
 
 
 def test_student_write_rejects_a_client_supplied_version(api):
@@ -124,7 +132,7 @@ def test_student_update_with_stale_expected_version_is_409(api):
     response = api.put(f"/students/{created['id']}", {**update, "display_name": "Second"})
 
     assert response.status_code == 409
-    assert response.json()["error"]["code"] == "version_conflict"
+    assert response.json()["code"] == "version_conflict"
 
 
 def test_unknown_student_is_404_with_the_shared_envelope(api):
@@ -132,7 +140,7 @@ def test_unknown_student_is_404_with_the_shared_envelope(api):
     response = api.get("/students/00000000-0000-4000-8000-000000000000")
 
     assert response.status_code == 404
-    assert response.json()["error"]["code"] == "object_inaccessible"
+    assert response.json()["code"] == "object_inaccessible"
 
 
 def test_guardian_accepts_null_contact_details(api):
@@ -198,7 +206,7 @@ def test_student_list_rejects_an_invalid_cursor_with_422(api):
     response = api.get("/students?cursor=not-a-real-cursor")
 
     assert response.status_code == 422
-    assert response.json()["error"]["code"] == "validation_failed"
+    assert response.json()["code"] == "validation_failed"
 
 
 def test_student_list_caps_page_size_at_one_hundred(api):

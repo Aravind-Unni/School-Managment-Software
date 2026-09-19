@@ -101,7 +101,13 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "school-contracts-v3-draft",
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,
-    "ENUM_NAME_OVERRIDES": {"ErrorCode": "contracts.errors.ErrorCode"},
+    # Without an explicit name, two fields carrying the SAME language choice set
+    # (a school's default and a pupil's preference) generate two differently
+    # named enums, and spectacular warns. Naming it once says they are one set.
+    "ENUM_NAME_OVERRIDES": {
+        "ErrorCode": "contracts.errors.ErrorCode",
+        "LanguageEnum": "shared.languages.LANGUAGE_CHOICES",
+    },
 }
 
 LOGGING = {

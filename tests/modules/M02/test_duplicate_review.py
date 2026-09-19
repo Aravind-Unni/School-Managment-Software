@@ -28,7 +28,7 @@ def test_same_name_and_birth_date_blocks_creation_without_acknowledgement(api):
     response = api.post("/students", {**TWIN, "admission_no": "2026/0101"})
 
     assert response.status_code == 409
-    error = response.json()["error"]
+    error = response.json()
     assert error["code"] == "state_conflict"
     assert error["message_key"] == "registry.error.duplicate_review_required"
 
@@ -136,11 +136,17 @@ def test_an_exact_admission_duplicate_cannot_be_acknowledged_away(api):
     )
 
     assert response.status_code == 409
-    assert response.json()["error"]["message_key"] == "registry.error.admission_number_exists"
+    assert response.json()["message_key"] == "registry.error.admission_number_exists"
 
 
 def test_a_review_taken_for_different_input_does_not_transfer(api):
-    """The token binds the canonical input it was issued for."""
+    """The token binds the canonical input it was issued for.
+
+    The second admission keeps the same name and birth date, so it genuinely
+    raises a candidate and the token IS consulted. Changing the name as well
+    would leave no candidates at all, and the request would succeed without the
+    token ever being examined -- passing for the wrong reason.
+    """
     api.post("/students", TWIN)
     review = api.post(
         "/students/duplicate-review",
@@ -156,17 +162,16 @@ def test_a_review_taken_for_different_input_does_not_transfer(api):
         {
             **TWIN,
             "admission_no": "2026/0102",
-            "display_name": "Someone Else Entirely",
             "duplicate_review": {
                 "review_id": review["review_id"],
                 "review_version": review["review_version"],
-                "distinct_person_reason": "Reusing a token from another admission.",
+                "distinct_person_reason": "Reusing a token issued for another number.",
             },
         },
     )
 
     assert response.status_code == 409
-    assert response.json()["error"]["message_key"] == "registry.error.duplicate_review_stale"
+    assert response.json()["message_key"] == "registry.error.duplicate_review_stale"
 
 
 def test_a_candidate_that_changed_since_the_review_invalidates_it(api):
@@ -204,7 +209,7 @@ def test_a_candidate_that_changed_since_the_review_invalidates_it(api):
     )
 
     assert response.status_code == 409
-    assert response.json()["error"]["message_key"] == "registry.error.duplicate_review_stale"
+    assert response.json()["message_key"] == "registry.error.duplicate_review_stale"
 
 
 def test_a_null_birth_date_does_not_match_another_null_birth_date(api):
@@ -248,4 +253,4 @@ def test_an_expired_review_is_refused(api, clock):
     )
 
     assert response.status_code == 409
-    assert response.json()["error"]["message_key"] == "registry.error.duplicate_review_stale"
+    assert response.json()["message_key"] == "registry.error.duplicate_review_stale"

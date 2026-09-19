@@ -57,7 +57,7 @@ def test_school_config_put_with_stale_expected_version_is_409(api):
     response = api.put("/school-config", {**body, "display_name": "Second writer"})
 
     assert response.status_code == 409
-    assert response.json()["error"]["code"] == "version_conflict"
+    assert response.json()["code"] == "version_conflict"
 
 
 def test_school_config_put_does_not_implicitly_create(api):
@@ -99,7 +99,7 @@ def test_academic_year_rejects_end_before_start(api):
     )
 
     assert response.status_code == 422
-    assert response.json()["error"]["code"] == "validation_failed"
+    assert response.json()["code"] == "validation_failed"
 
 
 def test_standard_number_is_constrained_to_the_twelve_school_years(api):
@@ -109,7 +109,7 @@ def test_standard_number_is_constrained_to_the_twelve_school_years(api):
     response = api.post("/standards", {"number": 13})
 
     assert response.status_code == 422
-    assert response.json()["error"]["code"] == "validation_failed"
+    assert response.json()["code"] == "validation_failed"
 
 
 def test_section_must_reference_a_year_and_standard_in_the_same_school(api, configured):
@@ -139,7 +139,7 @@ def test_section_referencing_an_unknown_standard_is_404(api, configured):
     )
 
     assert response.status_code == 404
-    assert response.json()["error"]["code"] == "object_inaccessible"
+    assert response.json()["code"] == "object_inaccessible"
 
 
 def test_term_must_fall_inside_its_academic_year(api, configured):
@@ -155,17 +155,18 @@ def test_term_must_fall_inside_its_academic_year(api, configured):
     )
 
     assert response.status_code == 422
-    assert response.json()["error"]["code"] == "validation_failed"
+    assert response.json()["code"] == "validation_failed"
 
 
 def test_subject_code_is_unique_within_the_school(api):
     """Two subjects cannot share a code; the second is a state conflict."""
-    assert api.post("/subjects", {"code": "MAL", "display_name": "Malayalam"}).status_code == 201
+    created = api.post("/subjects", {"code": "MAL", "display_name": "Malayalam"})
+    assert created.status_code == 201
 
     response = api.post("/subjects", {"code": "MAL", "display_name": "Malayalam again"})
 
     assert response.status_code == 409
-    assert response.json()["error"]["code"] == "state_conflict"
+    assert response.json()["code"] == "state_conflict"
 
 
 def test_archive_preserves_the_row_rather_than_deleting_it(api, configured):

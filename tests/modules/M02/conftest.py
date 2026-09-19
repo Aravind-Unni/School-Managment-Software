@@ -51,7 +51,21 @@ def clock(settings):
 
 
 @pytest.fixture
-def api(db, clock):
+def bootstrapped(db, clock):
+    """Install the one SchoolConfig row a deployment cannot serve without.
+
+    Goes through the module's real bootstrap, not an ORM insert, so a test would
+    notice if the seed stopped installing it. The API never creates this row
+    implicitly, which is exactly why every suite must install it first.
+    """
+    from modules.registry.seeds import bootstrap
+    from shared import fixtures
+
+    return bootstrap(fixtures.SCHOOL_A)
+
+
+@pytest.fixture
+def api(bootstrapped, clock):
     """Return a helper performing M02 API calls against the real app.
 
     Mirrors M01's helper so the two suites read the same way. Does not handle
