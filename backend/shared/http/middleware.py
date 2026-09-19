@@ -18,6 +18,7 @@ from contracts.errors import ContractError
 from .context import (
     DevPersona,
     SpoofedIdentityHeader,
+    assert_no_client_identity_headers,
     new_request_id,
     resolve_request_context,
 )
@@ -51,6 +52,43 @@ class RequestContextMiddleware:
         )
 
         if request.path.startswith(UNAUTHENTICATED_PATHS):
+            return self._get_response(request)
+
+        # A module that owns authentication (M01) resolves identity in its own
+        # middleware, which runs first. If it already produced a trusted context,
+        # this middleware must not second-guess it.
+        if getattr(request, "school_context", None) is not None:
+            return self._get_response(request)
+
+        # Endpoints a module declared as reachable without any session -- login,
+        # 2FA verification, recovery. Still guarded against spoofed identity
+        # headers below, because "public" does not mean "trusts the client".
+        public_prefixes = tuple(getattr(settings, "SCHOOL_PUBLIC_PATH_PREFIXES", ()))
+        if public_prefixes and request.path.startswith(public_prefixes):
+            try:
+                self._guard_body(request)
+                assert_no_client_identity_headers(request.META)
+            except SpoofedIdentityHeader as exc:
+                return self._envelope_response(
+                    request,
+                    code="validation_failed",
+                    message_key="error.client_asserted_identity",
+                    status=400,
+                    field_errors=[
+                        {"field": exc.header, "message_key": "error.header_not_accepted"}
+                    ],
+                )
+            except ContractError as exc:
+                return self._envelope_response(
+                    request,
+                    code=str(exc.code),
+                    message_key=exc.message_key,
+                    status=exc.http_status,
+                    field_errors=[
+                        {"field": fe.field, "message_key": fe.message_key}
+                        for fe in exc.field_errors
+                    ],
+                )
             return self._get_response(request)
 
         try:

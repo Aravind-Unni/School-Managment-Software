@@ -79,3 +79,37 @@ def build_port_registry(registration=None):
         clock=SCHOOL_CLOCK,
         worker_available=False,
     )
+
+
+# --- module-contributed middleware and public paths --------------------------
+# A module that owns authentication declares middleware and unauthenticated paths
+# in its registration; the host installs them rather than each profile hardcoding
+# a module name. Imported lazily so a module with no implementation yet simply
+# contributes nothing instead of breaking settings import.
+try:
+    import importlib
+
+    _registration = importlib.import_module(
+        f"{MODULE_ADDRESS.django_app}.registration"
+    ).REGISTRATION
+except (ModuleNotFoundError, AttributeError):  # module not implemented yet
+    _registration = None
+
+if _registration is not None and _registration.middleware:
+    _shared = "shared.http.middleware.RequestContextMiddleware"
+    MIDDLEWARE = [
+        *[m for m in MIDDLEWARE if m != _shared],
+    ]
+    # The module's middleware runs BEFORE the shared one, so it can resolve a real
+    # session; the shared one then yields to whatever context it produced.
+    _index = MIDDLEWARE.index("django.middleware.common.CommonMiddleware") + 1
+    MIDDLEWARE = [
+        *MIDDLEWARE[:_index],
+        *_registration.middleware,
+        _shared,
+        *MIDDLEWARE[_index:],
+    ]
+
+SCHOOL_PUBLIC_PATH_PREFIXES = (
+    _registration.absolute_public_paths if _registration is not None else ()
+)

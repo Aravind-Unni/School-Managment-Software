@@ -6,7 +6,10 @@
 # are all top-level packages under it.
 pythonpath = ["backend"]
 DJANGO_SETTINGS_MODULE = "config.settings.test_sqlite"
-testpaths = ["tests", "backend"]
+# Default run is the M00 profile (the foundation's own suite). Per-module suites
+# under tests/modules/<ID>/ need their own MODULE_ID, so they are NOT collected
+# here; `dev.py check <ID> --suite standalone` runs them with the right profile.
+testpaths = ["tests/contracts", "tests/integration", "backend"]
 python_files = ["test_*.py"]
 addopts = "-ra --strict-markers --strict-config"
 markers = [
@@ -14,6 +17,7 @@ markers = [
     "requires_postgres: needs a real PostgreSQL server; skipped on the SQLite profile",
     "requires_worker: needs a real broker and worker; never satisfied by eager mode",
     "browser: Playwright browser test; needs a running frontend and API",
+    "module: belongs to one module's suite and needs that module's MODULE_ID profile",
 ]
 filterwarnings = ["error::DeprecationWarning:shared.*", "error::DeprecationWarning:modules.*"]
 

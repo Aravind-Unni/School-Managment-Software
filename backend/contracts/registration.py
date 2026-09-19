@@ -98,6 +98,15 @@ class ModuleRegistration:
     #: Required when api_prefix is a shared version root; must be empty otherwise.
     api_path_roots: tuple[str, ...] = ()
     consumers: tuple[str, ...] = ()
+    #: Dotted middleware paths this module contributes, in order, installed BEFORE
+    #: the shared request-context middleware. Needed by a module that owns
+    #: authentication (M01): without it the shared middleware would reject the very
+    #: login endpoints that create a session.
+    middleware: tuple[str, ...] = ()
+    #: Paths under ``api_prefix`` reachable with NO session at all, e.g. login.
+    #: Declared rather than inferred, so "which endpoints are unauthenticated" is
+    #: reviewable in one place instead of scattered across views.
+    public_paths: tuple[str, ...] = ()
     scheduled_jobs: tuple[ScheduledJob, ...] = ()
     migration_dependencies: tuple[str, ...] = ()
     health_checks: tuple[HealthCheck, ...] = ()
@@ -148,6 +157,11 @@ class ModuleRegistration:
         unknown = {p for p in declared if p is not None} - set(self.permission_codes)
         if unknown:
             raise ValueError(f"routes require undeclared permissions: {sorted(unknown)}")
+
+    @property
+    def absolute_public_paths(self) -> tuple[str, ...]:
+        """Return this module's public paths as absolute URL prefixes."""
+        return tuple(f"{self.api_prefix}{path.lstrip('/')}" for path in self.public_paths)
 
     @property
     def owned_permission_prefixes(self) -> frozenset[str]:

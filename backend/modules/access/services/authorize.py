@@ -134,6 +134,37 @@ class AccessService:
 
     # --- loading -----------------------------------------------------------
 
+    def held_grants(self, context: RequestContext) -> tuple[GrantFact, ...]:
+        """Return EVERY grant the actor holds, direct and via roles.
+
+        Used by the escalation check, which must compare a requested grant against
+        the actor's whole permission set rather than one action at a time. Kept
+        separate from the per-action loader in ``authorize`` because that path must
+        stay narrow: answering one question should not pull an actor's entire
+        permission set.
+        """
+        from ..models import Grant
+
+        actor = self._load_actor(context)
+        if actor is None:
+            return ()
+        rows = (
+            Grant.objects.filter(school_id=actor.school_id)
+            .filter(Q(user_id=actor.user_id) | Q(role__user_links__user_id=actor.user_id))
+            .values("action", "scope_type", "scope_id", "valid_from", "valid_to")
+            .distinct()
+        )
+        return tuple(
+            GrantFact(
+                action=row["action"],
+                scope_type=ScopeType(row["scope_type"]),
+                scope_id=row["scope_id"],
+                valid_from=row["valid_from"],
+                valid_to=row["valid_to"],
+            )
+            for row in rows
+        )
+
     def _load_actor(self, context: RequestContext) -> ActorFacts | None:
         """Return the acting account's policy facts, or None if absent.
 

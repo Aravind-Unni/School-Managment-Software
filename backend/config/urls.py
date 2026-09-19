@@ -8,6 +8,7 @@ A module is never mounted by importing it for a side effect.
 from __future__ import annotations
 
 import importlib
+import os
 
 from django.conf import settings
 from django.http import JsonResponse
@@ -54,7 +55,18 @@ def _build_port_registry():
     URLconf import, is what makes "production refuses a fake adapter" a startup
     failure rather than a request-time surprise.
     """
-    profile = importlib.import_module(settings.SETTINGS_MODULE)
+    # settings.SETTINGS_MODULE is None whenever settings are wrapped by
+    # override_settings (which pytest-django's `settings` fixture uses), so the
+    # environment variable is the reliable source. This surfaced as an
+    # import_module(None) crash the first time a test overrode a setting BEFORE the
+    # URLconf had loaded.
+    profile_path = os.environ.get("DJANGO_SETTINGS_MODULE") or settings.SETTINGS_MODULE
+    if not profile_path:
+        raise RuntimeError(
+            "cannot determine the settings profile: DJANGO_SETTINGS_MODULE is unset "
+            "and settings.SETTINGS_MODULE is None"
+        )
+    profile = importlib.import_module(profile_path)
     builder = getattr(profile, "build_port_registry", None)
     if builder is None:
         raise RuntimeError(
@@ -65,8 +77,12 @@ def _build_port_registry():
     return builder(primary)
 
 
-#: Bound once at import. Views read it via settings.SCHOOL_PORTS.
-settings.SCHOOL_PORTS = _build_port_registry()
+#: Bound once at import and installed in the process-level holder. Views read it
+#: via shared.ports.runtime.get_registry(); settings.SCHOOL_PORTS remains only for
+#: backward compatibility with B00's assertions.
+from shared.ports import runtime as _port_runtime  # noqa: E402
+
+settings.SCHOOL_PORTS = _port_runtime.set_registry(_build_port_registry())
 
 
 def healthz(_request):

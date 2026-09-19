@@ -36,6 +36,21 @@ REGISTRATION = ModuleRegistration(
     #: M01 is Access, so it does NOT consume the access port. It consumes a fake
     #: Registry only, plus Platform for audit/outbox and the clock.
     consumers=("registry", "platform", "clock"),
+    #: M01 owns authentication, so it installs its own middleware ahead of the
+    #: shared one, which then yields to whatever context it produced.
+    middleware=("modules.access.middleware.AccessSessionMiddleware",),
+    #: Reachable with no session at all. Declared here so "which endpoints are
+    #: unauthenticated" is reviewable in one place.
+    #: Reachable with no session. The enrolment pair is here because an account
+    #: whose role REQUIRES a factor cannot sign in until it has one, so first
+    #: enrolment must work from the challenge. Both still demand the password.
+    public_paths=(
+        "auth/login",
+        "auth/2fa/verify",
+        "auth/2fa/recover",
+        "auth/2fa/enroll",
+        "auth/2fa/confirm",
+    ),
     scheduled_jobs=(),
     migration_dependencies=(),
     health_checks=(
