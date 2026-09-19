@@ -119,7 +119,16 @@
       "status": "frozen"
     },
     "M01": {
-      "artefacts": [],
+      "artefacts": [
+        {
+          "frozen": false,
+          "id": "M01/openapi.yaml",
+          "kind": "openapi",
+          "owner": "M01 access",
+          "path": "contracts/M01/openapi.yaml",
+          "sha256": "f73c02342ac06be7c2b5893c9bd5e72d03023fdc7a0c9dc19dae899ce7955bfd"
+        }
+      ],
       "fixtures": [
         {
           "frozen": false,

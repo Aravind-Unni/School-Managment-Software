@@ -7,6 +7,7 @@ password-only session is refused before the factor completes.
 from __future__ import annotations
 
 from django.db import transaction
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -22,12 +23,44 @@ from ..scopes import ScopeType
 from ..services import roles as role_service
 from ..services import sessions as session_service
 from . import deps
-from .serializers import RoleWriteRequest
+from .serializers import (
+    AccountCollectionResponse,
+    ErrorEnvelopeResponse,
+    RoleCollectionResponse,
+    RoleResponse,
+    RoleWriteRequest,
+    SessionCollectionResponse,
+    SessionResponse,
+)
+
+#: Error responses M01 endpoints can return. Declared once so the generated client
+#: carries the full error surface, not just the happy path. The authoritative list is
+#: contracts/M01/error-codes.json.
+COMMON_ERRORS = {
+    400: OpenApiResponse(ErrorEnvelopeResponse, "Client asserted its own identity."),
+    401: OpenApiResponse(
+        ErrorEnvelopeResponse, "Unauthenticated, expired challenge, or step-up required."
+    ),
+    403: OpenApiResponse(ErrorEnvelopeResponse, "Action denied."),
+    404: OpenApiResponse(ErrorEnvelopeResponse, "Absent, or not visible to you."),
+    409: OpenApiResponse(ErrorEnvelopeResponse, "Version or state conflict."),
+    422: OpenApiResponse(ErrorEnvelopeResponse, "Validation failed, or an unknown field."),
+    429: OpenApiResponse(ErrorEnvelopeResponse, "Throttled; carries Retry-After."),
+}
 
 
 class SessionCollectionView(APIView):
     """GET /sessions -- the caller's OWN sessions, never anyone else's."""
 
+    @extend_schema(
+        operation_id="sessions_list",
+        summary="List the caller's own sessions",
+        parameters=[
+            OpenApiParameter("cursor", str, description="Opaque keyset cursor. Do not parse."),
+            OpenApiParameter("page_size", int, description="Capped server-side."),
+        ],
+        responses={200: SessionCollectionResponse, **COMMON_ERRORS},
+    )
     def get(self, request: Request) -> Response:
         """Return a cursor page of the caller's sessions.
 
@@ -68,6 +101,12 @@ class SessionCollectionView(APIView):
 class SessionRevokeView(APIView):
     """POST /sessions/{session_id}/revoke -- revoke one of the caller's sessions."""
 
+    @extend_schema(
+        operation_id="sessions_revoke",
+        summary="Revoke one of the caller's sessions",
+        request=None,
+        responses={200: SessionResponse, **COMMON_ERRORS},
+    )
     def post(self, request: Request, session_id) -> Response:
         """Revoke a session the caller owns.
 
@@ -96,6 +135,15 @@ class SessionRevokeView(APIView):
 class RoleCollectionView(APIView):
     """GET /roles and POST /roles."""
 
+    @extend_schema(
+        operation_id="roles_list",
+        summary="List roles in the caller's school",
+        parameters=[
+            OpenApiParameter("cursor", str, description="Opaque keyset cursor. Do not parse."),
+            OpenApiParameter("page_size", int, description="Capped server-side."),
+        ],
+        responses={200: RoleCollectionResponse, **COMMON_ERRORS},
+    )
     def get(self, request: Request) -> Response:
         """Return a cursor page of roles in the caller's school."""
         from ..models import Role
@@ -122,6 +170,12 @@ class RoleCollectionView(APIView):
             ).to_wire()
         )
 
+    @extend_schema(
+        operation_id="roles_create",
+        summary="Create a role",
+        request=RoleWriteRequest,
+        responses={201: RoleResponse, **COMMON_ERRORS},
+    )
     def post(self, request: Request) -> Response:
         """Create a role, rejecting escalation and unenforceable grants."""
         from ..models import Grant, Role
@@ -176,6 +230,12 @@ class RoleCollectionView(APIView):
 class RoleGrantsView(APIView):
     """PUT /roles/{role_id}/grants."""
 
+    @extend_schema(
+        operation_id="roles_replace_grants",
+        summary="Replace a role's grants",
+        request=RoleWriteRequest,
+        responses={200: RoleResponse, **COMMON_ERRORS},
+    )
     def put(self, request: Request, role_id) -> Response:
         """Replace a role's grants under optimistic concurrency."""
         from ..models import Role
@@ -227,6 +287,15 @@ class RoleGrantsView(APIView):
 class AccountCollectionView(APIView):
     """GET /accounts -- the protected business endpoint."""
 
+    @extend_schema(
+        operation_id="accounts_list",
+        summary="List accounts in the caller's school",
+        parameters=[
+            OpenApiParameter("cursor", str, description="Opaque keyset cursor. Do not parse."),
+            OpenApiParameter("page_size", int, description="Capped server-side."),
+        ],
+        responses={200: AccountCollectionResponse, **COMMON_ERRORS},
+    )
     def get(self, request: Request) -> Response:
         """Return a cursor page of accounts.
 

@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import threading
-
 import pytest
-from shared import fixtures
-
 from m01_helpers import LOGINS, PASSWORDS, enrol_and_activate
+
+from shared import fixtures
 
 pytestmark = [pytest.mark.django_db, pytest.mark.module]
 
@@ -73,24 +71,28 @@ def test_a_failed_recovery_leaves_the_code_unused(api, seeded, clock):
         {"challenge_id": login2.json()["challenge_id"], "recovery_code": codes[0]},
     )
     assert good.status_code == 200
-    assert RecoveryCode.objects.get(
-        user=seeded["t1"],
-        code_hash=hash_recovery_code(codes[0], school_id=fixtures.SCHOOL_A),
-    ).used_at is not None
+    assert (
+        RecoveryCode.objects.get(
+            user=seeded["t1"],
+            code_hash=hash_recovery_code(codes[0], school_id=fixtures.SCHOOL_A),
+        ).used_at
+        is not None
+    )
 
 
 def test_a_factor_reset_revokes_every_session(api, seeded, clock):
     """Acceptance: factor reset revokes old sessions, and emits FactorReset.v1."""
-    from modules.access.models import Session
+    from modules.access.models import Session, TotpFactor
     from modules.access.models.accounts import FactorState
-    from modules.access.models import TotpFactor
     from shared.harness.models import HarnessOutboxEvent
 
     # T1 gets two live sessions.
     first = api
     enrol_and_activate(first, seeded["t1"], "t1", clock)
     second = api.__class__()
-    login = second.post("/auth/login", {"login_name": LOGINS["t1"], "password": PASSWORDS["t1"]})
+    login = second.post(
+        "/auth/login", {"login_name": LOGINS["t1"], "password": PASSWORDS["t1"]}
+    )
     from m01_helpers import totp_code_for
 
     clock.advance(seconds=31)
@@ -125,9 +127,7 @@ def test_a_factor_reset_revokes_every_session(api, seeded, clock):
     assert response.json()["state"] == "approved"
 
     assert Session.objects.filter(user=seeded["t1"], revoked_at__isnull=True).count() == 0
-    assert not TotpFactor.objects.filter(
-        user=seeded["t1"], state=FactorState.ACTIVE
-    ).exists()
+    assert not TotpFactor.objects.filter(user=seeded["t1"], state=FactorState.ACTIVE).exists()
     events = HarnessOutboxEvent.objects.filter(event_type="FactorReset.v1")
     assert events.count() == 1
     assert "password" not in repr(events.first().payload).lower()
@@ -135,9 +135,10 @@ def test_a_factor_reset_revokes_every_session(api, seeded, clock):
 
 def test_an_approver_cannot_approve_their_own_case(api, seeded, clock):
     """The second-person check is the whole point of a case."""
+    from m01_helpers import totp_code_for
+
     from modules.access.models import RecoveryCase
     from modules.access.models.accounts import CaseState
-    from m01_helpers import totp_code_for
 
     enrol_and_activate(api, seeded["p1"], "p1", clock)
     login = api.post("/auth/login", {"login_name": LOGINS["p1"], "password": PASSWORDS["p1"]})
@@ -162,8 +163,9 @@ def test_an_approver_cannot_approve_their_own_case(api, seeded, clock):
 
 def test_audit_rows_accompany_a_committed_write(api, seeded, clock):
     """Audit participates in the caller's transaction."""
-    from shared.harness.models import HarnessAuditRecord
     from m01_helpers import totp_code_for
+
+    from shared.harness.models import HarnessAuditRecord
 
     enrol_and_activate(api, seeded["o1"], "o1", clock)
     login = api.post("/auth/login", {"login_name": LOGINS["o1"], "password": PASSWORDS["o1"]})
@@ -186,8 +188,9 @@ def test_audit_rows_accompany_a_committed_write(api, seeded, clock):
 
 def test_a_rejected_write_leaves_no_audit_row(api, seeded, clock):
     """A refused write must leave no trail of having partially happened."""
-    from shared.harness.models import HarnessAuditRecord
     from m01_helpers import totp_code_for
+
+    from shared.harness.models import HarnessAuditRecord
 
     enrol_and_activate(api, seeded["o1"], "o1", clock)
     login = api.post("/auth/login", {"login_name": LOGINS["o1"], "password": PASSWORDS["o1"]})

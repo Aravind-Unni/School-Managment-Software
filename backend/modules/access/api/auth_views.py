@@ -8,6 +8,7 @@ API, service, workers, exports and private files".
 from __future__ import annotations
 
 from django.db import transaction
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -19,18 +20,46 @@ from ..cookies import clear_session_cookie, set_session_cookie
 from ..services import factors, login, sessions
 from . import deps
 from .serializers import (
+    AuthenticatedResponse,
+    ChallengeResponse,
     EnrolConfirmRequest,
+    EnrolStartResponse,
+    ErrorEnvelopeResponse,
     LoginRequest,
     PasswordConfirmRequest,
     RecoverRequest,
+    RecoveryCaseResponse,
+    RecoveryCodesResponse,
     ResetRequestBody,
+    RevokedResponse,
     TotpVerifyRequest,
 )
+
+#: Error responses M01 endpoints can return. Declared once so the generated client
+#: carries the full error surface, not just the happy path. The authoritative list is
+#: contracts/M01/error-codes.json.
+COMMON_ERRORS = {
+    400: OpenApiResponse(ErrorEnvelopeResponse, "Client asserted its own identity."),
+    401: OpenApiResponse(
+        ErrorEnvelopeResponse, "Unauthenticated, expired challenge, or step-up required."
+    ),
+    403: OpenApiResponse(ErrorEnvelopeResponse, "Action denied."),
+    404: OpenApiResponse(ErrorEnvelopeResponse, "Absent, or not visible to you."),
+    409: OpenApiResponse(ErrorEnvelopeResponse, "Version or state conflict."),
+    422: OpenApiResponse(ErrorEnvelopeResponse, "Validation failed, or an unknown field."),
+    429: OpenApiResponse(ErrorEnvelopeResponse, "Throttled; carries Retry-After."),
+}
 
 
 class LoginView(APIView):
     """POST /auth/login -- password step, returns a challenge, never a session."""
 
+    @extend_schema(
+        operation_id="auth_login",
+        summary="Begin authentication and receive a challenge",
+        request=LoginRequest,
+        responses={201: ChallengeResponse, **COMMON_ERRORS},
+    )
     def post(self, request: Request) -> Response:
         """Verify the password and issue a pre-authentication challenge.
 
@@ -73,6 +102,12 @@ class LoginView(APIView):
 class TotpVerifyView(APIView):
     """POST /auth/2fa/verify -- complete the challenge and rotate the session."""
 
+    @extend_schema(
+        operation_id="auth_totp_verify",
+        summary="Complete the challenge with a TOTP code",
+        request=TotpVerifyRequest,
+        responses={200: AuthenticatedResponse, **COMMON_ERRORS},
+    )
     def post(self, request: Request) -> Response:
         """Verify a TOTP code and issue a business session."""
         payload = TotpVerifyRequest(data=request.data)
@@ -102,6 +137,12 @@ class TotpVerifyView(APIView):
 class RecoverView(APIView):
     """POST /auth/2fa/recover -- single-use recovery code sign-in."""
 
+    @extend_schema(
+        operation_id="auth_factor_recover",
+        summary="Sign in with a single-use recovery code",
+        request=RecoverRequest,
+        responses={200: AuthenticatedResponse, **COMMON_ERRORS},
+    )
     def post(self, request: Request) -> Response:
         """Consume a recovery code and issue a recovery-level session.
 
@@ -135,6 +176,12 @@ class RecoverView(APIView):
 class LogoutView(APIView):
     """POST /auth/logout -- revoke the current session."""
 
+    @extend_schema(
+        operation_id="auth_logout",
+        summary="Revoke the current session",
+        request=None,
+        responses={200: RevokedResponse, **COMMON_ERRORS},
+    )
     def post(self, request: Request) -> Response:
         """Revoke the caller's session and clear its cookies."""
         session = deps.require_session(request)
@@ -147,6 +194,11 @@ class LogoutView(APIView):
 class CurrentSessionView(APIView):
     """GET /auth/session -- describe the calling session."""
 
+    @extend_schema(
+        operation_id="auth_current_session",
+        summary="Describe the calling session",
+        responses={200: AuthenticatedResponse, **COMMON_ERRORS},
+    )
     def get(self, request: Request) -> Response:
         """Return the caller's identity and auth level."""
         context = deps.require_context(request)
@@ -192,6 +244,12 @@ def _resolve_enrolling_account(request, validated):
 class EnrolStartView(APIView):
     """POST /auth/2fa/enroll -- begin enrolment, returning one-time secrets."""
 
+    @extend_schema(
+        operation_id="auth_factor_enrol_start",
+        summary="Begin factor enrolment",
+        request=PasswordConfirmRequest,
+        responses={201: EnrolStartResponse, **COMMON_ERRORS},
+    )
     def post(self, request: Request) -> Response:
         """Confirm the password, then return provisioning data once.
 
@@ -229,6 +287,12 @@ class EnrolStartView(APIView):
 class EnrolConfirmView(APIView):
     """POST /auth/2fa/confirm -- activate the factor, return recovery codes once."""
 
+    @extend_schema(
+        operation_id="auth_factor_enrol_confirm",
+        summary="Activate the factor and receive recovery codes once",
+        request=EnrolConfirmRequest,
+        responses={201: RecoveryCodesResponse, **COMMON_ERRORS},
+    )
     def post(self, request: Request) -> Response:
         """Activate the pending factor and return ten single-use codes.
 
@@ -291,6 +355,12 @@ class EnrolConfirmView(APIView):
 class ResetRequestView(APIView):
     """POST /auth/factor/reset-requests -- open a lost-device case."""
 
+    @extend_schema(
+        operation_id="auth_factor_reset_request",
+        summary="Open a lost-device case",
+        request=ResetRequestBody,
+        responses={201: RecoveryCaseResponse, **COMMON_ERRORS},
+    )
     def post(self, request: Request) -> Response:
         """Open a pending case for a DIFFERENT person to approve."""
         payload = ResetRequestBody(data=request.data)
@@ -316,6 +386,12 @@ class ResetRequestView(APIView):
 class ResetApproveView(APIView):
     """POST /auth/factor/reset-requests/{case_id}/approve."""
 
+    @extend_schema(
+        operation_id="auth_factor_reset_approve",
+        summary="Approve a lost-device case and reset the factor",
+        request=None,
+        responses={200: RecoveryCaseResponse, **COMMON_ERRORS},
+    )
     def post(self, request: Request, case_id) -> Response:
         """Approve a case, reset the factor and revoke every session it authorised.
 
