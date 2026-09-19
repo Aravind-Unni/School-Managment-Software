@@ -111,6 +111,14 @@ B00's DTO contract and the harness test adapter are untouched.
   context and bind mount needs `../..`. A `..` passed YAML validation, digest pinning
   and service-selection tests, and failed the instant anything actually built. Use
   `REPO_ROOT_FROM_COMPOSE`; a test resolves every generated path for every module.
+- **A container that runs as an unprivileged user must OWN its source tree.** Vite
+  writes `vite.config.ts.timestamp-*.mjs` beside its config, so a root-owned
+  `/app/frontend` killed the dev server with EACCES. Use `COPY --chown`. Do not
+  "fix" it by running as root: that writes root-owned files into the developer's
+  checkout through the bind mount.
+- **Three of these container defects were invisible to every test that did not
+  actually run a container.** Treat "the Compose file is valid" as saying nothing
+  about whether the stack works.
 
 ## 7. Open questions for the humans
 

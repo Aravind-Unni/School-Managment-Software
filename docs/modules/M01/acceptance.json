@@ -271,5 +271,24 @@
       "why_it_survived_this_long": "YAML validation, digest pinning and service-selection tests all passed on this file. Only actually building could find it, and nothing had ever built it: this was the first execution of the Compose path anywhere.",
       "fix": "A single REPO_ROOT_FROM_COMPOSE constant derived from the file's real depth, applied to the context and all three bind mounts. A regression test resolves every generated path for every module and asserts it exists; it was confirmed to FAIL with the old value."
     }
+  },
+  "ci_third_run": {
+    "run_id": 35451968802,
+    "url": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35451968802",
+    "results": {
+      "contracts and architecture": "success",
+      "guards reject real violations": "success",
+      "backend suite on real PostgreSQL": "success",
+      "frontend": "success",
+      "container images build": "success",
+      "M01 browser suite against a real stack": "failure -- frontend container EACCES"
+    },
+    "defect_found": {
+      "defect": "Both container images copied source as root while running as an unprivileged user",
+      "detail": "Vite writes a temporary bundle of its config NEXT TO vite.config.ts when loading it (vite.config.ts.timestamp-*.mjs). /app/frontend was root-owned from the COPY, so the dev server died immediately with EACCES.",
+      "progress": "The images BUILT and the containers STARTED -- two steps further than the previous attempt. The build-context fix worked.",
+      "fix": "Both Dockerfiles now chown their tree to the runtime user and COPY --chown. Running as root would also 'fix' it, and would create root-owned files in the developer's checkout through the bind mount, so ownership is the correct fix rather than dropping the unprivileged user.",
+      "not_verifiable_locally": "There is no container engine on the development machine, so CI is the only place this can be confirmed."
+    }
   }
 }
