@@ -1,7 +1,22 @@
 # Foundation progress — B00
 
-**Status: complete, CI green end to end, awaiting peer review.** Not merged, not
-deployed.
+**Status: MERGED to `main` on 2026-09-19 without peer review, with 4 of 25
+acceptance criteria unverified.** Not deployed.
+
+> **Deviation from the B00 gate, recorded deliberately.** B00 states "Do not merge
+> or deploy", "Never merge or deploy automatically", and "Foundation approval
+> requires all checks under Foundation acceptance **and peer review**". None of
+> that happened. The merge was requested by the repository collaborator
+> (`AbhinavM2000`) after the gate, the zero review count, and the four unverified
+> criteria were each raised and restated. It was merged by the author of the
+> change, which is self-approval of 216 files.
+>
+> **What this means for whoever reads this next:** the foundation has *not* been
+> peer reviewed. CI is green and 284 tests pass against real PostgreSQL, but the
+> container runtime path — booting the stack, the containerised REST/React
+> surface, Playwright, and worker crash/retry — has never been executed by anyone.
+> Treat `main` as unreviewed until someone other than the author has read it.
+> `acceptance.json` lists exactly what is and is not verified.
 
 | | |
 |---|---|

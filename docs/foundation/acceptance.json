@@ -249,9 +249,20 @@
     "Phase exit gate"
   ],
   "delivery": {
-    "merged": false,
+    "merged": true,
+    "merged_at": "2026-09-19",
+    "merged_by": "AbhinavM2000 (author of the change)",
     "deployed": false,
-    "note": "Never merge or deploy automatically. After explicit review and merge, normal module work starts from main."
+    "peer_reviewed": false,
+    "review_count_at_merge": 0,
+    "gate_deviation": "B00 requires peer review plus ALL Foundation acceptance checks before approval, and says never to merge automatically. Merged on explicit instruction from the collaborator after the gate, the zero review count and the four unverified criteria were raised and restated. This is self-approval by the change's author.",
+    "unverified_at_merge": [
+      "A fresh checkout boots the placeholder via doctor/up/migrate/seed",
+      "Its REST endpoint and React page work (in the container stack)",
+      "Browser tests produce machine-readable results",
+      "Worker crash and retry behaviour"
+    ],
+    "note": "Never deployed. Deployment remains M14's and is still gated."
   },
   "ci_first_run": {
     "run_id": 35418749812,
