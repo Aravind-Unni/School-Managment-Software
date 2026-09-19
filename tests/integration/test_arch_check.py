@@ -186,8 +186,17 @@ def test_no_business_module_contract_is_frozen_yet():
 
 @pytest.mark.parametrize("module_id", [f"M{index:02d}" for index in range(1, 15)])
 def test_every_business_module_has_a_contract_packet(module_id):
+    """Every business module carries a packet, and states its real status.
+
+    M01 is legitimately in progress, so "NOT STARTED" is asserted only for the
+    modules that have not begun. Asserting it unconditionally would force a false
+    status onto a module that had started.
+    """
     packet = REPO_ROOT / "contracts" / module_id / "PACKET.md"
     assert packet.exists()
     text = packet.read_text()
-    assert "NOT STARTED" in text
     assert "school-contracts-v3-draft" in text
+    if module_id == "M01":
+        assert "CONTRACT PROPOSED" in text
+    else:
+        assert "NOT STARTED" in text

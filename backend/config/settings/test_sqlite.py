@@ -17,13 +17,21 @@ machine-readable report.
 
 from __future__ import annotations
 
+from cryptography.fernet import Fernet
+
+from config import env
 from config.settings.base import *
 from config.settings.base import HARNESS_APPS, INSTALLED_APPS
+from shared.module_catalog import address_for
 
 APP_ENV = "standalone"
-MODULE_ID = "M00"
 
-INSTALLED_APPS = INSTALLED_APPS + HARNESS_APPS + ["modules.demo"]
+#: Which module's app to install. Defaults to the M00 placeholder so B00's own
+#: suite is unchanged; each module's suite selects itself with MODULE_ID.
+MODULE_ID = env.optional("MODULE_ID", "M00").upper()
+MODULE_ADDRESS = address_for(MODULE_ID)
+
+INSTALLED_APPS = INSTALLED_APPS + HARNESS_APPS + [MODULE_ADDRESS.django_app]
 
 DATABASES = {
     "default": {
@@ -34,7 +42,15 @@ DATABASES = {
 }
 
 SECRET_KEY = "test-only-not-a-secret"
-DEV_PERSONA_MODE = "fixed"
+
+#: A test-only Fernet key. Generated fresh per process, so nothing encrypted in
+#: one test run can be decrypted in another -- which is correct for a throwaway
+#: in-memory database and means no key material is ever committed.
+TOTP_ENCRYPTION_KEY = Fernet.generate_key().decode()
+
+#: M01 owns real login, so it must NOT get a synthetic persona: a persona would
+#: bypass the very flow under test. Every other module uses the fixed persona.
+DEV_PERSONA_MODE = "off" if MODULE_ID == "M01" else "fixed"
 DEMO_FIXTURES_ENABLED = True
 WORKER_AVAILABLE = False
 

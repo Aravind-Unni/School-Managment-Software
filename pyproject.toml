@@ -39,9 +39,11 @@ ignore = [
 "tests/**" = ["D100", "D103", "DTZ001"]
 # Settings modules use star imports from base by design, after validation.
 "**/settings/*.py" = ["F403", "F405", "E402"]
-# Django models: `class Meta` needs no docstring, and Meta's ordering/indexes
-# are class-level lists by framework contract, not accidental mutable defaults.
+# Django models: `class Meta` needs no docstring, and Meta's ordering/indexes/
+# constraints are class-level lists by framework contract, not accidental mutable
+# defaults. Covers both a models.py and a models/ package.
 "**/models.py" = ["D106", "RUF012"]
+"**/models/*.py" = ["D106", "RUF012"]
 
 [tool.ruff.lint.isort]
 # backend/ is the import root, so these are first-party despite having no

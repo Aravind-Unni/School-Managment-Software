@@ -43,10 +43,19 @@ SCHOOL_ID = env.optional("SCHOOL_ID") or str(fixtures.SCHOOL_A)
 #: Defaults to T1, class teacher of C1, so a developer opening the demo page
 #: can list, read and write. Authorisation tests build their own contexts for
 #: S1/G1/G2/T1/T2 rather than relying on this persona.
-DEV_PERSONA = DevPersona(
-    actor_id=fixtures.TEACHER_T1,
-    school_id=fixtures.SCHOOL_A,
+#: M01 owns real login, sessions and 2FA, so it must NOT get a synthetic
+#: persona -- one would bypass the flow under test. Every other module uses it.
+DEV_PERSONA = (
+    None
+    if MODULE_ID == "M01"
+    else DevPersona(actor_id=fixtures.TEACHER_T1, school_id=fixtures.SCHOOL_A)
 )
+DEV_PERSONA_MODE = "off" if MODULE_ID == "M01" else env.optional("DEV_PERSONA_MODE", "fixed")
+
+#: Fernet key for TOTP seeds at rest. Held OUTSIDE the database. dev.py generates
+#: one into dev/secrets/ and passes it in; there is no default, because a default
+#: would mean every developer's seeds were encrypted with the same known key.
+TOTP_ENCRYPTION_KEY = env.optional("TOTP_ENCRYPTION_KEY")
 
 #: Demo fixtures are the placeholder module's seed data, allowed here only.
 DEMO_FIXTURES_ENABLED = env.flag("DEMO_FIXTURES_ENABLED", default=True)
