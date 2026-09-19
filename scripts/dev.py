@@ -775,8 +775,10 @@ def _check_standalone(declaration, names, profile: str) -> int:
             "pytest",
             "tests",
             "-q",
-            "-p",
-            "pytest_jsonreport",
+            # Both flags are required: --json-report-file on its own writes
+            # nothing, which would leave "machine-readable results" quietly
+            # unmet while the suite still looked green.
+            "--json-report",
             f"--json-report-file={report_json}",
         ],
         cwd=REPO_ROOT,

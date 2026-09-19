@@ -460,3 +460,41 @@ def test_secret_and_state_directories_are_git_ignored():
         cwd=REPO_ROOT,
     ).stdout.strip()
     assert tracked == "", f"secrets or state are tracked: {tracked}"
+
+
+def test_the_standalone_check_requests_a_machine_readable_report():
+    """Regression: --json-report-file alone writes nothing.
+
+    pytest-json-report only activates on --json-report; passing only the file
+    path silently produces no report, which would leave "unit/API tests produce
+    machine-readable results" unmet while the suite still looked green.
+    """
+    source = DEV_PY.read_text()
+    assert '"--json-report"' in source
+    assert "--json-report-file=" in source
+
+
+def test_the_ci_workflow_also_requests_the_report():
+    workflow = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text()
+    assert "--json-report --json-report-file=" in workflow
+
+
+def test_the_ci_workflow_installs_with_require_hashes():
+    """The claim of repeatable installation from lockfiles must be literal."""
+    workflow = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text()
+    assert "--require-hashes" in workflow
+    assert "npm ci" in workflow
+
+
+def test_the_ci_workflow_asserts_the_guards_reject_violations():
+    """CI must prove rejection, not merely run the checkers on clean code."""
+    workflow = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text()
+    assert "a cross-module import is rejected" in workflow
+    assert "a fake adapter in the production config is rejected" in workflow
+    assert "contract schema drift is rejected" in workflow
+
+
+def test_the_ci_workflow_runs_the_suite_against_real_postgres():
+    workflow = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text()
+    assert "postgres:17.11-alpine" in workflow
+    assert "--ds=config.settings.standalone" in workflow

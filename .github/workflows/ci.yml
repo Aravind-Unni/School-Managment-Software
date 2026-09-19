@@ -1,0 +1,295 @@
+# Foundation CI.
+#
+# Five jobs, each proving one thing B00 requires:
+#   contracts  -- no schema drift, no architecture violation, frozen interfaces
+#   guards     -- the checks above actually REJECT a real violation
+#   backend    -- the full suite against real PostgreSQL, installed from lockfiles
+#   frontend   -- lint, typecheck, unit tests and a production build
+#   containers -- images are digest-pinned and both Dockerfiles build
+#
+# "Repeatable installation from lockfiles" is enforced literally: pip runs with
+# --require-hashes and npm with `ci`, so an unpinned or drifted dependency fails
+# the build rather than resolving to something new.
+
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "22.22.2"
+
+jobs:
+  contracts:
+    name: contracts and architecture
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # Deliberately BEFORE any dependency install: both checkers are standard
+      # library only, and proving that here keeps them usable by `doctor` on a
+      # fresh machine.
+      - name: contract manifest is current (no schema drift)
+        run: python3 scripts/contract_manifest.py --check
+
+      - name: architecture checks
+        run: python3 scripts/arch_check.py
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: install from hash-pinned lockfiles
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --require-hashes --no-deps \
+            -r backend/requirements.txt -r backend/requirements-dev.txt
+
+      - name: lint and format
+        run: |
+          ruff check .
+          ruff format --check .
+
+      - name: contract suite
+        run: pytest tests/contracts -q
+
+  guards:
+    name: guards reject real violations
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      # These assertions are the acceptance criteria "CI rejects a forbidden
+      # import" and "CI rejects a production fake configuration". They are
+      # written as explicit shell steps, not only as pytest cases, so the
+      # rejection is visible in the CI log a reviewer reads.
+      - name: a cross-module import is rejected
+        run: |
+          printf '"""Injected violation."""\nfrom modules.attendance import models  # noqa: F401\n' \
+            > backend/modules/demo/_ci_violation.py
+          if python3 scripts/arch_check.py; then
+            echo "::error::arch_check PASSED on a forbidden cross-module import"
+            exit 1
+          fi
+          echo "rejected as expected"
+          rm backend/modules/demo/_ci_violation.py
+          python3 scripts/arch_check.py
+
+      - name: a fake adapter in the production config is rejected
+        run: |
+          cp backend/config/settings/production.py /tmp/production.py.bak
+          printf '\nfrom shared.fakes import FakeAccess\nPORT = FakeAccess\n' \
+            >> backend/config/settings/production.py
+          if python3 scripts/arch_check.py; then
+            echo "::error::arch_check PASSED on a production fake configuration"
+            exit 1
+          fi
+          echo "rejected as expected"
+          cp /tmp/production.py.bak backend/config/settings/production.py
+          python3 scripts/arch_check.py
+
+      - name: contract schema drift is rejected
+        run: |
+          cp contracts/common/error-envelope.schema.json /tmp/envelope.bak
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path("contracts/common/error-envelope.schema.json")
+          d = json.loads(p.read_text())
+          d["properties"]["injected_drift"] = {"type": "string"}
+          p.write_text(json.dumps(d, indent=2) + "\n")
+          PY
+          if python3 scripts/contract_manifest.py --check; then
+            echo "::error::manifest check PASSED on injected schema drift"
+            exit 1
+          fi
+          echo "rejected as expected"
+          cp /tmp/envelope.bak contracts/common/error-envelope.schema.json
+          python3 scripts/contract_manifest.py --check
+
+  backend:
+    name: backend suite on real PostgreSQL
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        # Same major line as infra/images.json. A service container cannot take a
+        # digest, so the tag is pinned to the patch version instead.
+        image: postgres:17.11-alpine
+        env:
+          POSTGRES_DB: school_ci_ci_m00
+          POSTGRES_USER: school_dev
+          POSTGRES_PASSWORD: school_dev_local_only
+          LANG: C
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U school_dev -d school_ci_ci_m00"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+
+    env:
+      APP_ENV: standalone
+      MODULE_ID: M00
+      DATABASE_URL: postgresql://school_dev:school_dev_local_only@127.0.0.1:5432/school_ci_ci_m00
+      SESSION_SECRET: ci-only-not-a-real-secret
+      TOTP_ENCRYPTION_KEY: Y2ktb25seS1ub3QtYS1yZWFsLWtleS0zMmJ5dGVzLS0=
+      DEV_PERSONA_MODE: fixed
+      DEMO_FIXTURES_ENABLED: "true"
+      WORKER_AVAILABLE: "false"
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: install from hash-pinned lockfiles
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --require-hashes --no-deps \
+            -r backend/requirements.txt -r backend/requirements-dev.txt
+
+      - name: migrations match the models (no drift)
+        run: python backend/manage.py makemigrations --check --dry-run
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.standalone
+          PYTHONPATH: backend
+
+      - name: apply real migrations to PostgreSQL
+        run: python backend/manage.py migrate --noinput
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.standalone
+          PYTHONPATH: backend
+
+      - name: full suite against PostgreSQL
+        run: |
+          pytest tests -q --ds=config.settings.standalone \
+            --json-report --json-report-file=pytest-postgres.json
+
+      - name: the OpenAPI contract still generates cleanly
+        run: python backend/manage.py spectacular --fail-on-warn --file /tmp/openapi.yaml
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.standalone
+          PYTHONPATH: backend
+
+      - name: the committed OpenAPI matches the code
+        run: |
+          # A view changed without regenerating the contract is schema drift by
+          # another route, so it fails here too.
+          diff -u contracts/M00/openapi.yaml /tmp/openapi.yaml
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-report
+          path: pytest-postgres.json
+          if-no-files-found: warn
+
+  frontend:
+    name: frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: install from the committed lockfile
+        run: npm ci --no-audit --no-fund
+
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npx vitest run
+      - run: npx vite build
+
+      - name: the generated client matches the approved OpenAPI
+        run: |
+          # Regenerate and diff: a contract change that did not regenerate the
+          # client would otherwise ship a client that lies about the API.
+          npm run generate:client
+          git diff --exit-code -- src/features/demo/generated/schema.d.ts
+
+  containers:
+    name: container images build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: every base image is pinned by digest
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, sys
+          record = json.loads(pathlib.Path("infra/images.json").read_text())
+          bad = []
+          for name, image in record["images"].items():
+              digest = image.get("digest", "")
+              if not digest.startswith("sha256:") or len(digest) != 71:
+                  bad.append(f"{name}: {digest!r}")
+          if bad:
+              print("unpinned or malformed digests:", bad, file=sys.stderr)
+              sys.exit(1)
+          print(f"{len(record['images'])} images pinned by digest")
+          PY
+
+      - name: generated Compose files are valid YAML
+        run: |
+          python3 -m pip install --quiet pyyaml
+          python3 - <<'PY'
+          import pathlib, sys, yaml
+          sys.path.insert(0, "dev")
+          from harness.compose import render, required_port_names
+          from harness.modules import KNOWN_MODULE_IDS, load
+          from harness.naming import ResourceNames
+          root = pathlib.Path(".").resolve()
+          for module_id in KNOWN_MODULE_IDS:
+              declaration = load(root, module_id)
+              names = ResourceNames(module_id=module_id, repo_root=root)
+              ports = {n: 50000 + i for i, n in enumerate(required_port_names(declaration))}
+              spec = yaml.safe_load(render(
+                  repo_root=root, declaration=declaration, names=names,
+                  ports=ports, profile="standalone",
+              ))
+              assert "api" in spec["services"], module_id
+              print(f"{module_id}: {sorted(spec['services'])}")
+          PY
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: backend image builds from lockfiles
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/backend.Dockerfile
+          push: false
+          load: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: frontend image builds from the lockfile
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/frontend.Dockerfile
+          push: false
+          load: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
