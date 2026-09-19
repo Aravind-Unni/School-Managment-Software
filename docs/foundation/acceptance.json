@@ -63,6 +63,16 @@
     "browser": {
       "status": "NOT RUN",
       "reason": "Playwright needs a running stack, which needs a container engine. dev.py records backend=not-run, passed=false; it is not reported as passing."
+    },
+    "python_postgres_ci": {
+      "command": "pytest tests -q --ds=config.settings.standalone",
+      "backend": "postgres-container (17.11-alpine, CI service)",
+      "passed": 284,
+      "failed": 0,
+      "total": 284,
+      "exit_status": 0,
+      "run": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35419072164",
+      "note": "AUTHORITATIVE. Identical count to the local SQLite run, so no test silently skipped on either backend."
     }
   },
   "reviewed_interfaces": {
@@ -183,6 +193,21 @@
       "criterion": "Migrations apply to real PostgreSQL with no model drift",
       "how": "CI backend job ran makemigrations --check --dry-run and migrate --noinput against postgres 17.11; both passed",
       "status": "VERIFIED_IN_CI"
+    },
+    {
+      "criterion": "CI passes end to end",
+      "how": "Run 35419072164 on commit e1f6704: all five jobs green (contracts, guards, backend-on-PostgreSQL, frontend, containers)",
+      "status": "VERIFIED_IN_CI"
+    },
+    {
+      "criterion": "The full suite passes against real PostgreSQL",
+      "how": "CI backend job: 284 passed in 6.30s against postgres 17.11 with --ds=config.settings.standalone -- the same 284 that pass locally on SQLite, so nothing was silently skipped",
+      "status": "VERIFIED_IN_CI"
+    },
+    {
+      "criterion": "The committed OpenAPI matches the code",
+      "how": "CI regenerates with spectacular --fail-on-warn and diffs against contracts/M00/openapi.yaml; the frontend job regenerates the TypeScript client and git-diffs it",
+      "status": "VERIFIED_IN_CI"
     }
   ],
   "unverified_criteria": [
@@ -209,12 +234,6 @@
       "blocker": "No broker, and no module owns async work yet.",
       "what_exists": "A real worker service is rendered for declaring modules; eager mode is never configured and enqueue refuses without a real worker.",
       "how_to_verify": "First module that declares a worker must assert this against the real broker."
-    },
-    {
-      "criterion": "CI passes end to end",
-      "blocker": "First run (35418749812) had 4 of 5 jobs green; the backend job failed and exposed two real defects, now fixed. A re-run is needed to confirm all five.",
-      "what_exists": "contracts, guards, frontend and containers all passed. backend reached and passed migration checks, then failed in the suite.",
-      "how_to_verify": "Read the run triggered by the follow-up push."
     }
   ],
   "known_gaps": [
@@ -258,5 +277,19 @@
         "regression_tests": "test_the_suites_resolve_an_interpreter_without_a_venv"
       }
     ]
+  },
+  "ci_green_run": {
+    "run_id": 35419072164,
+    "run_number": 3,
+    "commit": "e1f67045df21",
+    "conclusion": "success",
+    "url": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35419072164",
+    "jobs": {
+      "contracts and architecture": "success",
+      "guards reject real violations": "success",
+      "backend suite on real PostgreSQL": "success",
+      "frontend": "success",
+      "container images build": "success"
+    }
   }
 }

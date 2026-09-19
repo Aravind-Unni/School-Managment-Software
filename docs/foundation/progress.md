@@ -1,7 +1,7 @@
 # Foundation progress — B00
 
-**Status: complete and self-verified where the environment allowed; awaiting peer
-review.** Not merged, not deployed.
+**Status: complete, CI green end to end, awaiting peer review.** Not merged, not
+deployed.
 
 | | |
 |---|---|
@@ -47,7 +47,24 @@ static   ruff check, ruff format, arch_check (7), manifest, eslint, tsc,
 browser  NOT RUN (no container engine; recorded as not-run, not as passing)
 ```
 
-## CI first run — and the two defects it caught
+## CI: green
+
+Run [35419072164](https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35419072164)
+on `e1f6704` — **all five jobs green**:
+
+| job | result |
+|---|---|
+| contracts and architecture | success |
+| guards reject real violations | success |
+| backend suite on real PostgreSQL | success — **284 passed** |
+| frontend | success |
+| container images build | success |
+
+**284 passed against PostgreSQL 17.11 — the same count as the local SQLite run**,
+so no test is silently skipped on either backend. The PostgreSQL run is the
+authoritative one.
+
+## CI's first run — and the two defects it caught
 
 Run [35418749812](https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35418749812):
 **4 of 5 jobs green.** `contracts`, `guards`, `frontend` and `containers` passed.
@@ -86,17 +103,19 @@ verification machine: `/usr/local/bin/docker` is a dangling symlink left by an
 uninstalled Docker Desktop, and only the Homebrew `docker-compose` binary
 survives — which cannot start anything without a daemon.
 
-So these remain unverified, and `acceptance.json` lists them as such rather than
-claiming them:
+So these four remain unverified, and `acceptance.json` lists them as such rather
+than claiming them:
 
 - a fresh checkout booting the placeholder via `up`/`migrate`/`seed`
 - the REST endpoint and React page inside the container stack
 - browser tests producing results
 - worker crash/retry behaviour
-- two simultaneous stacks actually running at once (names and rendered Compose
-  files are proven; running them is not)
-- CI passing end to end — 4 of 5 jobs are green; the `backend` job needs a
-  re-run to confirm the two fixes
+
+Resource isolation is **no longer** on that list: CI exposed a real collision in
+it, the fix is tested across five developer/path shapes, and CI proves both images
+build and every module's Compose file renders.
+(CI end-to-end is now verified — see above. The remaining items below all need a
+local container engine.)
 
 `doctor` reports the missing engine and exits 2, which is the honest-failure
 behaviour B00 asks for.
