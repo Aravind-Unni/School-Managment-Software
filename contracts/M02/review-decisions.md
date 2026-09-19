@@ -61,3 +61,39 @@ Minimum to unblock implementation: record approval/revisions for this packet and
 shared changes, settle B00 verification, then freeze a reviewed manifest revision.
 An acceptable partial is this schema/fixture proposal and draft PR. Do not begin
 module tests before the packet gate, or enable permissions before their review.
+
+---
+
+## Review outcome — 2026-09-20
+
+Reviewer: Abhinav M. Recorded at the time of the decision, not inferred later.
+
+**Approved as proposed**, with no revisions requested: the M02 contract packet,
+its OpenAPI surface, DTO and event schemas, error rows and consumer fixtures, and
+the shared compatibility resolutions in the table above. This approval is the
+packet gate described in `AGENTS.md`; module tests and code may now be written
+against the frozen artefacts.
+
+The manifest tooling limitation recorded above was fixed in the same decision
+rather than deferred, because it made the guard report success while leaving the
+largest artefacts unhashed:
+
+- Revision and per-module freeze state moved out of `scripts/contract_manifest.py`
+  into `contracts/revision.json`, so recording a review outcome no longer requires
+  editing code.
+- Artefact discovery is now recursive and covers `error-codes.json` and
+  `openapi-seed.yaml`. The previous top-level-only scan had never hashed
+  `contracts/M02/schemas/dtos.schema.json`, `contracts/M02/schemas/events.schema.json`,
+  `contracts/M01/schemas/dtos.schema.json`, `contracts/M01/error-codes.json` or
+  `contracts/M01/openapi-seed.yaml`. All five are now tracked.
+- Revision `school-contracts-v4` freezes M00 and M02: 20 frozen entries.
+
+**Deliberately not approved here.** M01 remains `not_started` in the manifest. It
+is implemented and merged, but no tracked record shows its packet passing this
+gate, and freezing it as a side effect of M02's review would assert a review that
+did not happen. Its artefacts are hashed, so drift is still reported; they are
+simply not claimed as approved. That remains an open decision.
+
+B00's own verification gate is likewise still open, and the local machine still
+has no container engine, so PostgreSQL and browser evidence for M02 cannot be
+produced here.

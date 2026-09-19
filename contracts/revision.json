@@ -1,0 +1,21 @@
+{
+  "revision": "school-contracts-v4",
+  "status": "reviewed",
+  "note": "Revision data, not code. The generator reads this file; it decides nothing itself. A module is listed under 'frozen_modules' only after its contract packet passed a human review gate, and the reviewer is named alongside the date. Adding a module here is the freeze; removing one un-freezes it and the drift guard will report every hash that moves.",
+  "envelope_versions": {
+    "event_envelope": 1
+  },
+  "frozen_modules": {
+    "M00": {
+      "reviewed_on": "2026-09-12",
+      "reviewer": "foundation (B00)",
+      "note": "Placeholder contract generated from real M00 code and frozen so drift is detectable."
+    },
+    "M02": {
+      "reviewed_on": "2026-09-20",
+      "reviewer": "Abhinav M",
+      "note": "Academic registry packet, OpenAPI, DTO/event schemas, error rows and consumer fixtures reviewed and approved. Shared compatibility items in contracts/M02/review-decisions.md approved with them."
+    }
+  },
+  "unfrozen_note": "M01 access is implemented and merged to main, but no tracked record shows its packet passing the review gate, so it stays 'not_started' here. Its artefacts are still hashed, so drift is reported; they are simply not claimed as approved. Freezing M01 is a separate reviewed decision and must not be done as a side effect of another module's freeze."
+}

@@ -115,6 +115,11 @@
         }
       ],
       "packet": null,
+      "review": {
+        "note": "Placeholder contract generated from real M00 code and frozen so drift is detectable.",
+        "reviewed_on": "2026-09-12",
+        "reviewer": "foundation (B00)"
+      },
       "slug": "demo",
       "status": "frozen"
     },
@@ -122,11 +127,35 @@
       "artefacts": [
         {
           "frozen": false,
+          "id": "M01/error-codes.json",
+          "kind": "json-schema",
+          "owner": "M01 access",
+          "path": "contracts/M01/error-codes.json",
+          "sha256": "36df181e271effda11c90fc53c8c0df0827596b7d5ac51d500e54111129fabff"
+        },
+        {
+          "frozen": false,
+          "id": "M01/openapi-seed.yaml",
+          "kind": "openapi",
+          "owner": "M01 access",
+          "path": "contracts/M01/openapi-seed.yaml",
+          "sha256": "22bc7a09cce5afe3b32214f4203d7e3a0a6e257b2b1727685f35a52eef6e8e74"
+        },
+        {
+          "frozen": false,
           "id": "M01/openapi.yaml",
           "kind": "openapi",
           "owner": "M01 access",
           "path": "contracts/M01/openapi.yaml",
           "sha256": "f73c02342ac06be7c2b5893c9bd5e72d03023fdc7a0c9dc19dae899ce7955bfd"
+        },
+        {
+          "frozen": false,
+          "id": "M01/schemas/dtos.schema.json",
+          "kind": "json-schema",
+          "owner": "M01 access",
+          "path": "contracts/M01/schemas/dtos.schema.json",
+          "sha256": "54640817d5c0b0372b46d6ffd8492b13b82b58d33f0a4950026bed8c85d65dd4"
         }
       ],
       "fixtures": [
@@ -152,11 +181,74 @@
       "status": "not_started"
     },
     "M02": {
-      "artefacts": [],
-      "fixtures": [],
+      "artefacts": [
+        {
+          "frozen": true,
+          "id": "M02/error-codes.json",
+          "kind": "json-schema",
+          "owner": "M02 registry",
+          "path": "contracts/M02/error-codes.json",
+          "sha256": "7f028202a48a75d1457de491a178c282a5ef0eacd362f6afc9327dd18862d39a"
+        },
+        {
+          "frozen": true,
+          "id": "M02/openapi.json",
+          "kind": "openapi",
+          "owner": "M02 registry",
+          "path": "contracts/M02/openapi.json",
+          "sha256": "34e97eb06e5d67dbb18383b6cfda081e86403c0e1fbc45d9ddf9572aaeb198f3"
+        },
+        {
+          "frozen": true,
+          "id": "M02/schemas/dtos.schema.json",
+          "kind": "json-schema",
+          "owner": "M02 registry",
+          "path": "contracts/M02/schemas/dtos.schema.json",
+          "sha256": "404e3d5194ec1482613e277aad31963f5eac0100458c4aec79d8246058ecb585"
+        },
+        {
+          "frozen": true,
+          "id": "M02/schemas/events.schema.json",
+          "kind": "json-schema",
+          "owner": "M02 registry",
+          "path": "contracts/M02/schemas/events.schema.json",
+          "sha256": "dfc29145342bdc2a634c0899c6d646da541c5346d4d7b00a2b07b3d24481ed4f"
+        }
+      ],
+      "fixtures": [
+        {
+          "frozen": true,
+          "id": "M02/fixtures/expected-results.json",
+          "kind": "consumer-fixture",
+          "owner": "M02 registry",
+          "path": "contracts/M02/fixtures/expected-results.json",
+          "sha256": "3c9f732b397a4a503686c3f8846a3dcbeceaa92f76ef2720b5e13b99c91bb102"
+        },
+        {
+          "frozen": true,
+          "id": "M02/fixtures/responses.json",
+          "kind": "consumer-fixture",
+          "owner": "M02 registry",
+          "path": "contracts/M02/fixtures/responses.json",
+          "sha256": "6eb4c3c95a2bdd886967fa9272810be7d1c917978800bdab51a74457ddcbf0ee"
+        },
+        {
+          "frozen": true,
+          "id": "M02/fixtures/scenario.json",
+          "kind": "consumer-fixture",
+          "owner": "M02 registry",
+          "path": "contracts/M02/fixtures/scenario.json",
+          "sha256": "5038036a176cd568765b2c76aee8938d7978db13a519a84b6630dd96b5bc001c"
+        }
+      ],
       "packet": "contracts/M02/PACKET.md",
+      "review": {
+        "note": "Academic registry packet, OpenAPI, DTO/event schemas, error rows and consumer fixtures reviewed and approved. Shared compatibility items in contracts/M02/review-decisions.md approved with them.",
+        "reviewed_on": "2026-09-20",
+        "reviewer": "Abhinav M"
+      },
       "slug": "registry",
-      "status": "not_started"
+      "status": "frozen"
     },
     "M03": {
       "artefacts": [],
@@ -243,7 +335,7 @@
       "status": "not_started"
     }
   },
-  "note": "Starting revision for the B00 foundation. No final v2 executable contract is assumed to exist. Replace 'revision' with the actual approved revision once contract review completes, and flip an entry's 'frozen' to true only after its human review gate.",
-  "revision": "school-contracts-v3-draft",
-  "status": "draft"
+  "note": "Revision data, not code. The generator reads this file; it decides nothing itself. A module is listed under 'frozen_modules' only after its contract packet passed a human review gate, and the reviewer is named alongside the date. Adding a module here is the freeze; removing one un-freezes it and the drift guard will report every hash that moves.",
+  "revision": "school-contracts-v4",
+  "status": "reviewed"
 }

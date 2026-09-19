@@ -43,14 +43,22 @@ class RegistryReadCapability:
     expires_at: datetime
     operations: frozenset[Literal["relationships", "teaching_assignments"]]
 
+
 class RegistryFactReaderPort(Protocol):
     def get_relationships(
-        self, capability: RegistryReadCapability, *, actor_id: UUID,
-        student_id: UUID, effective_date: date,
+        self,
+        capability: RegistryReadCapability,
+        *,
+        actor_id: UUID,
+        student_id: UUID,
+        effective_date: date,
     ) -> RelationshipFacts: ...
 
     def get_teaching_assignments(
-        self, capability: RegistryReadCapability, *, staff_id: UUID,
+        self,
+        capability: RegistryReadCapability,
+        *,
+        staff_id: UUID,
         effective_date: date,
     ) -> tuple[TeachingAssignment, ...]: ...
 ```
@@ -81,18 +89,26 @@ fields. Exports carry only the selected row kind per page.
 ```python
 class RegistryExchangePort(Protocol):
     def preview_import(
-        self, context: RequestContext, request: ImportPreviewRequest,
+        self,
+        context: RequestContext,
+        request: ImportPreviewRequest,
     ) -> ImportPreview: ...
 
     def commit_import(
-        self, context: RequestContext, request: ImportCommit, *,
+        self,
+        context: RequestContext,
+        request: ImportCommit,
+        *,
         idempotency_key: str,
     ) -> ImportResult: ...
 
     def export_page(
-        self, context: RequestContext, *,
+        self,
+        context: RequestContext,
+        *,
         kind: Literal["students", "staff", "opening_enrolments"],
-        cursor: str | None = None, page_size: int = 50,
+        cursor: str | None = None,
+        page_size: int = 50,
     ) -> ExportPage: ...
 ```
 
