@@ -65,7 +65,9 @@ this scoped repair does not alter the shared harness.
 - Evidence bundle generated at
   `dev/evidence/abnvm_aumspro_1c8e30_m01/bundle.json`; incomplete because local
   standalone/browser execution is unavailable.
-- CI rerun for the repair: pending push / observation.
+- Repair commit `135ee490b4e76444aa8e0be9490f5b206aa3104c`: [CI run 35453838095](https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35453838095), **all seven jobs passed**.
+  PostgreSQL: **159 passed, zero skips**; Chromium against the real stack:
+  **8 passed in 7.0 seconds**. Container startup, migrations and seeding passed.
 
 ## Remaining implementation and gates
 
@@ -77,7 +79,9 @@ phase exit gate must be approved before recording STANDALONE_VERIFIED.
 
 ## Concrete next action
 
-Push this repair to the same PR and inspect every job on the new revision,
-especially the eight-test browser result. Record the observed run URL and counts.
-Then obtain contract review before any further module implementation; keep the
-PR in draft and do not merge or deploy.
+Obtain review of the proposed M01 packet and existing shared-interface changes
+on PR #2, resolve the human policy questions in `handoff.md`, then freeze the
+approved contract revision before implementing new endpoints. A second developer
+must verify a fresh checkout. CI repair is complete; keep the PR in draft and do
+not merge or deploy. This record-only follow-up retains the tested implementation
+from `135ee49`.

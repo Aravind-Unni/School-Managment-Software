@@ -2,7 +2,7 @@
   "module": "M01 access -- identity, permissions and two-factor authentication",
   "recorded_at": "2026-09-19",
   "standalone_verified": false,
-  "standalone_verified_note": "NOT recorded. The whole-module gate requires the browser suite to pass and a second developer's verification from a fresh checkout. Neither has happened on this machine: there is no container engine, and no second developer has run it. Individual completed steps do not imply STANDALONE_VERIFIED.",
+  "standalone_verified_note": "NOT recorded. The real-stack browser job now passes in CI, but contract review/freeze, second-developer fresh-checkout verification and the human phase exit gate remain open. Local container execution is unavailable.",
   "source_identity": {
     "repository": "https://github.com/Aravind-Unni/School-Managment-Software",
     "branch": "m01/access-identity",
@@ -21,7 +21,7 @@
     "python3 scripts/dev.py seed M01 --scenario baseline",
     "python3 scripts/dev.py check M01 --suite contracts",
     "python3 scripts/dev.py check M01 --suite standalone",
-    "python3 scripts/dev.py check M01 --suite browser",
+    "MODULE_ID=M01 python3 scripts/dev.py check M01 --suite browser",
     "python3 scripts/dev.py evidence M01",
     "python3 scripts/dev.py down M01"
   ],
@@ -161,9 +161,13 @@
       "manage.py spectacular --fail-on-warn (M01)": 0
     },
     "browser suite": {
-      "status": "NOT RUN LOCALLY -- BLOCKER",
-      "reason": "No container engine on this machine. dev.py records backend=not-run, passed=false; it is never reported as passing.",
-      "ci": "A m01-browser job brings up the real stack via the generated Compose file, seeds it, installs Chromium and runs the seven journeys. It has not executed yet."
+      "status": "PASSED IN CI; NOT RUN LOCALLY",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "run": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35453838095",
+      "commit": "135ee490b4e76444aa8e0be9490f5b206aa3104c",
+      "reason": "No local container engine; CI executed the real Compose stack with Chromium. All eight M01 tests passed in 7.0 seconds."
     },
     "M01 suite on real PostgreSQL (CI, AUTHORITATIVE)": {
       "command": "pytest tests/modules/M01 tests/contracts -q --ds=config.settings.standalone",
@@ -172,7 +176,7 @@
       "failed": 0,
       "skipped": 0,
       "exit_status": 0,
-      "run": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35451755792",
+      "run": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35453838095",
       "note": "159 passed, ZERO skipped. The two-connection recovery-code race RAN on PostgreSQL and passed, so concurrency is verified rather than claimed. Migrations applied to an EMPTY database, then baseline seeded, migrate re-run and re-seeded, verifying them on populated data."
     }
   },
@@ -217,9 +221,9 @@
     }
   ],
   "blockers": [
-    "No container engine: up/migrate/seed and the browser suite cannot run here. The browser suite is a REQUIRED check that has not passed, so it is a blocker by M01's own rule.",
+    "Local container execution remains unavailable; CI startup, migrations, seeding and eight browser tests passed.",
     "No second developer has verified from a fresh checkout, which the whole-module gate requires.",
-    "The shared contract changes above are unreviewed. They affect every future module."
+    "The proposed M01 contracts and shared interface changes are unreviewed and not frozen; the human phase exit gate remains open."
   ],
   "delivery": {
     "merged": false,
@@ -315,6 +319,22 @@
       "standalone": "not-run: no container engine",
       "browser": "not-run: no container engine"
     },
-    "repair_ci": "pending"
+    "repair_ci": {
+      "commit": "135ee490b4e76444aa8e0be9490f5b206aa3104c",
+      "run": "https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35453838095",
+      "jobs": {
+        "guards reject real violations": "success",
+        "container images build": "success",
+        "M01 browser suite against a real stack": "success",
+        "contracts and architecture": "success",
+        "frontend": "success",
+        "M01 access suite on real PostgreSQL": "success",
+        "backend suite on real PostgreSQL": "success"
+      },
+      "postgres_passed": 159,
+      "postgres_skipped": 0,
+      "browser_passed": 8,
+      "browser_skipped": 0
+    }
   }
 }

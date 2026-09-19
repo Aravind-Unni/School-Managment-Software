@@ -38,14 +38,12 @@ database, then baseline seeded, `migrate` re-run and re-seeded — verifying the
 **populated** data. Both container images build. The committed OpenAPI matches freshly
 generated output.
 
-## 3. What is NOT verified — do not claim these
+## 3. Verification limits
 
-1. **The overall browser job has not passed yet.** Run 35452150849 executed all
-   eight Access tests successfully, but also collected four M00 tests against the
-   M01-only stack: two failed on the absent `/demo` route (10 passed, 2 failed).
-   The current repair selects Access tests with `MODULE_ID=M01` in Playwright
-   and sets it on the CI browser step. No test assertions were changed. The
-   repair still needs a green CI run before this blocker is cleared.
+1. **Local browser execution remains unavailable**, but the CI browser blocker
+   is resolved: run 35453838095 on `135ee49` passed all eight M01 tests against
+   the real stack in 7.0 seconds. The earlier run collected M00 tests against
+   the M01-only stack; explicit `MODULE_ID=M01` now selects Access tests.
 2. **`up` / `migrate` / `seed` against real containers on a developer machine** —
    never run here, because there is no container engine. The GitHub runner does have
    one (`server 28.0.4`), so CI is the only place this path exists.
@@ -149,6 +147,8 @@ forwards the variable but does not set it from the positional module argument.
 Without the variable the default Playwright collection still includes both
 modules. Discovery confirms eight M01 tests and twelve default tests.
 
-Next: observe the repair's CI, then request review/freeze of the existing M01
-contract proposal before extending endpoints or policy. The open human questions
+Repair CI run 35453838095 is green in all seven jobs: 159 PostgreSQL tests
+passed without skips and eight real-stack browser tests passed. Next: request
+review/freeze of the existing M01 contract proposal before extending endpoints
+or policy. The open human questions
 in section 7 remain unanswered; this CI repair does not approve those choices.
