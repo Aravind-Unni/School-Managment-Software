@@ -290,5 +290,31 @@
       "fix": "Both Dockerfiles now chown their tree to the runtime user and COPY --chown. Running as root would also 'fix' it, and would create root-owned files in the developer's checkout through the bind mount, so ownership is the correct fix rather than dropping the unprivileged user.",
       "not_verifiable_locally": "There is no container engine on the development machine, so CI is the only place this can be confirmed."
     }
+  },
+  "ci_browser_collection_repair": {
+    "starting_commit": "d87b30dd43d89a204c685e190830245b49988cf9",
+    "pr_url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/2",
+    "failed_run_id": 35452150849,
+    "observed_browser_result": {
+      "access_passed": 8,
+      "total_passed": 10,
+      "demo_failed": 2
+    },
+    "cause": "M00 browser tests collected against an M01-only stack; /demo is not mounted.",
+    "repair": "Select access.spec.ts when MODULE_ID=M01 and set that environment variable on the CI browser step. No test files changed.",
+    "local_checks": {
+      "M00_contracts_passed": 105,
+      "M01_contracts_passed": 16,
+      "M01_sqlite_passed": 53,
+      "M01_sqlite_skipped": 1,
+      "frontend_unit_passed": 47,
+      "lint": "passed",
+      "typecheck": "passed",
+      "M01_browser_discovered": 8,
+      "default_browser_discovered": 12,
+      "standalone": "not-run: no container engine",
+      "browser": "not-run: no container engine"
+    },
+    "repair_ci": "pending"
   }
 }

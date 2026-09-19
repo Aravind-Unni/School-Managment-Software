@@ -40,10 +40,12 @@ generated output.
 
 ## 3. What is NOT verified — do not claim these
 
-1. **The browser suite still has not passed.** Its first CI attempt failed because
-   the job ran `doctor` before installing dependencies (`doctor` gated on `.venv` and
-   was right to); the ordering is fixed but the job has not gone green yet. M01's rule
-   makes a required check that has not passed a **blocker**.
+1. **The overall browser job has not passed yet.** Run 35452150849 executed all
+   eight Access tests successfully, but also collected four M00 tests against the
+   M01-only stack: two failed on the absent `/demo` route (10 passed, 2 failed).
+   The current repair selects Access tests with `MODULE_ID=M01` in Playwright
+   and sets it on the CI browser step. No test assertions were changed. The
+   repair still needs a green CI run before this blocker is cleared.
 2. **`up` / `migrate` / `seed` against real containers on a developer machine** —
    never run here, because there is no container engine. The GitHub runner does have
    one (`server 28.0.4`), so CI is the only place this path exists.
@@ -136,3 +138,17 @@ B00's DTO contract and the harness test adapter are untouched.
    retry signal, so `rate_limited` was added. Confirm.
 6. **Session lifetime.** Currently 12 hours with no "remember me", chosen because a
    school device is often shared. Confirm.
+
+## 8. CI repair handoff (2026-09-19)
+
+The session resumed clean branch `m01/access-identity` at `d87b30d`, matching
+open draft PR #2 and the fetched remote. Read `progress.md` for current counts.
+For local M01 browser execution use
+`MODULE_ID=M01 python3 scripts/dev.py check M01 --suite browser`: the harness
+forwards the variable but does not set it from the positional module argument.
+Without the variable the default Playwright collection still includes both
+modules. Discovery confirms eight M01 tests and twelve default tests.
+
+Next: observe the repair's CI, then request review/freeze of the existing M01
+contract proposal before extending endpoints or policy. The open human questions
+in section 7 remain unanswered; this CI repair does not approve those choices.
