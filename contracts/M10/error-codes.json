@@ -1,0 +1,66 @@
+{
+  "status": "frozen",
+  "note": "Reuses frozen ErrorCode values; message_key values are module-owned.",
+  "rows": [
+    {
+      "status": 401,
+      "code": "unauthenticated",
+      "message_key": "error.unauthenticated",
+      "when": "No server-derived session."
+    },
+    {
+      "status": 403,
+      "code": "action_denied",
+      "message_key": "error.action_denied",
+      "when": "Actor lacks required alumni.* permission."
+    },
+    {
+      "status": 404,
+      "code": "object_inaccessible",
+      "message_key": "error.object_inaccessible",
+      "when": "Absent or other-school candidate/profile. Cross-school always 404."
+    },
+    {
+      "status": 409,
+      "code": "version_conflict",
+      "message_key": "error.version_conflict",
+      "when": "expected_version mismatch on contact patch."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "alumni.error.candidate_not_pending",
+      "when": "Approve/exclude called when candidate is not pending."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.validation_failed",
+      "when": "Malformed body or unknown field (closed schemas)."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.server_internal_field_rejected",
+      "when": "Body carried school_id/actor_id/auth_level/grant."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "alumni.error.reason_required",
+      "when": "Approve or contact patch missing non-empty reason."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "alumni.error.export_field_not_granted",
+      "when": "Export requested a field not in the granted contact/export set."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "alumni.error.contact_self_disabled",
+      "when": "alumni.contact_self used while alumni login policy fixture is off."
+    }
+  ]
+}

@@ -51,6 +51,12 @@ from .files import (
     UploadSession,
 )
 from .identity import AuthLevel, RequestContext
+from .alumni import (
+    AlumniPort,
+    AlumniProfileView,
+    ContactPreferenceView,
+    CreateCandidateResult,
+)
 from .library import (
     AvailabilityView,
     LibraryPort,
@@ -132,6 +138,8 @@ __all__ = [
     "UNAUTHENTICATED_REASONS",
     "AccessPort",
     "ActionDenied",
+    "AlumniPort",
+    "AlumniProfileView",
     "ArtifactRef",
     "AssessmentPort",
     "AttendancePort",
@@ -140,6 +148,8 @@ __all__ = [
     "AuthLevel",
     "AvailabilityView",
     "BalanceDTO",
+    "ContactPreferenceView",
+    "CreateCandidateResult",
     "CalendarDayDTO",
     "ChargeDTO",
     "ClockPort",

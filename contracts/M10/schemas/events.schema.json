@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M10/events",
+  "title": "M10 alumni event payloads",
+  "description": "Payloads only. Envelope is frozen common. event_type uses dotted snake; schema_version on envelope is 1.",
+  "$defs": {
+    "alumni.profile_approved": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile_id",
+        "student_id"
+      ],
+      "properties": {
+        "profile_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "alumni.contact_preference_changed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile_id",
+        "purpose",
+        "channel",
+        "allowed"
+      ],
+      "properties": {
+        "profile_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "purpose": {
+          "type": "string",
+          "enum": [
+            "alumni_notice",
+            "directory"
+          ]
+        },
+        "channel": {
+          "type": "string",
+          "enum": [
+            "email",
+            "sms",
+            "postal",
+            "phone"
+          ]
+        },
+        "allowed": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

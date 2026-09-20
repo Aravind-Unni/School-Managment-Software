@@ -1,0 +1,35 @@
+{
+  "status": "frozen",
+  "assertions": [
+    {
+      "id": "dup_event",
+      "given": "StudentLeft redelivered same leaving_event_id",
+      "then": "exactly one AlumniCandidate"
+    },
+    {
+      "id": "transfer_pending",
+      "given": "transfer_include_as_alumni is null",
+      "then": "transfer candidate state remains pending"
+    },
+    {
+      "id": "no_grades",
+      "given": "approved profile",
+      "then": "no marks/grade fields on AlumniProfileDTO"
+    },
+    {
+      "id": "deny_unrelated",
+      "given": "unrelated_actor reads profile",
+      "then": "404 or 403 per Access fixture"
+    },
+    {
+      "id": "withdraw_excludes",
+      "given": "preference allowed=false for alumni_notice/email",
+      "then": "not in next contact selection"
+    },
+    {
+      "id": "export_fields",
+      "given": "export fields includes phone when not granted",
+      "then": "422 alumni.error.export_field_not_granted"
+    }
+  ]
+}

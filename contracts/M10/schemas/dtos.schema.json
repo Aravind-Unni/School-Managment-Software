@@ -1,0 +1,501 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M10/dtos",
+  "title": "M10 alumni DTOs",
+  "$defs": {
+    "LeavingOutcome": {
+      "type": "string",
+      "enum": [
+        "graduate",
+        "transfer"
+      ]
+    },
+    "CandidateState": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "excluded"
+      ]
+    },
+    "ContactChannel": {
+      "type": "string",
+      "enum": [
+        "email",
+        "sms",
+        "postal",
+        "phone"
+      ]
+    },
+    "ContactPurpose": {
+      "type": "string",
+      "enum": [
+        "alumni_notice",
+        "directory"
+      ]
+    },
+    "ContactFields": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "phone": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "postal_address": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        }
+      }
+    },
+    "ContactPreferenceDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "person_id",
+        "purpose",
+        "channel",
+        "allowed",
+        "updated_at"
+      ],
+      "properties": {
+        "person_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "purpose": {
+          "$ref": "#/$defs/ContactPurpose"
+        },
+        "channel": {
+          "$ref": "#/$defs/ContactChannel"
+        },
+        "allowed": {
+          "type": "boolean"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "AlumniCandidateDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "student_id",
+        "leaving_event_id",
+        "outcome",
+        "state",
+        "version",
+        "admission_no",
+        "display_name",
+        "last_standard",
+        "leaving_year"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "leaving_event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "outcome": {
+          "$ref": "#/$defs/LeavingOutcome"
+        },
+        "state": {
+          "$ref": "#/$defs/CandidateState"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "admission_no": {
+          "type": "string",
+          "minLength": 1
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "last_standard": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "leaving_year": {
+          "type": "integer",
+          "minimum": 1900
+        }
+      }
+    },
+    "AlumniProfileDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "student_id",
+        "last_standard",
+        "leaving_year",
+        "outcome",
+        "snapshot_version",
+        "contact_fields",
+        "preferences",
+        "version",
+        "display_name",
+        "admission_no"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "last_standard": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "leaving_year": {
+          "type": "integer",
+          "minimum": 1900
+        },
+        "outcome": {
+          "$ref": "#/$defs/LeavingOutcome"
+        },
+        "snapshot_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "contact_fields": {
+          "$ref": "#/$defs/ContactFields"
+        },
+        "preferences": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ContactPreferenceDTO"
+          }
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "admission_no": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "AlumniProfileView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "student_id",
+        "leaving_year",
+        "outcome",
+        "approved_contact_fields",
+        "preferences"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "leaving_year": {
+          "type": "integer",
+          "minimum": 1900
+        },
+        "outcome": {
+          "$ref": "#/$defs/LeavingOutcome"
+        },
+        "approved_contact_fields": {
+          "$ref": "#/$defs/ContactFields"
+        },
+        "preferences": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ContactPreferenceDTO"
+          }
+        }
+      }
+    },
+    "CreateCandidateResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "state"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "$ref": "#/$defs/CandidateState"
+        }
+      }
+    },
+    "ApproveCandidateRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "include",
+        "reason"
+      ],
+      "properties": {
+        "include": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contact_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "fields": {
+              "$ref": "#/$defs/ContactFields"
+            },
+            "preferences": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "purpose",
+                  "channel",
+                  "allowed"
+                ],
+                "properties": {
+                  "purpose": {
+                    "$ref": "#/$defs/ContactPurpose"
+                  },
+                  "channel": {
+                    "$ref": "#/$defs/ContactChannel"
+                  },
+                  "allowed": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ApproveCandidateResponse": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/AlumniProfileDTO"
+        },
+        {
+          "$ref": "#/$defs/AlumniCandidateDTO"
+        }
+      ]
+    },
+    "PatchContactRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expected_version",
+        "reason"
+      ],
+      "properties": {
+        "fields": {
+          "$ref": "#/$defs/ContactFields"
+        },
+        "preferences": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "purpose",
+              "channel",
+              "allowed"
+            ],
+            "properties": {
+              "purpose": {
+                "$ref": "#/$defs/ContactPurpose"
+              },
+              "channel": {
+                "$ref": "#/$defs/ContactChannel"
+              },
+              "allowed": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "CreateExportRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "filters",
+        "fields"
+      ],
+      "properties": {
+        "filters": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "year": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1900
+            },
+            "outcome": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "graduate",
+                "transfer",
+                null
+              ]
+            }
+          }
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "enum": [
+              "display_name",
+              "admission_no",
+              "leaving_year",
+              "outcome",
+              "email",
+              "phone",
+              "postal_address"
+            ]
+          }
+        }
+      }
+    },
+    "ExportJobDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "job_id",
+        "state"
+      ],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed"
+          ]
+        }
+      }
+    },
+    "CandidateCollection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "next_cursor"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AlumniCandidateDTO"
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "AlumniCollection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "next_cursor"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AlumniProfileDTO"
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}
