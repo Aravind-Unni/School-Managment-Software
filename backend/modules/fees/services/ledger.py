@@ -41,9 +41,7 @@ def compute_balance(
 
     credit_rows = list(Credit.objects.filter(school_id=school_id, student_id=student_id))
     credited = sum(c.amount_paise for c in credit_rows if c.charge_id is not None)
-    credit_available = sum(
-        c.remaining_paise for c in credit_rows if c.charge_id is None
-    )
+    credit_available = sum(c.remaining_paise for c in credit_rows if c.charge_id is None)
 
     paid = sum(
         a.amount_paise

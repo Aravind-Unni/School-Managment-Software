@@ -297,9 +297,7 @@ def test_stale_2fa_on_reversal(client, baseline, settings):
     )
     res = client.post(
         f"/api/v1/payments/{pay['payment']['id']}/reversals",
-        data=json.dumps(
-            {"reason": "needs 2fa", "expected_version": pay["payment"]["version"]}
-        ),
+        data=json.dumps({"reason": "needs 2fa", "expected_version": pay["payment"]["version"]}),
         content_type="application/json",
     )
     assert res.status_code == 401
