@@ -7,8 +7,8 @@
 | Branch | `m07/fees-payments-balances-receipts` |
 | Started from | `da0570c2efdd3e17ef852164d0a62a9265416fbf` (`origin/main`) |
 | Manifest revision | `school-contracts-v7` (current); proposed freeze → `school-contracts-v8` |
-| PR | not opened yet |
-| Head commit | (local; see git) |
+| PR | https://github.com/Aravind-Unni/School-Managment-Software/pull/8 (draft) |
+| Head commit | `768542a416a2f9ea1fcdb85fa7698e5bbf9111f9` |
 | Last recorded | 2026-09-20 |
 
 ## Original request
