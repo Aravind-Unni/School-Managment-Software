@@ -671,11 +671,74 @@
       "status": "frozen"
     },
     "M09": {
-      "artefacts": [],
-      "fixtures": [],
+      "artefacts": [
+        {
+          "frozen": true,
+          "id": "M09/error-codes.json",
+          "kind": "json-schema",
+          "owner": "M09 library",
+          "path": "contracts/M09/error-codes.json",
+          "sha256": "132b52a064718d569daf8be0dcaa5f95c6c1cd1a2753822c914c723bd9638516"
+        },
+        {
+          "frozen": true,
+          "id": "M09/openapi.json",
+          "kind": "openapi",
+          "owner": "M09 library",
+          "path": "contracts/M09/openapi.json",
+          "sha256": "45c86b6db206984417ad622ff80829012ee33d3735672183547842681cae4327"
+        },
+        {
+          "frozen": true,
+          "id": "M09/schemas/dtos.schema.json",
+          "kind": "json-schema",
+          "owner": "M09 library",
+          "path": "contracts/M09/schemas/dtos.schema.json",
+          "sha256": "2d7bb10bfae0bfcafa8637c1c26c16ff8400136363f3dfc41ec62f8c681bf193"
+        },
+        {
+          "frozen": true,
+          "id": "M09/schemas/events.schema.json",
+          "kind": "json-schema",
+          "owner": "M09 library",
+          "path": "contracts/M09/schemas/events.schema.json",
+          "sha256": "4d70cb66b9f50a538a2077d2d63fe0d8a53838bd0109d812d55557fdcbe257ab"
+        }
+      ],
+      "fixtures": [
+        {
+          "frozen": true,
+          "id": "M09/fixtures/expected-results.json",
+          "kind": "consumer-fixture",
+          "owner": "M09 library",
+          "path": "contracts/M09/fixtures/expected-results.json",
+          "sha256": "423170b61540a87b23839e44156d21ec6e31f1dc9558d5da249980f4bc86bfed"
+        },
+        {
+          "frozen": true,
+          "id": "M09/fixtures/responses.json",
+          "kind": "consumer-fixture",
+          "owner": "M09 library",
+          "path": "contracts/M09/fixtures/responses.json",
+          "sha256": "cd8b706cabfb3683ab7e001709d992fd1be547698cb0ec47f8206a33291ab1f9"
+        },
+        {
+          "frozen": true,
+          "id": "M09/fixtures/scenario.json",
+          "kind": "consumer-fixture",
+          "owner": "M09 library",
+          "path": "contracts/M09/fixtures/scenario.json",
+          "sha256": "e124797bd4b33ab22c28671b83379bda3725dd4356f028cfa53a73955d560b6c"
+        }
+      ],
       "packet": "contracts/M09/PACKET.md",
+      "review": {
+        "note": "Library packet, OpenAPI, DTO/event schemas, error rows, LibraryPort signatures and consumer fixtures approved as proposed (items 1\u201318). No fines; fixture borrower limits; overdue on GET; split circulate permissions.",
+        "reviewed_on": "2026-09-21",
+        "reviewer": "Abhinav M"
+      },
       "slug": "library",
-      "status": "not_started"
+      "status": "frozen"
     },
     "M10": {
       "artefacts": [],
@@ -714,6 +777,6 @@
     }
   },
   "note": "Revision data, not code. The generator reads this file; it decides nothing itself. A module is listed under 'frozen_modules' only after its contract packet passed a human review gate, and the reviewer is named alongside the date. Adding a module here is the freeze; removing one un-freezes it and the drift guard will report every hash that moves.",
-  "revision": "school-contracts-v9",
+  "revision": "school-contracts-v10",
   "status": "reviewed"
 }

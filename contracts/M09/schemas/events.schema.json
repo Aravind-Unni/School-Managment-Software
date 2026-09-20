@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M09/events",
+  "title": "M09 library event payloads",
+  "description": "Payloads only. Envelope is frozen common. Names use dotted snake form.",
+  "$defs": {
+    "library.loan_issued": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["loan_id", "borrower_person_id", "due_date"],
+      "properties": {
+        "loan_id": { "type": "string", "format": "uuid" },
+        "borrower_person_id": { "type": "string", "format": "uuid" },
+        "due_date": { "type": "string", "format": "date" }
+      }
+    },
+    "library.loan_returned": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["loan_id", "copy_id"],
+      "properties": {
+        "loan_id": { "type": "string", "format": "uuid" },
+        "copy_id": { "type": "string", "format": "uuid" }
+      }
+    },
+    "library.overdue_detected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["loan_id", "as_of"],
+      "properties": {
+        "loan_id": { "type": "string", "format": "uuid" },
+        "as_of": { "type": "string", "format": "date" }
+      }
+    }
+  }
+}

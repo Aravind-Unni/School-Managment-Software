@@ -1,0 +1,56 @@
+{
+  "status": "frozen",
+  "note": "Synthetic baseline for M09 standalone. Shared fixture UUIDs. Limits are seed data, not invented school policy.",
+  "policy_fixture": {
+    "max_active_loans_per_borrower": 3,
+    "max_renewals_per_loan": 2
+  },
+  "school_a": {
+    "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "librarian_actor_id": "5e101a6a-eca4-5a5f-b5ef-c2d776c939fe",
+    "student_s1": {
+      "id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c",
+      "admission_no": "A-1001",
+      "display_name": "S1"
+    },
+    "student_s2": {
+      "id": "eceaa8ed-e2db-50cf-a649-557816565032",
+      "admission_no": "A-1002",
+      "display_name": "S2"
+    },
+    "guardian_g1": {
+      "id": "a98bf46f-c03f-59a9-96e4-5eb94f0cf4a7",
+      "linked_student_id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c"
+    },
+    "title": {
+      "name": "കേരള ചരിത്രം",
+      "author": "Synthetic Author",
+      "language": "ml",
+      "isbn": "978-0-000000-01-1"
+    },
+    "copy": {
+      "accession_no": "ACC-1001",
+      "state": "available"
+    },
+    "future_due_date": "2026-10-01",
+    "overdue_due_date": "2026-09-01",
+    "as_of_before_overdue": "2026-09-01",
+    "as_of_overdue": "2026-09-02"
+  },
+  "school_b": {
+    "school_id": "8e1e985f-ba74-5baa-82c6-b884525e416c",
+    "student_foreign": {
+      "id": "131631b7-b975-56ae-80b3-4294fd4071ed",
+      "admission_no": "B-9",
+      "display_name": "S1_B"
+    }
+  },
+  "expected": {
+    "one_open_loan_after_concurrent_issue": true,
+    "repeat_return_harmless": true,
+    "overdue_at_as_of_boundary": true,
+    "s2_cannot_read_s1_loans": true,
+    "duplicate_accession_rejected": true,
+    "withdrawn_history_retained": true
+  }
+}

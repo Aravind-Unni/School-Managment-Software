@@ -12,6 +12,7 @@ import { ACCESS_MESSAGES } from "@features/access/locales/messages";
 import { ASSESSMENT_MESSAGES } from "@features/assessment/locales/messages";
 import { ATTENDANCE_MESSAGES } from "@features/attendance/locales/messages";
 import { feesMessages as FEES_MESSAGES } from "@features/fees/locales/messages";
+import { LIBRARY_MESSAGES } from "@features/library/locales/messages";
 import { performanceMessages as PERFORMANCE_MESSAGES } from "@features/performance/locales/messages";
 import { TIMETABLE_MESSAGES } from "@features/timetable/locales/messages";
 import { TRANSPORT_MESSAGES } from "@features/transport/locales/messages";
@@ -70,6 +71,7 @@ export function LanguageProvider({ children }: { readonly children: ReactNode })
             ...PERFORMANCE_MESSAGES.en,
             ...FEES_MESSAGES.en,
             ...TRANSPORT_MESSAGES.en,
+            ...LIBRARY_MESSAGES.en,
           },
           ml: {
             ...SHARED_MESSAGES.ml,
@@ -80,6 +82,7 @@ export function LanguageProvider({ children }: { readonly children: ReactNode })
             ...PERFORMANCE_MESSAGES.ml,
             ...FEES_MESSAGES.ml,
             ...TRANSPORT_MESSAGES.ml,
+            ...LIBRARY_MESSAGES.ml,
           },
         }),
     }),

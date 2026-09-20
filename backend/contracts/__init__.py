@@ -51,6 +51,11 @@ from .files import (
     UploadSession,
 )
 from .identity import AuthLevel, RequestContext
+from .library import (
+    AvailabilityView,
+    LibraryPort,
+    OpenLoanView,
+)
 from .pagination import (
     DEFAULT_PAGE_SIZE,
     MAX_PAGE_SIZE,
@@ -133,6 +138,7 @@ __all__ = [
     "AttendanceSummaryDTO",
     "AuditRecord",
     "AuthLevel",
+    "AvailabilityView",
     "BalanceDTO",
     "CalendarDayDTO",
     "ChargeDTO",
@@ -154,11 +160,13 @@ __all__ = [
     "HealthCheck",
     "InterventionDTO",
     "InterventionPage",
+    "LibraryPort",
     "MetricDTO",
     "ModuleRegistration",
     "NotificationPort",
     "ObjectInaccessible",
     "ObjectStoragePort",
+    "OpenLoanView",
     "Page",
     "PerformancePort",
     "PeriodChargeResult",

@@ -1,0 +1,24 @@
+{
+  "module_id": "M09",
+  "slug": "library",
+  "status": "implemented_awaiting_standalone_evidence",
+  "standalone_verified": false,
+  "branch": "m09/library-catalogue-lending",
+  "started_from": "b046ad6e567e3a1e6d165d17ffd101c3821300be",
+  "manifest_revision": "school-contracts-v10",
+  "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/10",
+  "head_commit": "d09e0dfc78538fdc0a93aa00fab6793c6e58ba26",
+  "checks": {
+    "contracts": "pass",
+    "module_sqlite": "17 passed",
+    "frontend_vitest": "11 passed (moduleRegistry)",
+    "standalone": "not-run",
+    "browser": "not-run"
+  },
+  "pending_integration": [
+    "real_m01_auth_2fa",
+    "real_m02_registry_borrower_contacts",
+    "library_fines_out_of_scope"
+  ],
+  "note": "Do not set standalone_verified true until whole-module gate + peer verify from fresh checkout."
+}

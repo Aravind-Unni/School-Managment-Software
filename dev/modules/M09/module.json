@@ -1,8 +1,8 @@
 {
   "module_id": "M09",
   "slug": "library",
-  "_comment": "Minimum declaration. If this module turns out to own asynchronous work or files, its contract packet must say so and this file must be updated before implementation.",
-  "_status": "module not implemented; this declaration describes the stack `dev.py up` would start once it is",
+  "_comment": "Catalogue lending and returns. No broker; overdue detection on GET.",
+  "_status": "implemented",
   "resources": {
     "postgres": true,
     "frontend": true,

@@ -1,0 +1,322 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M09/dtos",
+  "title": "M09 library DTOs",
+  "$defs": {
+    "CopyState": {
+      "type": "string",
+      "enum": ["available", "on_loan", "lost", "damaged", "withdrawn"]
+    },
+    "BorrowerType": {
+      "type": "string",
+      "enum": ["student", "staff"]
+    },
+    "ReturnCondition": {
+      "type": "string",
+      "enum": ["ok", "damaged", "lost"]
+    },
+    "TitleDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "school_id", "name", "author", "language", "version"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "isbn": { "type": ["string", "null"], "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "author": { "type": "string", "minLength": 1 },
+        "language": { "type": "string", "minLength": 1 },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "CreateTitleRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "author", "language"],
+      "properties": {
+        "isbn": { "type": ["string", "null"], "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "author": { "type": "string", "minLength": 1 },
+        "language": { "type": "string", "minLength": 1 }
+      }
+    },
+    "CopyDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "title_id",
+        "accession_no",
+        "state",
+        "version"
+      ],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "title_id": { "type": "string", "format": "uuid" },
+        "accession_no": { "type": "string", "minLength": 1 },
+        "state": { "$ref": "#/$defs/CopyState" },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "CreateCopyRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title_id", "accession_no"],
+      "properties": {
+        "title_id": { "type": "string", "format": "uuid" },
+        "accession_no": { "type": "string", "minLength": 1 }
+      }
+    },
+    "LoanDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "copy_id",
+        "borrower_person_id",
+        "borrower_type",
+        "issued_at",
+        "due_date",
+        "version"
+      ],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "copy_id": { "type": "string", "format": "uuid" },
+        "borrower_person_id": { "type": "string", "format": "uuid" },
+        "borrower_type": { "$ref": "#/$defs/BorrowerType" },
+        "issued_at": { "type": "string", "format": "date-time" },
+        "due_date": { "type": "string", "format": "date" },
+        "returned_at": { "type": ["string", "null"], "format": "date-time" },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "CreateLoanRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "copy_id",
+        "borrower_person_id",
+        "borrower_type",
+        "due_date"
+      ],
+      "properties": {
+        "copy_id": { "type": "string", "format": "uuid" },
+        "borrower_person_id": { "type": "string", "format": "uuid" },
+        "borrower_type": { "$ref": "#/$defs/BorrowerType" },
+        "due_date": { "type": "string", "format": "date" }
+      }
+    },
+    "ReturnLoanRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["returned_at", "condition", "expected_version"],
+      "properties": {
+        "returned_at": { "type": "string", "format": "date-time" },
+        "condition": { "$ref": "#/$defs/ReturnCondition" },
+        "expected_version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "RenewLoanRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["new_due_date", "expected_version"],
+      "properties": {
+        "new_due_date": { "type": "string", "format": "date" },
+        "expected_version": { "type": "integer", "minimum": 1 },
+        "reason": { "type": ["string", "null"], "minLength": 1 }
+      }
+    },
+    "RenewalDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "loan_id",
+        "old_due",
+        "new_due",
+        "actor_id"
+      ],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "loan_id": { "type": "string", "format": "uuid" },
+        "old_due": { "type": "string", "format": "date" },
+        "new_due": { "type": "string", "format": "date" },
+        "actor_id": { "type": "string", "format": "uuid" },
+        "reason": { "type": ["string", "null"] }
+      }
+    },
+    "CopyAdjustmentDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "copy_id",
+        "reason",
+        "old_state",
+        "new_state",
+        "actor_id"
+      ],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "copy_id": { "type": "string", "format": "uuid" },
+        "reason": { "type": "string", "minLength": 1 },
+        "old_state": { "$ref": "#/$defs/CopyState" },
+        "new_state": { "$ref": "#/$defs/CopyState" },
+        "actor_id": { "type": "string", "format": "uuid" }
+      }
+    },
+    "AdjustCopyRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["new_state", "reason", "expected_version"],
+      "properties": {
+        "new_state": { "$ref": "#/$defs/CopyState" },
+        "reason": { "type": "string", "minLength": 1 },
+        "expected_version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "OverdueItemDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "loan_id",
+        "copy_id",
+        "accession_no",
+        "borrower_person_id",
+        "borrower_display_name",
+        "due_date",
+        "as_of"
+      ],
+      "properties": {
+        "loan_id": { "type": "string", "format": "uuid" },
+        "copy_id": { "type": "string", "format": "uuid" },
+        "accession_no": { "type": "string" },
+        "borrower_person_id": { "type": "string", "format": "uuid" },
+        "borrower_display_name": { "type": "string" },
+        "due_date": { "type": "string", "format": "date" },
+        "as_of": { "type": "string", "format": "date" }
+      }
+    },
+    "OpenLoanView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["loan_id", "copy_id", "due_date", "overdue"],
+      "properties": {
+        "loan_id": { "type": "string", "format": "uuid" },
+        "copy_id": { "type": "string", "format": "uuid" },
+        "due_date": { "type": "string", "format": "date" },
+        "overdue": { "type": "boolean" }
+      }
+    },
+    "AvailabilityView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["available", "total"],
+      "properties": {
+        "available": { "type": "integer", "minimum": 0 },
+        "total": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "CatalogueImportRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "author", "language", "accession_no"],
+      "properties": {
+        "isbn": { "type": ["string", "null"] },
+        "name": { "type": "string", "minLength": 1 },
+        "author": { "type": "string", "minLength": 1 },
+        "language": { "type": "string", "minLength": 1 },
+        "accession_no": { "type": "string", "minLength": 1 }
+      }
+    },
+    "CatalogueImportRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rows"],
+      "properties": {
+        "rows": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/CatalogueImportRow" }
+        }
+      }
+    },
+    "CatalogueImportReviewItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["row_index", "issue", "accession_no"],
+      "properties": {
+        "row_index": { "type": "integer", "minimum": 0 },
+        "issue": {
+          "type": "string",
+          "enum": ["duplicate_accession", "duplicate_isbn_review"]
+        },
+        "accession_no": { "type": "string" },
+        "isbn": { "type": ["string", "null"] }
+      }
+    },
+    "CatalogueImportResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["created_title_ids", "created_copy_ids", "review_items"],
+      "properties": {
+        "created_title_ids": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" }
+        },
+        "created_copy_ids": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" }
+        },
+        "review_items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/CatalogueImportReviewItem" }
+        }
+      }
+    },
+    "TitleCollection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items", "next_cursor"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/TitleDTO" }
+        },
+        "next_cursor": { "type": ["string", "null"] }
+      }
+    },
+    "LoanCollection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items", "next_cursor"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/LoanDTO" }
+        },
+        "next_cursor": { "type": ["string", "null"] }
+      }
+    },
+    "OverdueCollection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items", "next_cursor"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/OverdueItemDTO" }
+        },
+        "next_cursor": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

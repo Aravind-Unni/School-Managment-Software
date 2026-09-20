@@ -1,28 +1,23 @@
 # Contract packet -- M09 library
 
-Status: **NOT STARTED**. No executable contract exists for this module yet.
+Status: **APPROVED AND FROZEN** under revision `school-contracts-v10` on 2026-09-21
+(see `review-decisions.md`).
 
-Manifest revision this packet targets: `school-contracts-v3-draft`
-(the current draft in `contracts/manifest.json`; replace with the approved
-revision once review completes).
+Manifest revision this packet targets: `school-contracts-v10`
 
 ---
 
 ## The rule this packet exists to enforce
 
-**Contract approval comes before module coding.** The module task must first
-produce, for developer review:
+**Contract approval comes before module coding.** This packet proposes:
 
-1. the exact **OpenAPI** document for this module's REST API
-2. the **JSON Schema** for every request, response and event payload
-3. the **Protocol signatures** for every service port this module provides
-4. the **error enums** -- which `code`/`message_key` pairs this module returns
-5. **example fixtures** a consumer suite can assert against
+1. OpenAPI (`openapi.json`)
+2. JSON Schema for DTOs and events (`schemas/`)
+3. Protocol signatures (`ports.md` → `backend/contracts/library.py` after freeze)
+4. Error enums (`error-codes.json`)
+5. Example fixtures (`fixtures/`)
 
-Those are then **frozen in `contracts/manifest.json`** before implementation
-starts. A later provider of the same contract must pass the same consumer
-fixture suite. A mismatch needs a reviewed contract revision -- **not** an
-invented per-module field and **not** a local adapter.
+Review decisions: [`review-decisions.md`](review-decisions.md).
 
 ## What this module must declare
 
@@ -32,29 +27,26 @@ A `ModuleRegistration` in `backend/modules/library/registration.py`:
 |---|---|
 | `id` | `M09` |
 | `slug` | `library` |
-| `api_prefix` | `/api/library/` |
-| `frontend_routes` | React routes, each with nav metadata and required permission |
-| `permission_codes` | all namespaced `library.<verb>_<noun>` |
-| `consumers` | service ports this module requires from others |
-| `scheduled_jobs` | periodic work, cron interpreted in Asia/Kolkata |
-| `migration_dependencies` | module ids whose migrations must apply first |
-| `health_checks` | readiness probes contributed to `/readyz` |
+| `api_prefix` | `/api/v1/` |
+| `frontend_routes` | Catalogue, issue desk, overdues, borrower history |
+| `permission_codes` | `library.catalogue.manage`, `library.issue`, `library.return`, `library.renew`, `library.read_overdues`, `library.read_own` |
+| `consumers` | `access`, `registry`, `platform`, `clock` |
+| `scheduled_jobs` | none in baseline (overdue detection on GET) |
+| `migration_dependencies` | none |
+| `health_checks` | `library_tables` |
 
 ## Inherited, non-negotiable constraints
-
-These come from the foundation and are already enforced; a module does not
-restate or relax them:
 
 - UUID `id`, trusted `school_id`, integer `version` on mutable aggregates
 - `expected_version` on every update; stale means **409**
 - errors use the frozen envelope: 401 / 403 / 404 / 409 / 422
 - **cross-school access is 404, never 403**
-- collections return `items` + `next_cursor`; no offset pagination
-- UTC instants, Asia/Kolkata civil dates, integer INR paise, decimal-string marks
-- audit + outbox appended in the **same transaction** as the write
-- Access checks apply to API, service, workers, exports and private files
+- collections return `items` + `next_cursor`
+- UTC instants, Asia/Kolkata civil dates
+- audit + outbox in the **same transaction** as the write
+- Access checks on API, service, workers, exports and private files
 - client role, school and relationship claims are never trusted
-- `ResourceGrant` is server-internal and never accepted from a browser
+- No library fines / money balances
 
 ## Standalone development
 
@@ -65,16 +57,12 @@ python scripts/dev.py seed M09 --scenario baseline
 python scripts/dev.py check M09 --suite standalone
 ```
 
-Dependency ports bind to deterministic fakes. Real authentication and 2FA
-integration stay **explicitly pending** until M01 is integrated.
-
-## B00 notes specific to this module
-
-_No module-specific note in the B00 packet beyond the inherited constraints above._
+Dependency ports bind to deterministic fakes. Real authentication/2FA and
+real Registry contact fields stay **explicitly pending**.
 
 ## Human gates before this module ships
 
 - this packet reviewed and frozen in the manifest
-- every equivalence/authorisation rule reviewed before being enabled
+- every authorisation rule reviewed before being enabled
 - the phase exit gate
 - first customer-facing report for each design partner, where applicable
