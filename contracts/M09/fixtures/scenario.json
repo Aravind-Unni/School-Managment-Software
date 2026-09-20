@@ -1,5 +1,5 @@
 {
-  "status": "proposed",
+  "status": "frozen",
   "note": "Synthetic baseline for M09 standalone. Shared fixture UUIDs. Limits are seed data, not invented school policy.",
   "policy_fixture": {
     "max_active_loans_per_borrower": 3,

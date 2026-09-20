@@ -1,5 +1,5 @@
 {
-  "status": "proposed",
+  "status": "frozen",
   "note": "Consumer examples for TitleDTO, CopyDTO, LoanDTO, AvailabilityView, OverdueItemDTO.",
   "title": {
     "id": "a0b1c2d3-4e5f-6677-8899-aabbccdde001",

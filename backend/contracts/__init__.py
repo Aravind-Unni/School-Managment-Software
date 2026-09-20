@@ -101,6 +101,11 @@ from .timetable import (
     PeriodSessionDTO,
     TeachingAuthorityDTO,
 )
+from .library import (
+    AvailabilityView,
+    LibraryPort,
+    OpenLoanView,
+)
 from .transport import (
     PeriodChargeResult,
     TransportParticipationView,
@@ -133,6 +138,7 @@ __all__ = [
     "AttendanceSummaryDTO",
     "AuditRecord",
     "AuthLevel",
+    "AvailabilityView",
     "BalanceDTO",
     "CalendarDayDTO",
     "ChargeDTO",
@@ -154,11 +160,13 @@ __all__ = [
     "HealthCheck",
     "InterventionDTO",
     "InterventionPage",
+    "LibraryPort",
     "MetricDTO",
     "ModuleRegistration",
     "NotificationPort",
     "ObjectInaccessible",
     "ObjectStoragePort",
+    "OpenLoanView",
     "Page",
     "PerformancePort",
     "PeriodChargeResult",

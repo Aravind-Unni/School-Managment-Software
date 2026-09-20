@@ -1,5 +1,5 @@
 {
-  "status": "proposed",
+  "status": "frozen",
   "note": "Reuses frozen ErrorCode values; message_key values are module-owned.",
   "rows": [
     {

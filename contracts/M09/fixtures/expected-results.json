@@ -1,5 +1,5 @@
 {
-  "status": "proposed",
+  "status": "frozen",
   "concurrent_issue_one_winner": true,
   "repeat_return_harmless": true,
   "overdue_date_correct_in_school_timezone": true,

@@ -18,6 +18,7 @@ describe("module registry", () => {
       "M06",
       "M07",
       "M08",
+      "M09",
     ]);
   });
 
@@ -51,6 +52,9 @@ describe("module registry", () => {
       "nav.fees_concessions",
       "nav.transport",
       "nav.transport_billing",
+      "nav.library",
+      "nav.library_desk",
+      "nav.library_overdues",
     ]);
   });
 

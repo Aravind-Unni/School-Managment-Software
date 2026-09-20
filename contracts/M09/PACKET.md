@@ -1,10 +1,9 @@
 # Contract packet -- M09 library
 
-Status: **PROPOSED — awaiting human review gate.** Artefacts exist under
-`contracts/M09/` but are **not** frozen in `contracts/revision.json`.
+Status: **APPROVED AND FROZEN** under revision `school-contracts-v10` on 2026-09-21
+(see `review-decisions.md`).
 
-Manifest revision this packet targets: `school-contracts-v10` (proposed).
-Current frozen revision remains `school-contracts-v9` until review.
+Manifest revision this packet targets: `school-contracts-v10`
 
 ---
 
