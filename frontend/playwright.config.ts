@@ -5,6 +5,7 @@ const SPEC_BY_MODULE: Record<string, string> = {
   M00: "**/demo.spec.ts",
   M01: "**/access.spec.ts",
   M03: "**/timetable.spec.ts",
+  M04: "**/attendance.spec.ts",
 };
 
 /**

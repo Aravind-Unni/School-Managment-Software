@@ -118,6 +118,19 @@ class TimetableService:
             ),
         )
 
+    def get_sessions_for_staff(
+        self,
+        context: RequestContext,
+        staff_id: UUID,
+        effective_date: date,
+    ) -> tuple[PeriodSessionDTO, ...]:
+        """Return dated periods where staff is assigned or covering as substitute."""
+        self.scope.require_school_action(context, "timetable.read")
+        _day, sessions = self.reader.sessions_for_teacher(
+            school_id=context.school_id, staff_id=staff_id, on=effective_date
+        )
+        return tuple(session_to_dto(session) for session in sessions)
+
     def _require_session(
         self, context: RequestContext, timetable_session_id: UUID
     ) -> SessionView:

@@ -336,6 +336,20 @@ class TimetablePort(Protocol):
         """
         ...
 
+    def get_sessions_for_staff(
+        self,
+        context: RequestContext,
+        staff_id: UUID,
+        effective_date: date,
+    ) -> tuple[PeriodSessionDTO, ...]:
+        """Return dated periods where ``staff_id`` is assigned or live substitute.
+
+        Attendance uses this to build the teacher's day list. Cancelled and
+        holiday-empty days return accordingly. Does not authorise the caller;
+        the consumer asks Access and matches the actor to ``staff_id``.
+        """
+        ...
+
 
 @runtime_checkable
 class AttendancePort(Protocol):

@@ -4,50 +4,43 @@
 
 Build M04 independently: per-period attendance from the central timetable,
 draft/submit/correct, period summaries, events, en/ml UI, standalone profile,
-evidence and a draft PR. Propose contracts for review first. Do not integrate
-other business modules, invent school policy, merge or deploy.
+evidence and a draft PR. Propose contracts for review first.
 
 ## Current phase / source identity
 
-**Phase: contract proposal only — AWAITING HUMAN REVIEW before any
-implementation or freeze.**
+**Phase: implementation complete through steps 1–4 locally; browser suite depends
+on a running stack / CI. STANDALONE_VERIFIED is false until second-developer
+verification.**
 
 | Item | Observed value |
 |---|---|
 | Repository | https://github.com/Aravind-Unni/School-Managment-Software |
 | Branch | `m04/teacher-attendance` |
-| Branched from | `fd7751dbbeddfbcd3a526ad244a6e8fe0638a892` (`origin/main`) |
-| Manifest revision | `school-contracts-v4` (unchanged; M04 still `not_started` in manifest) |
-| PR | **Draft #5** — https://github.com/Aravind-Unni/School-Managment-Software/pull/5 |
-| Head | `e4ec862` |
+| Branched from | `fd7751d` (`origin/main`) |
+| Manifest revision | `school-contracts-v5`, M04 **frozen** |
+| PR | Draft #5 — https://github.com/Aravind-Unni/School-Managment-Software/pull/5 |
 | Recorded | 2026-09-20 |
 
 ## Complete
 
-- Inspected checkout, branched from latest `main` (M03 merged).
-- Read packet, shared ports, M03 TimetableService/DTOs, FakeRegistry enrolments.
-- Proposed contract artefacts under `contracts/M04/` (OpenAPI, DTOs, events,
-  errors, ports, fixtures, review-decisions). **Not frozen.**
+- Contract gate: all nine review items approved; TimetablePort + AttendancePort
+  added to shared contracts; FakeTimetable + M04 registry overlay.
+- Step 1: Session/Entry models, periods list, create/save drafts, period-teacher
+  gate, elective roster rejection.
+- Step 2: Submit with Idempotency-Key, concurrency, roster_stale; React mark UI
+  en/ml (submitSucceeded only after success).
+- Step 3: Corrections + events; real reconcile helper preserving history;
+  summaries from timetable eligibility (percentage null).
+- Step 4: Playwright attendance.spec.ts; contract tests; handoff/acceptance.
 
-## Incomplete
+## Incomplete / honest gaps
 
-- Human review / freeze of M04 contracts.
-- Shared revision: `TimetablePort` + `AttendancePort` in `backend/contracts`.
-- Implementation steps 1–4.
-- Standalone / browser / evidence.
-- PENDING integration cases (real roster transfers, substitutions, notifications,
-  performance denominators).
-
-## Changed interfaces
-
-None frozen. Proposal only — see `contracts/M04/review-decisions.md`.
+- Browser suite not claimed green until observed against a real stack.
+- STANDALONE_VERIFIED false (no second-developer fresh checkout).
+- PENDING integration: real roster transfers, substitutions, notifications,
+  performance denominators.
 
 ## Exact next step
 
-Reviewer answers the nine items in `review-decisions.md`. On approval: freeze
-M04 in `revision.json`, run `contract_manifest.py --update`, then implement
-step 1 (resolve periods/rosters, create drafts).
-
-## Blockers
-
-**Contract review gate.** AGENTS.md forbids coding before freeze.
+Push, update draft PR, run `dev.py check M04` suites in CI / with containers.
+Second developer verifies from a fresh checkout before STANDALONE_VERIFIED.

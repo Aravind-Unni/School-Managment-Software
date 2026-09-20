@@ -96,7 +96,11 @@ class FakeRegistry:
 
         membership = self._section_membership_overlay or fixtures.SECTION_MEMBERSHIP
         members = [student for student, section in membership if section == section_id]
-        enrolments = self._enrolment_overlay if self._enrolment_overlay is not None else SUBJECT_ENROLMENTS
+        enrolments = (
+            self._enrolment_overlay
+            if self._enrolment_overlay is not None
+            else SUBJECT_ENROLMENTS
+        )
         if subject_id is not None:
             members = [
                 student for student in members if subject_id in enrolments.get(student, ())

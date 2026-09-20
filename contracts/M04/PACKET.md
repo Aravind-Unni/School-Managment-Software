@@ -1,12 +1,7 @@
 # Contract packet -- M04 attendance
 
-Status: **PROPOSED, AWAITING REVIEW**. Artefacts live beside this packet under
-`contracts/M04/` (`openapi.json`, `schemas/`, `error-codes.json`, `ports.md`,
-`fixtures/`, `review-decisions.md`). They are **not** in `contracts/manifest.json`
-until a named reviewer freezes them.
-
-Manifest revision this packet targets: `school-contracts-v4` (current reviewed
-revision). Freezing M04 will bump the revision via `contracts/revision.json`.
+Status: **FROZEN** under revision `school-contracts-v5` (reviewed 2026-09-20 by
+Abhinav M). Artefacts live under `contracts/M04/`.
 
 ---
 

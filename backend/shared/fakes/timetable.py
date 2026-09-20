@@ -11,7 +11,7 @@ are fixture data only.
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, time, timedelta
 from uuid import UUID
 
@@ -32,9 +32,7 @@ TIMETABLE_ID = uuid.uuid5(
 )
 
 
-def session_id_for(
-    *, school_id: UUID, section_id: UUID, on: date, slot_code: str
-) -> UUID:
+def session_id_for(*, school_id: UUID, section_id: UUID, on: date, slot_code: str) -> UUID:
     """Return the stable dated period id (school, section, date, slot_code)."""
     return uuid.uuid5(
         TIMETABLE_SESSION_NAMESPACE,
@@ -188,7 +186,11 @@ class FakeTimetable:
                     date=cursor,
                     is_school_day=is_school,
                     reason_key="timetable.reason.holiday" if holiday else None,
-                    kinds=("holiday",) if holiday else (("weekday",) if is_school else ("weekend",)),
+                    kinds=(
+                        ("holiday",)
+                        if holiday
+                        else (("weekday",) if is_school else ("weekend",))
+                    ),
                 )
             )
             cursor = cursor + timedelta(days=1)
@@ -228,6 +230,31 @@ class FakeTimetable:
             cancelled=cancelled,
             eligible_for_attendance=bool(not holiday and not cancelled),
         )
+
+    def get_sessions_for_staff(
+        self,
+        context: RequestContext,
+        staff_id: UUID,
+        effective_date: date,
+    ) -> tuple[PeriodSessionDTO, ...]:
+        """Return periods on a date where staff is assigned or live substitute."""
+        self.failures.maybe_fail("timetable.get_sessions_for_staff")
+        self.calls.append(("get_sessions_for_staff", (staff_id, effective_date)))
+        if context.school_id != fixtures.SCHOOL_A:
+            return ()
+        if effective_date in self._holiday_dates:
+            return ()
+        matched: list[PeriodSessionDTO] = []
+        for session in self.get_sessions(context, fixtures.CLASS_C1, effective_date):
+            if session.cancelled:
+                continue
+            authority = self.get_teaching_authority(context, session.timetable_session_id)
+            if staff_id in {
+                authority.assigned_teacher_id,
+                authority.substitute_teacher_id,
+            }:
+                matched.append(session)
+        return tuple(matched)
 
     def _find(self, timetable_session_id: UUID) -> tuple[date, _PeriodSpec] | None:
         """Locate a period spec by stable session id."""

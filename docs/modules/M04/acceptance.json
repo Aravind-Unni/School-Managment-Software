@@ -1,0 +1,27 @@
+{
+  "module_id": "M04",
+  "slug": "attendance",
+  "STANDALONE_VERIFIED": false,
+  "reason_not_verified": "Second developer has not verified from a fresh checkout; browser suite must be observed on a real stack before claiming green.",
+  "contract_revision": "school-contracts-v5",
+  "branch": "m04/teacher-attendance",
+  "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/5",
+  "suites": {
+    "contracts": "run locally / CI",
+    "standalone": "24 pytest module tests as of 2026-09-20",
+    "browser": "not-run until stack + Playwright observed"
+  },
+  "pending_integration": [
+    "real_roster_transfers",
+    "real_substitutions",
+    "notifications",
+    "performance_denominators"
+  ],
+  "anti_cheat": {
+    "eligible_from_timetable_not_rows_only": true,
+    "period_teacher_gate_separate_from_access": true,
+    "percentage_null_until_config": true,
+    "reconciliation_preserves_history": true,
+    "no_allow_all_access": true
+  }
+}
