@@ -1,18 +1,19 @@
 # M04 attendance
 
-Status: **not started**. The foundation (B00) is built; this module is not.
+Status: **contract proposed — awaiting review**. No implementation yet.
 
+- Progress: [`progress.md`](progress.md)
 - Contract packet: [`contracts/M04/PACKET.md`](../../../contracts/M04/PACKET.md)
+- Review decisions: [`contracts/M04/review-decisions.md`](../../../contracts/M04/review-decisions.md)
 - Code will live in `backend/modules/attendance/` and `frontend/src/features/attendance/`
 - Nothing here is importable yet: `backend/modules/attendance/` deliberately has no
-  `__init__.py`, so no other module can accidentally depend on it and
-  `scripts/dev.py up M04` fails honestly rather than serving an empty app.
+  `__init__.py`.
 
 ## Before writing any code
 
-Produce the exact OpenAPI, JSON Schema, Protocol signatures, error enums and
-example fixtures listed in the packet, get them reviewed, and freeze them in
-`contracts/manifest.json`. Only then implement.
+Proposed OpenAPI, schemas, ports, errors and fixtures are in `contracts/M04/`.
+They must be reviewed and frozen in `contracts/manifest.json` before
+implementation.
 
 ## B00 note
 
