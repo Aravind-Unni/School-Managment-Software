@@ -268,6 +268,14 @@ def m05_baseline_registry_kwargs() -> dict[str, object]:
     }
 
 
+def m06_baseline_registry_kwargs() -> dict[str, object]:
+    """Return FakeRegistry kwargs for the M06 baseline scenario.
+
+    Same C1 maths enrolment as M05 so performance projections cover S1 and S2.
+    """
+    return m05_baseline_registry_kwargs()
+
+
 #: Dated teaching assignments. T1 teaches C1; T2 appears nowhere.
 TEACHING_ASSIGNMENTS: dict[UUID, tuple[TeachingAssignment, ...]] = {
     fixtures.TEACHER_T1: (

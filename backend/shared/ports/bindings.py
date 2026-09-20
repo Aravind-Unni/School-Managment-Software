@@ -19,6 +19,8 @@ FAKEABLE_PORTS: frozenset[str] = frozenset(
         "access",
         "registry",
         "timetable",
+        "assessment",
+        "attendance",
         "platform",
         "notifications",
         "object_storage",
@@ -49,6 +51,8 @@ def build_fake_registry(
     """
     from shared.fakes import (
         FakeAccess,
+        FakeAssessment,
+        FakeAttendance,
         FakeFiles,
         FakeNotifications,
         FakeObjectStorage,
@@ -56,7 +60,11 @@ def build_fake_registry(
         FakeTimetable,
         TestPlatformAdapter,
     )
-    from shared.fakes.registry import m04_baseline_registry_kwargs, m05_baseline_registry_kwargs
+    from shared.fakes.registry import (
+        m04_baseline_registry_kwargs,
+        m05_baseline_registry_kwargs,
+        m06_baseline_registry_kwargs,
+    )
 
     consumers = tuple(registration.consumers) if registration else ()
     unknown = sorted(set(consumers) - FAKEABLE_PORTS)
@@ -80,11 +88,13 @@ def build_fake_registry(
         return adapter
 
     def registry_factory():
-        """Bind FakeRegistry, applying M04/M05 baseline overlays when needed."""
+        """Bind FakeRegistry, applying M04/M05/M06 baseline overlays when needed."""
         if registration is not None and registration.id == "M04":
             return FakeRegistry(**m04_baseline_registry_kwargs())
         if registration is not None and registration.id == "M05":
             return FakeRegistry(**m05_baseline_registry_kwargs())
+        if registration is not None and registration.id == "M06":
+            return FakeRegistry(**m06_baseline_registry_kwargs())
         return FakeRegistry()
 
     def files_factory():
@@ -93,10 +103,20 @@ def build_fake_registry(
         adapter._clock = clock
         return adapter
 
+    def assessment_factory():
+        """Bind FakeAssessment for modules that consume published results."""
+        return FakeAssessment()
+
+    def attendance_factory():
+        """Bind FakeAttendance for modules that consume period summaries."""
+        return FakeAttendance()
+
     factories = {
         "access": access_factory,
         "registry": registry_factory,
         "timetable": FakeTimetable,
+        "assessment": assessment_factory,
+        "attendance": attendance_factory,
         "platform": lambda: TestPlatformAdapter(worker_available=worker_available),
         "notifications": FakeNotifications,
         "object_storage": FakeObjectStorage,

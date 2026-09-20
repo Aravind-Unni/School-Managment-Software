@@ -461,11 +461,74 @@
       "status": "frozen"
     },
     "M06": {
-      "artefacts": [],
-      "fixtures": [],
+      "artefacts": [
+        {
+          "frozen": true,
+          "id": "M06/error-codes.json",
+          "kind": "json-schema",
+          "owner": "M06 performance",
+          "path": "contracts/M06/error-codes.json",
+          "sha256": "4b704708a845b5b29fb9fd1fd25a3e0158802d6261a786222f8831c00ac2d4b0"
+        },
+        {
+          "frozen": true,
+          "id": "M06/openapi.json",
+          "kind": "openapi",
+          "owner": "M06 performance",
+          "path": "contracts/M06/openapi.json",
+          "sha256": "46394ac5a44b4e3040064c55462a75b46b88e9cd05b211848143aeb5c0524758"
+        },
+        {
+          "frozen": true,
+          "id": "M06/schemas/dtos.schema.json",
+          "kind": "json-schema",
+          "owner": "M06 performance",
+          "path": "contracts/M06/schemas/dtos.schema.json",
+          "sha256": "483559056da6362203f86180ddcb631f66d2af54efea45604d3ae4327e9f1585"
+        },
+        {
+          "frozen": true,
+          "id": "M06/schemas/events.schema.json",
+          "kind": "json-schema",
+          "owner": "M06 performance",
+          "path": "contracts/M06/schemas/events.schema.json",
+          "sha256": "b6b1d42a1b4f27acb73a65a076de790b16236f7b1753a2a2c637f64c5abfead8"
+        }
+      ],
+      "fixtures": [
+        {
+          "frozen": true,
+          "id": "M06/fixtures/expected-results.json",
+          "kind": "consumer-fixture",
+          "owner": "M06 performance",
+          "path": "contracts/M06/fixtures/expected-results.json",
+          "sha256": "c6f310986511b1146b78e966146411b901ac5e78f0a0f2a85ba73ee082b35289"
+        },
+        {
+          "frozen": true,
+          "id": "M06/fixtures/responses.json",
+          "kind": "consumer-fixture",
+          "owner": "M06 performance",
+          "path": "contracts/M06/fixtures/responses.json",
+          "sha256": "2c5e7b4648508a8488202a5e5583ab0111962c3699fc0435b12555a02c4a48c9"
+        },
+        {
+          "frozen": true,
+          "id": "M06/fixtures/scenario.json",
+          "kind": "consumer-fixture",
+          "owner": "M06 performance",
+          "path": "contracts/M06/fixtures/scenario.json",
+          "sha256": "527db5da4d15194f42f834c7625075aa212a593b86c60c6065d11fb20e0fb73a"
+        }
+      ],
       "packet": "contracts/M06/PACKET.md",
+      "review": {
+        "note": "Performance packet, OpenAPI, DTO/event schemas, error rows, port signatures and consumer fixtures approved as proposed (items 1\u201310). Shared PerformancePort plus FakeAssessment/FakeAttendance harness bindings approved. Baseline metric is simple_mean_v1 only; topic gaps never inferred; incomplete attendance distinct from low attendance.",
+        "reviewed_on": "2026-09-20",
+        "reviewer": "Abhinav M"
+      },
       "slug": "performance",
-      "status": "not_started"
+      "status": "frozen"
     },
     "M07": {
       "artefacts": [],
@@ -525,6 +588,6 @@
     }
   },
   "note": "Revision data, not code. The generator reads this file; it decides nothing itself. A module is listed under 'frozen_modules' only after its contract packet passed a human review gate, and the reviewer is named alongside the date. Adding a module here is the freeze; removing one un-freezes it and the drift guard will report every hash that moves.",
-  "revision": "school-contracts-v6",
+  "revision": "school-contracts-v7",
   "status": "reviewed"
 }

@@ -1,0 +1,85 @@
+{
+  "status": "frozen",
+  "dashboard_s1": {
+    "metrics": [
+      {
+        "code": "overall_mean",
+        "value": "65.00",
+        "denominator": "100",
+        "definition_version": 1,
+        "status": "ok",
+        "window_label": "term",
+        "cohort_label": null
+      },
+      {
+        "code": "attendance_percentage",
+        "value": "80.00",
+        "denominator": "100",
+        "definition_version": 1,
+        "status": "ok",
+        "window_label": "term",
+        "cohort_label": null
+      },
+      {
+        "code": "topic_weakness",
+        "value": null,
+        "denominator": null,
+        "definition_version": 1,
+        "status": "insufficient_data",
+        "window_label": "term",
+        "cohort_label": null
+      }
+    ],
+    "warnings": [
+      {
+        "id": "110fd87d-6db5-5acd-a3c1-6fc051dc0cd6",
+        "rule_id": "2f806647-5d30-55ab-9b1f-76436dfb78ff",
+        "state": "open",
+        "explanation_key": "performance.warning.low_attendance",
+        "student_id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c"
+      }
+    ],
+    "source_freshness": {
+      "assessment_updated_at": "2026-07-15T04:30:00+00:00",
+      "attendance_updated_at": "2026-07-15T04:30:00+00:00"
+    },
+    "updated_at": "2026-07-15T04:30:00+00:00"
+  },
+  "dashboard_s2_missing": {
+    "metrics": [
+      {
+        "code": "overall_mean",
+        "value": null,
+        "denominator": "100",
+        "definition_version": 1,
+        "status": "insufficient_data",
+        "window_label": "term",
+        "cohort_label": null
+      },
+      {
+        "code": "attendance_percentage",
+        "value": null,
+        "denominator": null,
+        "definition_version": 1,
+        "status": "incomplete",
+        "window_label": "term",
+        "cohort_label": null
+      },
+      {
+        "code": "topic_weakness",
+        "value": null,
+        "denominator": null,
+        "definition_version": 1,
+        "status": "insufficient_data",
+        "window_label": "term",
+        "cohort_label": null
+      }
+    ],
+    "warnings": [],
+    "source_freshness": {
+      "assessment_updated_at": null,
+      "attendance_updated_at": null
+    },
+    "updated_at": "2026-07-15T04:30:00+00:00"
+  }
+}

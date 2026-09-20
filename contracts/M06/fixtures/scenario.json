@@ -1,0 +1,66 @@
+{
+  "status": "frozen",
+  "note": "Synthetic baseline only. ACCEPTANCE EXPECTATIONS, NOT RUNTIME EVIDENCE.",
+  "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+  "term_id": "f76bcdb0-b6b9-5a80-a449-a8a4e423716a",
+  "window": "term",
+  "metric_definition": {
+    "id": "383477d6-efd2-5325-bc3b-09fe52d9e273",
+    "code": "overall_mean",
+    "version": 1,
+    "formula": "simple_mean_v1",
+    "denominator": "100"
+  },
+  "students": {
+    "S1": {
+      "student_id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c",
+      "published_scores": [
+        { "score": "60.00", "max_score": "100.00", "policy_version": "illustrative-v0" },
+        { "score": "70.00", "max_score": "100.00", "policy_version": "illustrative-v0" }
+      ],
+      "attendance": {
+        "unit": "period",
+        "eligible": 10,
+        "present": 8,
+        "absent": 2,
+        "late": 0,
+        "excused": 0,
+        "unmarked": 0,
+        "percentage": "80.00",
+        "policy_version": "period_present_over_eligible_v1"
+      },
+      "topic_tags": []
+    },
+    "S2": {
+      "student_id": "eceaa8ed-e2db-50cf-a649-557816565032",
+      "published_scores": [],
+      "attendance": null,
+      "topic_tags": [],
+      "note": "Missing inputs — metrics status insufficient_data / incomplete"
+    }
+  },
+  "warning_rules": [
+    {
+      "id": "2f806647-5d30-55ab-9b1f-76436dfb78ff",
+      "code": "low_attendance",
+      "threshold": "85.00",
+      "window": "term",
+      "minimum_samples": 5,
+      "exclusions": []
+    },
+    {
+      "id": "b8b7857b-1954-5e67-b9dc-eb7e104748e6",
+      "code": "missing_work",
+      "threshold": "1",
+      "window": "term",
+      "minimum_samples": 1,
+      "exclusions": []
+    }
+  ],
+  "resource": {
+    "id": "6c9d4e47-7502-5649-a661-3a9b673a90da",
+    "topic": "fractions_revision",
+    "level": "class_6",
+    "url": "https://example.invalid/resources/fractions"
+  }
+}

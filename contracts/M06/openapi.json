@@ -1,0 +1,636 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "M06 Analytics, Warnings and Academic Interventions",
+    "version": "1.0.0",
+    "description": "Paths relative to /api/v1. Closed write schemas. Topic analysis without tagged items returns insufficient_data. Guardians see approved own-child summaries only; sensitive observations require observations.read_sensitive."
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "security": [{ "session": [] }],
+  "paths": {
+    "/performance/dashboard": {
+      "get": {
+        "operationId": "get_performance_dashboard",
+        "summary": "Performance dashboard for a scope and window",
+        "x-permission": "performance.read",
+        "parameters": [
+          {
+            "name": "subject_id",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "scope",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["student", "section", "self", "child"]
+            }
+          },
+          {
+            "name": "window",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "enum": ["term", "year", "custom"] }
+          },
+          {
+            "name": "student_id",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "section_id",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dashboard",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DashboardDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/warning-rules": {
+      "post": {
+        "operationId": "create_warning_rule",
+        "summary": "Create a versioned warning rule",
+        "x-permission": "warnings.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateWarningRuleRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WarningRuleDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/warnings/{id}/acknowledge": {
+      "post": {
+        "operationId": "acknowledge_warning",
+        "summary": "Acknowledge an open warning",
+        "x-permission": "warnings.manage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/WarningActionRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WarningDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" },
+          "409": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/warnings/{id}/dismiss": {
+      "post": {
+        "operationId": "dismiss_warning",
+        "summary": "Dismiss a warning with reason",
+        "x-permission": "warnings.manage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/WarningActionRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WarningDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" },
+          "409": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/interventions": {
+      "post": {
+        "operationId": "create_intervention",
+        "summary": "Create a teacher-authored intervention",
+        "x-permission": "interventions.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateInterventionRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/InterventionDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      },
+      "get": {
+        "operationId": "list_interventions",
+        "summary": "List interventions for a student",
+        "x-permission": "performance.read",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/InterventionPage" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/meetings": {
+      "post": {
+        "operationId": "create_meeting",
+        "summary": "Record a parent-teacher meeting",
+        "x-permission": "meetings.record",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateMeetingRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MeetingDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/performance/export": {
+      "get": {
+        "operationId": "export_performance_summary",
+        "summary": "Scoped academic export; omits restricted observations",
+        "x-permission": "performance.read",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "window",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Export payload",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DashboardDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/performance/rebuild": {
+      "post": {
+        "operationId": "rebuild_projections",
+        "summary": "Enqueue full projection rebuild",
+        "x-permission": "warnings.manage",
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["job_id", "state"],
+                  "properties": {
+                    "job_id": { "type": "string", "format": "uuid" },
+                    "state": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": { "type": "apiKey", "in": "cookie", "name": "sessionid" }
+    },
+    "responses": {
+      "Error": {
+        "description": "error",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "DashboardDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["metrics", "warnings", "source_freshness", "updated_at"],
+        "properties": {
+          "metrics": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/MetricDTO" }
+          },
+          "warnings": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/WarningSummaryDTO" }
+          },
+          "source_freshness": { "$ref": "#/components/schemas/SourceFreshnessDTO" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "MetricDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "definition_version", "status"],
+        "properties": {
+          "code": { "type": "string" },
+          "value": { "type": ["string", "null"] },
+          "denominator": { "type": ["string", "null"] },
+          "definition_version": { "type": "integer", "minimum": 1 },
+          "status": {
+            "type": "string",
+            "enum": ["ok", "insufficient_data", "incomplete", "incompatible"]
+          },
+          "window_label": { "type": "string" },
+          "cohort_label": { "type": ["string", "null"] }
+        }
+      },
+      "WarningSummaryDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "rule_id", "state", "explanation_key"],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "rule_id": { "type": "string", "format": "uuid" },
+          "state": {
+            "type": "string",
+            "enum": ["open", "acknowledged", "dismissed", "closed"]
+          },
+          "explanation_key": { "type": "string" },
+          "student_id": { "type": "string", "format": "uuid" }
+        }
+      },
+      "SourceFreshnessDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["assessment_updated_at", "attendance_updated_at"],
+        "properties": {
+          "assessment_updated_at": { "type": ["string", "null"], "format": "date-time" },
+          "attendance_updated_at": { "type": ["string", "null"], "format": "date-time" }
+        }
+      },
+      "CreateWarningRuleRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "threshold", "window", "minimum_samples"],
+        "properties": {
+          "code": { "type": "string" },
+          "threshold": { "type": "string" },
+          "window": { "type": "string" },
+          "minimum_samples": { "type": "integer", "minimum": 1 },
+          "exclusions": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "WarningRuleDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "school_id",
+          "code",
+          "version",
+          "threshold",
+          "window",
+          "minimum_samples",
+          "exclusions"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "school_id": { "type": "string", "format": "uuid" },
+          "code": { "type": "string" },
+          "version": { "type": "integer", "minimum": 1 },
+          "threshold": { "type": "string" },
+          "window": { "type": "string" },
+          "minimum_samples": { "type": "integer", "minimum": 1 },
+          "exclusions": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "WarningActionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["reason", "expected_version"],
+        "properties": {
+          "reason": { "type": "string", "minLength": 1 },
+          "expected_version": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "WarningDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "school_id",
+          "student_id",
+          "rule_id",
+          "rule_version",
+          "state",
+          "version",
+          "source_refs",
+          "explanation_key"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "school_id": { "type": "string", "format": "uuid" },
+          "student_id": { "type": "string", "format": "uuid" },
+          "rule_id": { "type": "string", "format": "uuid" },
+          "rule_version": { "type": "integer", "minimum": 1 },
+          "state": {
+            "type": "string",
+            "enum": ["open", "acknowledged", "dismissed", "closed"]
+          },
+          "version": { "type": "integer", "minimum": 1 },
+          "source_refs": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "explanation_key": { "type": "string" },
+          "reason": { "type": ["string", "null"] }
+        }
+      },
+      "CreateInterventionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "student_id",
+          "goal",
+          "owner_id",
+          "review_date",
+          "visibility"
+        ],
+        "properties": {
+          "student_id": { "type": "string", "format": "uuid" },
+          "goal": { "type": "string" },
+          "owner_id": { "type": "string", "format": "uuid" },
+          "review_date": { "type": "string", "format": "date" },
+          "resource_ids": {
+            "type": "array",
+            "items": { "type": "string", "format": "uuid" }
+          },
+          "visibility": {
+            "type": "string",
+            "enum": ["staff", "guardian_visible", "restricted"]
+          }
+        }
+      },
+      "InterventionDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "school_id",
+          "student_id",
+          "goal",
+          "owner_id",
+          "review_date",
+          "state",
+          "visibility",
+          "version"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "school_id": { "type": "string", "format": "uuid" },
+          "student_id": { "type": "string", "format": "uuid" },
+          "goal": { "type": "string" },
+          "owner_id": { "type": "string", "format": "uuid" },
+          "review_date": { "type": "string", "format": "date" },
+          "state": {
+            "type": "string",
+            "enum": ["active", "reviewed", "completed", "cancelled"]
+          },
+          "visibility": {
+            "type": "string",
+            "enum": ["staff", "guardian_visible", "restricted"]
+          },
+          "version": { "type": "integer", "minimum": 1 },
+          "resource_ids": {
+            "type": "array",
+            "items": { "type": "string", "format": "uuid" }
+          }
+        }
+      },
+      "InterventionPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["items"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/InterventionDTO" }
+          },
+          "next_cursor": { "type": ["string", "null"] }
+        }
+      },
+      "CreateMeetingRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "student_id",
+          "date",
+          "participants",
+          "notes",
+          "actions",
+          "visibility"
+        ],
+        "properties": {
+          "student_id": { "type": "string", "format": "uuid" },
+          "date": { "type": "string", "format": "date" },
+          "participants": {
+            "type": "array",
+            "items": { "type": "string", "format": "uuid" },
+            "minItems": 1
+          },
+          "notes": { "type": "string" },
+          "actions": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "visibility": {
+            "type": "string",
+            "enum": ["staff", "guardian_visible", "restricted"]
+          }
+        }
+      },
+      "MeetingDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "school_id",
+          "student_id",
+          "date",
+          "participants",
+          "notes",
+          "actions",
+          "visibility",
+          "version"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "school_id": { "type": "string", "format": "uuid" },
+          "student_id": { "type": "string", "format": "uuid" },
+          "date": { "type": "string", "format": "date" },
+          "participants": {
+            "type": "array",
+            "items": { "type": "string", "format": "uuid" }
+          },
+          "notes": { "type": "string" },
+          "actions": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "visibility": {
+            "type": "string",
+            "enum": ["staff", "guardian_visible", "restricted"]
+          },
+          "version": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "ErrorEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message_key", "request_id"],
+        "properties": {
+          "code": { "type": "string" },
+          "message_key": { "type": "string" },
+          "field_errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "request_id": { "type": "string" }
+        }
+      }
+    }
+  }
+}
