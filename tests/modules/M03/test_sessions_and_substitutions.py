@@ -10,9 +10,9 @@ import uuid
 from datetime import UTC, date, datetime
 
 import pytest
-from shared import fixtures
-
 from m03_helpers import LAST_WEDNESDAY, SATURDAY_NO_PERIODS, THURSDAY_HOLIDAY, WEDNESDAY, grid
+
+from shared import fixtures
 
 pytestmark = pytest.mark.module
 
@@ -47,12 +47,15 @@ def test_a_session_id_is_derived_from_school_section_date_and_slot_code(api, pub
         f"{fixtures.SCHOOL_A}:{fixtures.CLASS_C1}:{WEDNESDAY}:P1",
     )
     assert session["timetable_session_id"] == str(expected)
-    assert session_id_for(
-        school_id=fixtures.SCHOOL_A,
-        section_id=fixtures.CLASS_C1,
-        on=date(2026, 7, 15),
-        slot_code="P1",
-    ) == expected
+    assert (
+        session_id_for(
+            school_id=fixtures.SCHOOL_A,
+            section_id=fixtures.CLASS_C1,
+            on=date(2026, 7, 15),
+            slot_code="P1",
+        )
+        == expected
+    )
 
 
 def test_a_revision_does_not_create_a_duplicate_attendance_identity(api, published, year_id):
@@ -379,15 +382,24 @@ def test_a_cancelled_session_is_shown_rather_than_dropped(api, published):
 
 
 def test_a_cancellation_can_be_reversed_under_its_own_version(api, published):
+    """The caller tracks the override's version from its own writes.
+
+    The frozen PeriodSessionDTO is closed and carries no version, so the first
+    successful cancellation is version 1 by construction. A client that did not
+    make that write has no way to learn it; that gap is recorded in the handoff
+    as a contract revision item rather than patched around here.
+    """
     session = session_for(api)
-    cancelled = api.put(
+    first = api.put(
         f"/sessions/{session['timetable_session_id']}/cancellation",
         {"cancelled": True, "reason_key": None, "expected_version": None},
-    ).json()
+    )
+    assert first.status_code == 200
+    assert "version" not in first.json()
 
     restored = api.put(
         f"/sessions/{session['timetable_session_id']}/cancellation",
-        {"cancelled": False, "reason_key": None, "expected_version": cancelled["version"]},
+        {"cancelled": False, "reason_key": None, "expected_version": 1},
     )
 
     assert restored.status_code == 200
@@ -555,6 +567,7 @@ def test_a_historical_session_still_resolves_after_a_revision(
 
     assert authority.date == date(2026, 7, 8)
     assert authority.eligible_for_attendance is True
-    assert api.get(f"/sessions/{historical['timetable_session_id']}").json()[
-        "timetable_id"
-    ] == published["id"]
+    assert (
+        api.get(f"/sessions/{historical['timetable_session_id']}").json()["timetable_id"]
+        == published["id"]
+    )

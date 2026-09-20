@@ -18,18 +18,18 @@ from __future__ import annotations
 
 import pytest
 from django.test import Client
-
-from contracts.identity import AuthLevel
-from shared import fixtures
-from shared.http.context import DevPersona
-
 from m03_helpers import (
     FROZEN_INSTANT,
     THURSDAY_HOLIDAY,
     grid,
 )
 
+from contracts.identity import AuthLevel
+from shared import fixtures
+from shared.http.context import DevPersona
+
 pytestmark = pytest.mark.module
+
 
 @pytest.fixture(autouse=True)
 def _school_id(settings):

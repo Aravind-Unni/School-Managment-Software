@@ -11,11 +11,11 @@ import uuid
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from m03_helpers import WEDNESDAY
+
 from contracts.errors import StaleAuth
 from contracts.identity import AuthLevel
 from shared import fixtures
-
-from m03_helpers import WEDNESDAY
 
 pytestmark = pytest.mark.module
 
@@ -120,7 +120,7 @@ def test_a_section_read_asks_access_with_the_relationship_registry_reported(
     """The module folds Registry's answer into ScopeFacts; it decides nothing itself."""
     api.get(f"/timetables/current?section_id={C1}&date={WEDNESDAY}")
 
-    action, facts = next(
+    _action, facts = next(
         call for call in recorded_access if call[0] == "timetable.read_section"
     )
     assert facts.section_id == C1
@@ -135,7 +135,9 @@ def test_a_pupil_day_marks_the_subjects_they_are_not_enrolled_in(api, published,
     """S2 takes malayalam only; the maths period is a free period for them."""
     as_persona(fixtures.GUARDIAN_G1)
 
-    body = api.get(f"/student-schedule?student_id={fixtures.STUDENT_S2}&date={WEDNESDAY}").json()
+    body = api.get(
+        f"/student-schedule?student_id={fixtures.STUDENT_S2}&date={WEDNESDAY}"
+    ).json()
 
     by_subject = {row["session"]["subject_id"]: row["enrolled"] for row in body["sessions"]}
     assert by_subject[str(fixtures.SUBJECT_MATHS)] is False
@@ -216,9 +218,7 @@ def test_another_school_s_timetable_is_404_not_403(api, published):
 
     assert api.get(f"/timetables/{theirs.id}").status_code == 404
     assert api.get("/timetables").json()["items"] != []
-    assert all(
-        item["id"] != str(theirs.id) for item in api.get("/timetables").json()["items"]
-    )
+    assert all(item["id"] != str(theirs.id) for item in api.get("/timetables").json()["items"])
 
 
 def test_another_school_s_session_identity_is_404(api, published):

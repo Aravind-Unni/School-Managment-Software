@@ -207,6 +207,39 @@ def test_every_openapi_path_falls_under_a_declared_api_path_root():
         assert path.lstrip("/").split("/")[0] in roots, path
 
 
+def test_the_served_api_matches_the_frozen_contract_operation_for_operation():
+    """Drift between the code and the frozen OpenAPI is the thing this catches.
+
+    Generated from the real URLconf and views, so an endpoint added, renamed or
+    dropped without a reviewed contract revision fails here rather than at a
+    consumer.
+    """
+    import io
+
+    from django.core.management import call_command
+
+    buffer = io.StringIO()
+    call_command("spectacular", "--format", "openapi-json", stdout=buffer)
+    generated = json.loads(buffer.getvalue())
+    frozen = load_json("openapi.json")
+
+    served_methods = {"get", "post", "put", "patch", "delete"}
+    frozen_operations = {
+        operation["operationId"]
+        for path in frozen["paths"].values()
+        for operation in path.values()
+    }
+    generated_operations = {
+        operation["operationId"]
+        for path in generated["paths"].values()
+        for method, operation in path.items()
+        if method in served_methods
+    }
+    assert generated_operations == frozen_operations
+
+    assert set(generated["paths"]) == {f"/api/v1{path}" for path in frozen["paths"]}
+
+
 def test_the_registration_declares_exactly_the_ports_this_module_uses():
     """Declaring an unused consumer claims capability that was never tested."""
     from modules.timetable.registration import REGISTRATION

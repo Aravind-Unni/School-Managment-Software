@@ -14,10 +14,10 @@ import uuid
 from datetime import UTC, date, datetime, time
 
 import pytest
+from m03_helpers import grid
+
 from contracts.people import TeachingAssignment
 from shared import fixtures
-
-from m03_helpers import grid
 
 pytestmark = pytest.mark.module
 
@@ -324,7 +324,10 @@ def test_adding_a_slot_never_removes_a_conflict():
     after = codes(
         detect(
             periods,
-            (*clashing, slot("c", periods[1], section=fixtures.CLASS_C1, teacher=fixtures.TEACHER_T1)),
+            (
+                *clashing,
+                slot("c", periods[1], section=fixtures.CLASS_C1, teacher=fixtures.TEACHER_T1),
+            ),
         )
     )
 
@@ -363,7 +366,9 @@ def test_validate_reports_a_double_booking_and_publish_then_refuses(api, year_id
     assert report.status_code == 200
     reported = report.json()["conflicts"]
     assert any(c["code"] == "teacher_double_booked" and c["blocking"] for c in reported)
-    assert len(next(c for c in reported if c["code"] == "teacher_double_booked")["slot_ids"]) == 2
+    assert (
+        len(next(c for c in reported if c["code"] == "teacher_double_booked")["slot_ids"]) == 2
+    )
 
     refused = api.post(
         f"/timetables/{draft['id']}/publish", {"expected_version": draft["version"]}
@@ -431,7 +436,7 @@ def test_a_withdrawn_unavailability_stops_blocking(api, draft):
     assert not any(c["code"] == "teacher_unavailable" for c in report["conflicts"])
 
 
-def test_an_unavailability_must_end_after_it_starts():
+def test_an_unavailability_must_end_after_it_starts(api):
     response = api.post(
         "/teacher-unavailability",
         {
@@ -443,7 +448,9 @@ def test_an_unavailability_must_end_after_it_starts():
     )
 
     assert response.status_code == 422
-    assert response.json()["message_key"] == "timetable.error.unavailability_end_not_after_start"
+    assert (
+        response.json()["message_key"] == "timetable.error.unavailability_end_not_after_start"
+    )
 
 
 def _unavailable(staff_id, starts_at, ends_at):

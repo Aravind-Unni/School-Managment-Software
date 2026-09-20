@@ -7,9 +7,9 @@ here comes from schemas/dtos.schema.json and openapi.json.
 from __future__ import annotations
 
 import pytest
-from shared import fixtures
-
 from m03_helpers import grid
+
+from shared import fixtures
 
 pytestmark = pytest.mark.module
 
@@ -105,8 +105,18 @@ def test_two_periods_on_one_weekday_may_not_overlap(api, year_id):
     """Half-open comparison: 08:45-09:30 and 09:30-10:15 abut and are fine."""
     body = {"year_id": year_id, "effective_from": "2026-06-01", **grid()}
     body["periods"] = [
-        {"day_of_week": 3, "slot_code": "P1", "starts_at_local": "08:45", "ends_at_local": "09:30"},
-        {"day_of_week": 3, "slot_code": "P2", "starts_at_local": "09:15", "ends_at_local": "10:00"},
+        {
+            "day_of_week": 3,
+            "slot_code": "P1",
+            "starts_at_local": "08:45",
+            "ends_at_local": "09:30",
+        },
+        {
+            "day_of_week": 3,
+            "slot_code": "P2",
+            "starts_at_local": "09:15",
+            "ends_at_local": "10:00",
+        },
     ]
     body["slots"] = []
 
@@ -126,8 +136,18 @@ def test_abutting_periods_are_accepted(api, year_id):
 def test_two_periods_may_not_share_a_weekday_and_slot_code(api, year_id):
     body = {"year_id": year_id, "effective_from": "2026-06-01", **grid()}
     body["periods"] = [
-        {"day_of_week": 3, "slot_code": "P1", "starts_at_local": "08:45", "ends_at_local": "09:30"},
-        {"day_of_week": 3, "slot_code": "P1", "starts_at_local": "10:00", "ends_at_local": "10:45"},
+        {
+            "day_of_week": 3,
+            "slot_code": "P1",
+            "starts_at_local": "08:45",
+            "ends_at_local": "09:30",
+        },
+        {
+            "day_of_week": 3,
+            "slot_code": "P1",
+            "starts_at_local": "10:00",
+            "ends_at_local": "10:45",
+        },
     ]
     body["slots"] = []
 

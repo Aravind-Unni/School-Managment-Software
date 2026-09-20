@@ -7,8 +7,6 @@ readable forever, because a register taken last term was taken against it.
 from __future__ import annotations
 
 import pytest
-from shared import fixtures
-
 from m03_helpers import (
     FRIDAY,
     SATURDAY_NO_PERIODS,
@@ -16,6 +14,8 @@ from m03_helpers import (
     WEDNESDAY,
     grid,
 )
+
+from shared import fixtures
 
 pytestmark = pytest.mark.module
 
@@ -32,7 +32,13 @@ def second_version(api, year_id, effective_from=SEPTEMBER):
             "effective_from": effective_from,
             **grid(
                 slots=[
-                    (day, "P1", fixtures.CLASS_C1, fixtures.SUBJECT_MALAYALAM, fixtures.TEACHER_T1)
+                    (
+                        day,
+                        "P1",
+                        fixtures.CLASS_C1,
+                        fixtures.SUBJECT_MALAYALAM,
+                        fixtures.TEACHER_T1,
+                    )
                     for day in (1, 2, 3, 4, 5)
                 ]
             ),
@@ -92,17 +98,25 @@ def test_publication_notifies_through_the_outbox_and_not_a_direct_send(api, draf
 
 def test_a_failed_publish_leaves_no_audit_row_no_event_and_no_state_change(api, draft):
     """The rollback assertion: the Platform adapter joins the caller's transaction."""
+    from shared.fakes.failures import InjectedFailure
     from shared.harness.models import HarnessAuditRecord, HarnessOutboxEvent
     from shared.ports import runtime
 
     platform = runtime.get_registry().resolve("platform")
-    platform._failures.fail("platform.append_event")
+    # The port registry is process-global, so the injector's call counters carry
+    # across tests. Plan the failure for the NEXT call rather than the first one
+    # ever, or an earlier test in the same process consumes it.
+    platform._failures.fail(
+        "platform.append_event",
+        on_call=platform._failures.call_count("platform.append_event") + 1,
+    )
 
-    with pytest.raises(Exception):
+    with pytest.raises(InjectedFailure):
         api.post(f"/timetables/{draft['id']}/publish", {"expected_version": draft["version"]})
 
+    # The draft's own creation audit row is expected and is not what rolled back.
     assert HarnessOutboxEvent.objects.count() == 0
-    assert HarnessAuditRecord.objects.count() == 0
+    assert HarnessAuditRecord.objects.filter(action="timetable.publish").count() == 0
     assert api.get(f"/timetables/{draft['id']}").json()["state"] == "draft"
 
 
@@ -185,14 +199,14 @@ def test_publication_is_forward_only(api, published, year_id):
     )
 
     assert response.status_code == 409
-    assert response.json()["message_key"] == "timetable.error.effective_from_not_after_effective"
+    assert (
+        response.json()["message_key"] == "timetable.error.effective_from_not_after_effective"
+    )
 
 
 def test_reading_a_date_no_published_version_covers_is_a_state_conflict(api, draft):
     """A draft is never served to a schedule reader."""
-    response = api.get(
-        f"/timetables/current?section_id={fixtures.CLASS_C1}&date={WEDNESDAY}"
-    )
+    response = api.get(f"/timetables/current?section_id={fixtures.CLASS_C1}&date={WEDNESDAY}")
 
     assert response.status_code == 409
     assert response.json()["message_key"] == "timetable.error.no_effective_timetable"
@@ -222,9 +236,9 @@ def test_a_weekday_with_no_periods_is_not_a_school_day(api, published):
 
 
 def test_a_holiday_is_not_a_school_day(api, holiday):
-    days = api.get(
-        f"/calendar?from_date={THURSDAY_HOLIDAY}&to_date={THURSDAY_HOLIDAY}"
-    ).json()["days"]
+    days = api.get(f"/calendar?from_date={THURSDAY_HOLIDAY}&to_date={THURSDAY_HOLIDAY}").json()[
+        "days"
+    ]
 
     assert days[0]["is_school_day"] is False
     assert days[0]["reason_key"] == "timetable.reason.holiday"
@@ -273,9 +287,9 @@ def test_withdrawing_a_holiday_restores_the_teaching_day(api, holiday):
 
     assert response.status_code == 200
     assert response.json()["withdrawn"] is True
-    days = api.get(
-        f"/calendar?from_date={THURSDAY_HOLIDAY}&to_date={THURSDAY_HOLIDAY}"
-    ).json()["days"]
+    days = api.get(f"/calendar?from_date={THURSDAY_HOLIDAY}&to_date={THURSDAY_HOLIDAY}").json()[
+        "days"
+    ]
     assert days[0]["is_school_day"] is True
 
 
