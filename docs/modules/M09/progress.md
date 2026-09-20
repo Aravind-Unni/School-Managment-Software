@@ -8,7 +8,7 @@
 | Started from | `b046ad6e567e3a1e6d165d17ffd101c3821300be` (`origin/main`) |
 | Manifest revision | `school-contracts-v10` |
 | PR | (draft, pending push) |
-| Head commit | (see git) |
+| Head commit | `d09e0dfc78538fdc0a93aa00fab6793c6e58ba26` |
 | Last recorded | 2026-09-21 |
 
 ## Original request
