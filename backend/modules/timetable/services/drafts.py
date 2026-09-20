@@ -168,7 +168,11 @@ class DraftService:
             queryset = queryset.filter(year_id=year_id)
         if state is not None:
             queryset = queryset.filter(state=state)
-        return queryset.order_by("-effective_from", "-created_at", "id")
+        # Ordered by exactly the keys the cursor carries. A third sort column
+        # here would order rows one way in SQL and advance the cursor another,
+        # which silently skips or repeats a row at a page boundary where two
+        # revisions share an effective date.
+        return queryset.order_by("-effective_from", "id")
 
     # --- internals ----------------------------------------------------------
 

@@ -67,7 +67,10 @@ class CalendarService:
             queryset = queryset.filter(date__lte=to_date)
         if kind is not None:
             queryset = queryset.filter(kind=kind)
-        return queryset.order_by("date", "kind", "id")
+        # Ordered by exactly the keys the cursor carries -- see the same note in
+        # services/drafts.py. Two exceptions can share a date, so the tiebreaker
+        # must be the one the cursor compares.
+        return queryset.order_by("date", "id")
 
     def list_unavailability(
         self,

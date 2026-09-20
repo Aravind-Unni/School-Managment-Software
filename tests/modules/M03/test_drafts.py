@@ -317,3 +317,33 @@ def test_an_unknown_timetable_is_404(api):
     unknown = fixtures.fixture_uuid("school_a.timetable.does_not_exist")
 
     assert api.get(f"/timetables/{unknown}").status_code == 404
+
+
+def test_paging_never_skips_or_repeats_a_revision(api, year_id):
+    """Three drafts sharing an effective date, walked two at a time.
+
+    The listing must be ordered by exactly the keys the cursor carries. A third
+    sort column would order rows one way in SQL and advance the cursor another,
+    and the row that fell through the gap would simply never be shown.
+    """
+    created = {
+        api.post(
+            "/timetables",
+            {"year_id": year_id, "effective_from": "2026-06-01", **grid(weekdays=[3])},
+        ).json()["id"]
+        for _ in range(3)
+    }
+
+    seen: list[str] = []
+    cursor = None
+    for _ in range(5):
+        query = "/timetables?page_size=2" + (f"&cursor={cursor}" if cursor else "")
+        page = api.get(query).json()
+        seen.extend(item["id"] for item in page["items"])
+        cursor = page["next_cursor"]
+        if cursor is None:
+            break
+
+    assert cursor is None
+    assert len(seen) == len(set(seen))
+    assert created <= set(seen)
