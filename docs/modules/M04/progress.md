@@ -18,8 +18,8 @@ implementation or freeze.**
 | Branch | `m04/teacher-attendance` |
 | Branched from | `fd7751dbbeddfbcd3a526ad244a6e8fe0638a892` (`origin/main`) |
 | Manifest revision | `school-contracts-v4` (unchanged; M04 still `not_started` in manifest) |
-| PR | not opened yet |
-| Head | (see git after commit) |
+| PR | draft — opening with this proposal |
+| Head | `63a222c` |
 | Recorded | 2026-09-20 |
 
 ## Complete
