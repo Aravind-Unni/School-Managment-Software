@@ -1,0 +1,90 @@
+{
+  "status": "frozen",
+  "note": "Reuses frozen ErrorCode values; message_key values are module-owned.",
+  "rows": [
+    {
+      "status": 401,
+      "code": "unauthenticated",
+      "message_key": "error.unauthenticated",
+      "when": "No server-derived session."
+    },
+    {
+      "status": 403,
+      "code": "action_denied",
+      "message_key": "error.action_denied",
+      "when": "Actor lacks transport.manage / transport.read / transport.bill."
+    },
+    {
+      "status": 404,
+      "code": "object_inaccessible",
+      "message_key": "error.object_inaccessible",
+      "when": "Absent or other-school bus/participation/billing request/student. Cross-school always 404."
+    },
+    {
+      "status": 409,
+      "code": "version_conflict",
+      "message_key": "error.version_conflict",
+      "when": "expected_version mismatch on participation patch."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "transport.error.source_key_conflict",
+      "when": "Fees rejects reused source_key with a different payload."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "transport.error.billing_already_posted",
+      "when": "Unique participation/period/charge_kind already posted."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.validation_failed",
+      "when": "Malformed body or unknown field (closed schemas)."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.server_internal_field_rejected",
+      "when": "Body carried school_id/actor_id/auth_level/grant."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "transport.error.overlapping_participation",
+      "when": "Create/patch would leave overlapping active participation for the same student."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "transport.error.proration_policy_missing",
+      "when": "Partial-period billing requested and no approved proration policy exists (blocked, not guessed)."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "transport.error.fee_plan_missing",
+      "when": "fee_plan_id unknown to Fees fake/provider or has no amount."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "transport.error.invalid_date_range",
+      "when": "to_date is before from_date."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "transport.error.reason_required",
+      "when": "Patch or adjustment missing non-empty reason."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "transport.error.bus_inactive",
+      "when": "Assigned bus_id exists but is inactive."
+    }
+  ]
+}

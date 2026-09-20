@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M08/events",
+  "title": "M08 transport event payloads",
+  "description": "Payloads only. Envelope is frozen common. Names use dotted snake form.",
+  "$defs": {
+    "transport.participation_changed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["participation_id", "student_id", "effective_date", "version"],
+      "properties": {
+        "participation_id": { "type": "string", "format": "uuid" },
+        "student_id": { "type": "string", "format": "uuid" },
+        "effective_date": { "type": "string", "format": "date" },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "transport.billing_requested": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["request_id", "source_key", "period"],
+      "properties": {
+        "request_id": { "type": "string", "format": "uuid" },
+        "source_key": { "type": "string", "minLength": 1 },
+        "period": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}$"
+        }
+      }
+    }
+  }
+}

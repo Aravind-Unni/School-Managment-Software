@@ -601,11 +601,74 @@
       "status": "frozen"
     },
     "M08": {
-      "artefacts": [],
-      "fixtures": [],
+      "artefacts": [
+        {
+          "frozen": true,
+          "id": "M08/error-codes.json",
+          "kind": "json-schema",
+          "owner": "M08 transport",
+          "path": "contracts/M08/error-codes.json",
+          "sha256": "3862ac36ca2cb996686d0170914dea295390f91d112ebfb8a5db118af9a8caee"
+        },
+        {
+          "frozen": true,
+          "id": "M08/openapi.json",
+          "kind": "openapi",
+          "owner": "M08 transport",
+          "path": "contracts/M08/openapi.json",
+          "sha256": "8a0bde0a2011b2a2f41d154079dfaf56241d99ca6281429e56e5f258074e2b97"
+        },
+        {
+          "frozen": true,
+          "id": "M08/schemas/dtos.schema.json",
+          "kind": "json-schema",
+          "owner": "M08 transport",
+          "path": "contracts/M08/schemas/dtos.schema.json",
+          "sha256": "ff4c125e7463c91ccf43985adf8804fd1fcf5884545d167fc5dd596a612464d7"
+        },
+        {
+          "frozen": true,
+          "id": "M08/schemas/events.schema.json",
+          "kind": "json-schema",
+          "owner": "M08 transport",
+          "path": "contracts/M08/schemas/events.schema.json",
+          "sha256": "62e3741cc50f033502dfcba4ae0cd915fccf1bd9ad26ee1d653522b2fcb5f06c"
+        }
+      ],
+      "fixtures": [
+        {
+          "frozen": true,
+          "id": "M08/fixtures/expected-results.json",
+          "kind": "consumer-fixture",
+          "owner": "M08 transport",
+          "path": "contracts/M08/fixtures/expected-results.json",
+          "sha256": "bc12a54199e6c76aeef78e7bb248750d4ed53c086c079b7d782c554fc9cc3172"
+        },
+        {
+          "frozen": true,
+          "id": "M08/fixtures/responses.json",
+          "kind": "consumer-fixture",
+          "owner": "M08 transport",
+          "path": "contracts/M08/fixtures/responses.json",
+          "sha256": "b116dd57533b0d13f26811febd23f7f565fd8958c66b2aaa09dc9ebd509c7ec2"
+        },
+        {
+          "frozen": true,
+          "id": "M08/fixtures/scenario.json",
+          "kind": "consumer-fixture",
+          "owner": "M08 transport",
+          "path": "contracts/M08/fixtures/scenario.json",
+          "sha256": "a25e66fed8aca4ba81a9a7c7e108f1e9c63f3d4c5cde4e118a4f35f417af2292"
+        }
+      ],
       "packet": "contracts/M08/PACKET.md",
+      "review": {
+        "note": "Transport packet, OpenAPI, DTO/event schemas, error rows, TransportPort signatures and consumer fixtures approved as proposed (items 1\u201312). No GPS; FakeFees commit-then-timeout; missing proration blocks; bus_id optional.",
+        "reviewed_on": "2026-09-21",
+        "reviewer": "Abhinav M"
+      },
       "slug": "transport",
-      "status": "not_started"
+      "status": "frozen"
     },
     "M09": {
       "artefacts": [],
@@ -651,6 +714,6 @@
     }
   },
   "note": "Revision data, not code. The generator reads this file; it decides nothing itself. A module is listed under 'frozen_modules' only after its contract packet passed a human review gate, and the reviewer is named alongside the date. Adding a module here is the freeze; removing one un-freezes it and the drift guard will report every hash that moves.",
-  "revision": "school-contracts-v8",
+  "revision": "school-contracts-v9",
   "status": "reviewed"
 }

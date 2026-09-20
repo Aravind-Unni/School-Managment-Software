@@ -8,6 +8,8 @@ standalone runner -- which is how "passes in tests, breaks in the runner" starts
 
 from __future__ import annotations
 
+from uuid import UUID
+
 from contracts.registration import ModuleRegistration
 
 from .registry import AdapterKind, PortRegistry
@@ -21,6 +23,7 @@ FAKEABLE_PORTS: frozenset[str] = frozenset(
         "timetable",
         "assessment",
         "attendance",
+        "fees",
         "platform",
         "notifications",
         "object_storage",
@@ -28,6 +31,11 @@ FAKEABLE_PORTS: frozenset[str] = frozenset(
         "clock",
     }
 )
+
+#: M08 scenario fee plan (contracts/M08/fixtures/scenario.json).
+M08_FEE_PLAN_ID = UUID("b8e2c1a0-4f3d-5e6a-9b0c-1d2e3f4a5b6c")
+M08_FEE_HEAD_ID = UUID("c9f3d2b1-5a4e-6f7b-0c1d-2e3f4a5b6c7d")
+M08_FEE_AMOUNT_PAISE = 50000
 
 
 def build_fake_registry(
@@ -53,6 +61,7 @@ def build_fake_registry(
         FakeAccess,
         FakeAssessment,
         FakeAttendance,
+        FakeFees,
         FakeFiles,
         FakeNotifications,
         FakeObjectStorage,
@@ -111,12 +120,25 @@ def build_fake_registry(
         """Bind FakeAttendance for modules that consume period summaries."""
         return FakeAttendance()
 
+    def fees_factory():
+        """Bind FakeFees; seed M08 scenario plan when the module is transport."""
+        adapter = FakeFees()
+        if registration is not None and registration.id == "M08":
+            adapter.seed_plan(
+                fee_plan_id=M08_FEE_PLAN_ID,
+                fee_head_id=M08_FEE_HEAD_ID,
+                amount_paise=M08_FEE_AMOUNT_PAISE,
+                proration_policy=None,
+            )
+        return adapter
+
     factories = {
         "access": access_factory,
         "registry": registry_factory,
         "timetable": FakeTimetable,
         "assessment": assessment_factory,
         "attendance": attendance_factory,
+        "fees": fees_factory,
         "platform": lambda: TestPlatformAdapter(worker_available=worker_available),
         "notifications": FakeNotifications,
         "object_storage": FakeObjectStorage,
