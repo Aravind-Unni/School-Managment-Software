@@ -52,6 +52,23 @@ DEV_PERSONA = (
 )
 DEV_PERSONA_MODE = "off" if MODULE_ID == "M01" else env.optional("DEV_PERSONA_MODE", "fixed")
 
+#: Peer networks, beyond loopback, from which the fixed persona is accepted.
+#: EMPTY unless the runner sets it. The containerised stack sets it because it
+#: publishes the API to 127.0.0.1 ONLY and Docker then NATs the connection, so
+#: the peer the container sees is the bridge gateway rather than loopback --
+#: which refused every browser request with 401. See
+#: shared/http/context.is_trusted_persona_peer for the full reasoning.
+#:
+#: A developer running the API directly on the host sets nothing and keeps
+#: loopback-only. Production never reaches this code: the persona branch refuses
+#: APP_ENV=production outright, and PortRegistry.assert_production_safe refuses
+#: to start with DEV_PERSONA_MODE set at all.
+DEV_PERSONA_TRUSTED_NETWORKS = tuple(
+    network.strip()
+    for network in (env.optional("DEV_PERSONA_TRUSTED_NETWORKS", "") or "").split(",")
+    if network.strip()
+)
+
 #: Fernet key for TOTP seeds at rest. Held OUTSIDE the database. dev.py generates
 #: one into dev/secrets/ and passes it in; there is no default, because a default
 #: would mean every developer's seeds were encrypted with the same known key.

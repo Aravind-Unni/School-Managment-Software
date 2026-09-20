@@ -111,6 +111,9 @@ class RequestContextMiddleware:
                 dev_persona_mode=settings.DEV_PERSONA_MODE,
                 persona=self._persona(),
                 clock=settings.SCHOOL_CLOCK,
+                trusted_persona_networks=tuple(
+                    getattr(settings, "DEV_PERSONA_TRUSTED_NETWORKS", ())
+                ),
             )
         except SpoofedIdentityHeader as exc:
             logger.warning(

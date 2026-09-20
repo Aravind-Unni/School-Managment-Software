@@ -237,6 +237,14 @@ def _backend_environment(
         '      SESSION_SECRET: "${SESSION_SECRET}"',
         '      TOTP_ENCRYPTION_KEY: "${TOTP_ENCRYPTION_KEY}"',
         '      DEV_PERSONA_MODE: "fixed"',
+        # The API port is published to 127.0.0.1 ONLY (see _api), so the persona
+        # is unreachable from any network. Docker then NATs the connection, so
+        # the peer the container SEES is the bridge gateway, not loopback -- and
+        # the persona check refused every browser request with 401 until this was
+        # declared. Private ranges only, and only in a development profile;
+        # production refuses the persona outright and never reads this.
+        "      DEV_PERSONA_TRUSTED_NETWORKS: "
+        + _quote("10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"),
         "      DJANGO_SETTINGS_MODULE: " + _quote(f"config.settings.{profile}"),
     ]
     if declaration.needs_broker:
