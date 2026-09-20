@@ -18,8 +18,8 @@ implementation or freeze.**
 | Branch | `m04/teacher-attendance` |
 | Branched from | `fd7751dbbeddfbcd3a526ad244a6e8fe0638a892` (`origin/main`) |
 | Manifest revision | `school-contracts-v4` (unchanged; M04 still `not_started` in manifest) |
-| PR | draft — opening with this proposal |
-| Head | `63a222c` |
+| PR | **Draft #5** — https://github.com/Aravind-Unni/School-Managment-Software/pull/5 |
+| Head | `e4ec862` |
 | Recorded | 2026-09-20 |
 
 ## Complete
