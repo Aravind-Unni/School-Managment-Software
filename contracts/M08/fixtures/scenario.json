@@ -1,0 +1,51 @@
+{
+  "status": "frozen",
+  "note": "Synthetic baseline for M08 standalone. Shared fixture UUIDs. Amounts are seed data, not invented school policy.",
+  "school_a": {
+    "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "transport_actor_id": "5e101a6a-eca4-5a5f-b5ef-c2d776c939fe",
+    "student_s1": {
+      "id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c",
+      "admission_no": "A-1001",
+      "display_name": "S1",
+      "opted_in": true
+    },
+    "student_s2": {
+      "id": "eceaa8ed-e2db-50cf-a649-557816565032",
+      "admission_no": "A-1002",
+      "display_name": "S2",
+      "opted_in": false
+    },
+    "guardian_g1": {
+      "id": "a98bf46f-c03f-59a9-96e4-5eb94f0cf4a7",
+      "linked_student_id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c"
+    },
+    "bus": {
+      "label": "Bus A",
+      "active": true
+    },
+    "fee_plan": {
+      "id": "b8e2c1a0-4f3d-5e6a-9b0c-1d2e3f4a5b6c",
+      "fee_head_id": "c9f3d2b1-5a4e-6f7b-0c1d-2e3f4a5b6c7d",
+      "amount_paise": 50000,
+      "proration_policy": null
+    },
+    "billing_period": "2026-06",
+    "as_of": "2026-06-15",
+    "participation_from": "2026-06-01"
+  },
+  "school_b": {
+    "school_id": "8e1e985f-ba74-5baa-82c6-b884525e416c",
+    "student_foreign": {
+      "id": "131631b7-b975-56ae-80b3-4294fd4071ed",
+      "admission_no": "B-9",
+      "display_name": "S1_B"
+    }
+  },
+  "expected": {
+    "s1_charge_paise": 50000,
+    "only_one_charge_after_timeout_retry": true,
+    "s2_no_charge": true,
+    "partial_period_blocked_without_proration": true
+  }
+}

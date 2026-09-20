@@ -1,0 +1,403 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "M08 Bus Participation and Fee Coordination",
+    "version": "1.0.0",
+    "description": "Paths relative to /api/v1. Track bus participation and request Fees charges. No GPS or routes. Closed write schemas. Integer INR paise."
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "security": [{ "session": [] }],
+  "paths": {
+    "/buses": {
+      "post": {
+        "operationId": "create_bus",
+        "summary": "Create a labelled bus",
+        "x-permission": "transport.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateBusRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BusDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      },
+      "get": {
+        "operationId": "list_buses",
+        "summary": "List buses for the actor school",
+        "x-permission": "transport.read",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BusCollection" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/bus-participations": {
+      "post": {
+        "operationId": "create_bus_participation",
+        "summary": "Opt a student into bus participation",
+        "x-permission": "transport.manage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateParticipationRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ParticipationDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/bus-participations/{id}": {
+      "get": {
+        "operationId": "get_bus_participation",
+        "summary": "Read one participation",
+        "x-permission": "transport.read",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ParticipationDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      },
+      "patch": {
+        "operationId": "patch_bus_participation",
+        "summary": "Revise bus assignment or end date",
+        "x-permission": "transport.manage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PatchParticipationRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Revised",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ParticipationDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" },
+          "409": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/bus-billing-runs": {
+      "post": {
+        "operationId": "create_bus_billing_run",
+        "summary": "Queue a period billing run with validation preview",
+        "x-permission": "transport.bill",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateBillingRunRequest" }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted job plus preview",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BillingRunDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/bus-participants": {
+      "get": {
+        "operationId": "list_bus_participants",
+        "summary": "Paginated effective participants on a school date",
+        "x-permission": "transport.read",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ParticipantCollection" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/bus-billing-reconciliation": {
+      "get": {
+        "operationId": "get_bus_billing_reconciliation",
+        "summary": "Unmatched participation/charge requests and retry status",
+        "x-permission": "transport.bill",
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ReconciliationDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/bus-adjustments": {
+      "post": {
+        "operationId": "create_bus_adjustment",
+        "summary": "Request an explicit Fees credit for a posted bus charge",
+        "x-permission": "transport.bill",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateAdjustmentRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AdjustmentRequestDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" },
+          "409": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/bus-billing-requests/{id}/retry": {
+      "post": {
+        "operationId": "retry_bus_billing_request",
+        "summary": "Retry a failed or lost-link billing request with the same source_key",
+        "x-permission": "transport.bill",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BillingRequestDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" },
+          "409": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "sessionid"
+      }
+    },
+    "responses": {
+      "Error": {
+        "description": "Stable error envelope",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ErrorEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message_key", "field_errors", "request_id"],
+        "properties": {
+          "code": { "type": "string" },
+          "message_key": { "type": "string" },
+          "field_errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "request_id": { "type": "string", "format": "uuid" }
+        }
+      },
+      "CreateBusRequest": {
+        "$ref": "schemas/dtos.schema.json#/$defs/CreateBusRequest"
+      },
+      "BusDTO": { "$ref": "schemas/dtos.schema.json#/$defs/BusDTO" },
+      "CreateParticipationRequest": {
+        "$ref": "schemas/dtos.schema.json#/$defs/CreateParticipationRequest"
+      },
+      "PatchParticipationRequest": {
+        "$ref": "schemas/dtos.schema.json#/$defs/PatchParticipationRequest"
+      },
+      "ParticipationDTO": {
+        "$ref": "schemas/dtos.schema.json#/$defs/ParticipationDTO"
+      },
+      "CreateBillingRunRequest": {
+        "$ref": "schemas/dtos.schema.json#/$defs/CreateBillingRunRequest"
+      },
+      "BillingRunDTO": {
+        "$ref": "schemas/dtos.schema.json#/$defs/BillingRunDTO"
+      },
+      "BillingRequestDTO": {
+        "$ref": "schemas/dtos.schema.json#/$defs/BillingRequestDTO"
+      },
+      "CreateAdjustmentRequest": {
+        "$ref": "schemas/dtos.schema.json#/$defs/CreateAdjustmentRequest"
+      },
+      "AdjustmentRequestDTO": {
+        "$ref": "schemas/dtos.schema.json#/$defs/AdjustmentRequestDTO"
+      },
+      "ReconciliationDTO": {
+        "$ref": "schemas/dtos.schema.json#/$defs/ReconciliationDTO"
+      },
+      "BusCollection": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["items", "next_cursor"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/BusDTO" }
+          },
+          "next_cursor": { "type": ["string", "null"] }
+        }
+      },
+      "ParticipantCollection": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["items", "next_cursor"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "schemas/dtos.schema.json#/$defs/ParticipantRowDTO"
+            }
+          },
+          "next_cursor": { "type": ["string", "null"] }
+        }
+      }
+    }
+  }
+}

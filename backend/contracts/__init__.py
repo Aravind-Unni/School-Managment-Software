@@ -101,6 +101,11 @@ from .timetable import (
     PeriodSessionDTO,
     TeachingAuthorityDTO,
 )
+from .transport import (
+    PeriodChargeResult,
+    TransportParticipationView,
+    TransportPort,
+)
 from .values import (
     MARKS_DECIMAL_PLACES,
     SCHOOL_TIMEZONE,
@@ -156,6 +161,7 @@ __all__ = [
     "ObjectStoragePort",
     "Page",
     "PerformancePort",
+    "PeriodChargeResult",
     "PeriodSessionDTO",
     "PlatformPort",
     "RateLimited",
@@ -178,6 +184,8 @@ __all__ = [
     "TeachingAssignment",
     "TeachingAuthorityDTO",
     "TimetablePort",
+    "TransportParticipationView",
+    "TransportPort",
     "Unauthenticated",
     "UploadSession",
     "ValidationFailed",

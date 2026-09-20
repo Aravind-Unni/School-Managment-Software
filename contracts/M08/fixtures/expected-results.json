@@ -1,0 +1,12 @@
+{
+  "status": "frozen",
+  "same_period_billed_once": true,
+  "timeout_after_commit_safe": true,
+  "retry_returns_original_charge_id": true,
+  "only_one_50000_paise_charge": true,
+  "overlap_rejected": true,
+  "unauthorized_read_denied": true,
+  "missing_proration_policy_blocks": true,
+  "reconciliation_catches_lost_link": true,
+  "s2_opted_out_no_charge": true
+}

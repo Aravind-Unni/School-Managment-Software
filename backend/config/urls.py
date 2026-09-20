@@ -80,9 +80,16 @@ def _build_port_registry():
 #: Bound once at import and installed in the process-level holder. Views read it
 #: via shared.ports.runtime.get_registry(); settings.SCHOOL_PORTS remains only for
 #: backward compatibility with B00's assertions.
+#:
+#: When the URLconf is re-imported (pytest-django settings overrides can force
+#: that), keep the already-bound registry so in-memory fakes retain state.
 from shared.ports import runtime as _port_runtime  # noqa: E402
 
-settings.SCHOOL_PORTS = _port_runtime.set_registry(_build_port_registry())
+_existing_ports = _port_runtime.peek()
+if _existing_ports is None:
+    settings.SCHOOL_PORTS = _port_runtime.set_registry(_build_port_registry())
+else:
+    settings.SCHOOL_PORTS = _existing_ports
 
 
 def healthz(_request):

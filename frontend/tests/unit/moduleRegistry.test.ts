@@ -17,6 +17,7 @@ describe("module registry", () => {
       "M05",
       "M06",
       "M07",
+      "M08",
     ]);
   });
 
@@ -48,6 +49,8 @@ describe("module registry", () => {
       "nav.fees_collect",
       "nav.fees_overdue",
       "nav.fees_concessions",
+      "nav.transport",
+      "nav.transport_billing",
     ]);
   });
 

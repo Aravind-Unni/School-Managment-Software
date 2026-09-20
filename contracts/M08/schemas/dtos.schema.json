@@ -1,0 +1,296 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M08/dtos",
+  "title": "M08 transport DTOs",
+  "$defs": {
+    "BillingRequestState": {
+      "type": "string",
+      "enum": ["pending", "requested", "posted", "blocked", "failed"]
+    },
+    "AdjustmentRequestState": {
+      "type": "string",
+      "enum": ["pending", "requested", "posted", "failed"]
+    },
+    "ChargeKind": {
+      "type": "string",
+      "enum": ["period", "adjustment"]
+    },
+    "BusDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "school_id", "label", "active", "version"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "label": { "type": "string", "minLength": 1 },
+        "active": { "type": "boolean" },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "CreateBusRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label"],
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "active": { "type": "boolean", "default": true }
+      }
+    },
+    "ParticipationDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "student_id",
+        "from_date",
+        "fee_plan_id",
+        "version"
+      ],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "student_id": { "type": "string", "format": "uuid" },
+        "bus_id": { "type": ["string", "null"], "format": "uuid" },
+        "from_date": { "type": "string", "format": "date" },
+        "to_date": { "type": ["string", "null"], "format": "date" },
+        "fee_plan_id": { "type": "string", "format": "uuid" },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "CreateParticipationRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["student_id", "from_date", "fee_plan_id"],
+      "properties": {
+        "student_id": { "type": "string", "format": "uuid" },
+        "bus_id": { "type": ["string", "null"], "format": "uuid" },
+        "from_date": { "type": "string", "format": "date" },
+        "fee_plan_id": { "type": "string", "format": "uuid" }
+      }
+    },
+    "PatchParticipationRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expected_version", "reason"],
+      "properties": {
+        "to_date": { "type": ["string", "null"], "format": "date" },
+        "bus_id": { "type": ["string", "null"], "format": "uuid" },
+        "expected_version": { "type": "integer", "minimum": 1 },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "BillingRequestDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "participation_id",
+        "period",
+        "source_key",
+        "state",
+        "version"
+      ],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "participation_id": { "type": "string", "format": "uuid" },
+        "period": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}$"
+        },
+        "source_key": { "type": "string", "minLength": 1 },
+        "state": { "$ref": "#/$defs/BillingRequestState" },
+        "charge_id": { "type": ["string", "null"], "format": "uuid" },
+        "error_code": { "type": ["string", "null"] },
+        "amount_paise": { "type": ["integer", "null"], "minimum": 1 },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "CreateBillingRunRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["period", "policy_version"],
+      "properties": {
+        "period": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}$"
+        },
+        "policy_version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "BillingRunDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["job_id", "state", "period", "policy_version", "preview"],
+      "properties": {
+        "job_id": { "type": "string", "format": "uuid" },
+        "state": {
+          "type": "string",
+          "enum": ["queued", "running", "succeeded", "failed"]
+        },
+        "period": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}$"
+        },
+        "policy_version": { "type": "integer", "minimum": 1 },
+        "preview": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["eligible_count", "blocked_count", "already_billed_count"],
+          "properties": {
+            "eligible_count": { "type": "integer", "minimum": 0 },
+            "blocked_count": { "type": "integer", "minimum": 0 },
+            "already_billed_count": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "ParticipantRowDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "participation_id",
+        "student_id",
+        "display_name",
+        "bus_id",
+        "from_date",
+        "to_date",
+        "fee_plan_id"
+      ],
+      "properties": {
+        "participation_id": { "type": "string", "format": "uuid" },
+        "student_id": { "type": "string", "format": "uuid" },
+        "display_name": { "type": "string" },
+        "bus_id": { "type": ["string", "null"], "format": "uuid" },
+        "from_date": { "type": "string", "format": "date" },
+        "to_date": { "type": ["string", "null"], "format": "date" },
+        "fee_plan_id": { "type": "string", "format": "uuid" }
+      }
+    },
+    "AdjustmentRequestDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "source_key",
+        "charge_id",
+        "amount_paise",
+        "reason",
+        "state",
+        "version"
+      ],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "source_key": { "type": "string", "minLength": 1 },
+        "charge_id": { "type": "string", "format": "uuid" },
+        "amount_paise": { "type": "integer", "minimum": 1 },
+        "reason": { "type": "string", "minLength": 1 },
+        "state": { "$ref": "#/$defs/AdjustmentRequestState" },
+        "credit_id": { "type": ["string", "null"], "format": "uuid" },
+        "error_code": { "type": ["string", "null"] },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "CreateAdjustmentRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["charge_id", "amount_paise", "reason", "source_key"],
+      "properties": {
+        "charge_id": { "type": "string", "format": "uuid" },
+        "amount_paise": { "type": "integer", "minimum": 1 },
+        "reason": { "type": "string", "minLength": 1 },
+        "source_key": { "type": "string", "minLength": 1 }
+      }
+    },
+    "ReconciliationItemDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "owner",
+        "period",
+        "retryable",
+        "participation_id",
+        "billing_request_id",
+        "source_key",
+        "charge_id",
+        "state",
+        "error_code"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["missing_charge", "orphaned_link", "blocked", "retryable_failure"]
+        },
+        "owner": { "type": "string", "enum": ["transport", "fees"] },
+        "period": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}$"
+        },
+        "retryable": { "type": "boolean" },
+        "participation_id": { "type": ["string", "null"], "format": "uuid" },
+        "billing_request_id": { "type": ["string", "null"], "format": "uuid" },
+        "source_key": { "type": ["string", "null"] },
+        "charge_id": { "type": ["string", "null"], "format": "uuid" },
+        "state": { "type": ["string", "null"] },
+        "error_code": { "type": ["string", "null"] }
+      }
+    },
+    "ReconciliationDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["period", "items"],
+      "properties": {
+        "period": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}$"
+        },
+        "items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ReconciliationItemDTO" }
+        }
+      }
+    },
+    "TransportParticipationView": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "active", "from_date", "fee_plan_id"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "active": { "type": "boolean" },
+        "bus_id": { "type": ["string", "null"], "format": "uuid" },
+        "from_date": { "type": "string", "format": "date" },
+        "to_date": { "type": ["string", "null"], "format": "date" },
+        "fee_plan_id": { "type": "string", "format": "uuid" }
+      }
+    },
+    "PeriodChargeResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_key", "state"],
+      "properties": {
+        "source_key": { "type": "string", "minLength": 1 },
+        "charge_id": { "type": ["string", "null"], "format": "uuid" },
+        "state": { "$ref": "#/$defs/BillingRequestState" }
+      }
+    },
+    "FeePlanAmountRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fee_plan_id", "fee_head_id", "amount_paise", "proration_policy"],
+      "properties": {
+        "fee_plan_id": { "type": "string", "format": "uuid" },
+        "fee_head_id": { "type": "string", "format": "uuid" },
+        "amount_paise": { "type": "integer", "minimum": 1 },
+        "proration_policy": {
+          "type": ["string", "null"],
+          "description": "Null means partial-period billing is blocked."
+        }
+      }
+    }
+  }
+}

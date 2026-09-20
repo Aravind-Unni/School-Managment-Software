@@ -1,0 +1,43 @@
+{
+  "status": "frozen",
+  "note": "Consumer examples for ParticipationDTO, BillingRequestDTO, PeriodChargeResult.",
+  "participation_s1": {
+    "id": "d0a1b2c3-4e5f-6677-8899-aabbccddeeff",
+    "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "student_id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c",
+    "bus_id": "a1b2c3d4-e5f6-7788-9900-aabbccddeeff",
+    "from_date": "2026-06-01",
+    "to_date": null,
+    "fee_plan_id": "b8e2c1a0-4f3d-5e6a-9b0c-1d2e3f4a5b6c",
+    "version": 1
+  },
+  "billing_request_posted": {
+    "id": "e1b2c3d4-5f60-7788-9900-bbccddeef001",
+    "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "participation_id": "d0a1b2c3-4e5f-6677-8899-aabbccddeeff",
+    "period": "2026-06",
+    "source_key": "transport:d0a1b2c3-4e5f-6677-8899-aabbccddeeff:2026-06:period",
+    "state": "posted",
+    "charge_id": "f2c3d4e5-6071-8899-0011-ccddeeff2002",
+    "error_code": null,
+    "amount_paise": 50000,
+    "version": 1
+  },
+  "period_charge_after_timeout_retry": {
+    "source_key": "transport:d0a1b2c3-4e5f-6677-8899-aabbccddeeff:2026-06:period",
+    "charge_id": "f2c3d4e5-6071-8899-0011-ccddeeff2002",
+    "state": "posted"
+  },
+  "billing_request_blocked_proration": {
+    "id": "a3b4c5d6-7081-99aa-1122-ddeeff3003",
+    "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "participation_id": "d0a1b2c3-4e5f-6677-8899-aabbccddeeff",
+    "period": "2026-06",
+    "source_key": "transport:d0a1b2c3-4e5f-6677-8899-aabbccddeeff:2026-06:period",
+    "state": "blocked",
+    "charge_id": null,
+    "error_code": "transport.error.proration_policy_missing",
+    "amount_paise": null,
+    "version": 1
+  }
+}

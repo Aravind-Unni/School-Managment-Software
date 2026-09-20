@@ -25,6 +25,11 @@ def set_registry(registry: PortRegistry) -> PortRegistry:
     return registry
 
 
+def peek() -> PortRegistry | None:
+    """Return the installed registry without building one on demand."""
+    return _REGISTRY
+
+
 def get_registry() -> PortRegistry:
     """Return the installed registry, building it on demand.
 

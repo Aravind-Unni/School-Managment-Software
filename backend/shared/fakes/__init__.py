@@ -18,6 +18,7 @@ from .assessment import FakeAssessment
 from .attendance import FakeAttendance
 from .clock import FixedClock
 from .failures import FailureInjector, InjectedFailure
+from .fees import FakeFees, FeePlanSeed, FeesCommitTimeout
 from .files import FakeFiles
 from .notifications import FakeNotifications, SentMessage
 from .platform import EagerModeNotAsserted, TestPlatformAdapter
@@ -32,11 +33,14 @@ __all__ = [
     "FakeAccess",
     "FakeAssessment",
     "FakeAttendance",
+    "FakeFees",
     "FakeFiles",
     "FakeNotifications",
     "FakeObjectStorage",
     "FakeRegistry",
     "FakeTimetable",
+    "FeePlanSeed",
+    "FeesCommitTimeout",
     "FixedClock",
     "InjectedFailure",
     "PolicyRule",
