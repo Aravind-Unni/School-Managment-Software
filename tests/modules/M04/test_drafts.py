@@ -5,6 +5,7 @@ from __future__ import annotations
 import uuid
 
 import pytest
+
 from shared import fixtures
 
 pytestmark = pytest.mark.module

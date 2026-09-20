@@ -23,7 +23,6 @@ REGISTRATION = ModuleRegistration(
         FrontendRoute(
             path="/attendance/session/:sessionId",
             component="AttendanceSessionPage",
-            nav_label_key="nav.attendance_session",
             required_permission="attendance.mark",
         ),
     ),

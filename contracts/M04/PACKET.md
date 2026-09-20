@@ -1,7 +1,7 @@
 # Contract packet -- M04 attendance
 
-Status: **FROZEN** under revision `school-contracts-v5` (reviewed 2026-09-20 by
-Abhinav M). Artefacts live under `contracts/M04/`.
+Status: **APPROVED AND FROZEN** under revision `school-contracts-v5` on 2026-09-20
+by Abhinav M. Artefacts live under `contracts/M04/`.
 
 ---
 

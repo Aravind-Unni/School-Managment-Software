@@ -36,7 +36,6 @@ def test_response_fixtures_match_summary_schema():
     """Consumer summary examples validate against AttendanceSummaryDTO."""
     schema = load_json("schemas/dtos.schema.json")
     summary = schema["$defs"]["AttendanceSummaryDTO"]
-    validator = jsonschema.Draft202012Validator(summary, resolver=None)
     # Inline $ref resolution is limited; validate required keys instead.
     examples = load_json("fixtures/responses.json")["examples"]
     for example in examples:

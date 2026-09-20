@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import pytest
-from shared import fixtures
-from shared.harness.models import HarnessAuditRecord, HarnessOutboxEvent
 
 from modules.attendance.models import AttendanceAmendment, AttendanceEntry, AttendanceSession
 from modules.attendance.seeds import seed_baseline
+from shared import fixtures
+from shared.harness.models import HarnessAuditRecord, HarnessOutboxEvent
 
 pytestmark = pytest.mark.module
 
@@ -29,13 +29,20 @@ def test_baseline_summary_counts(api, clock):
     """After seed: S1/S2 eligible=2 marked=1; S3 eligible=1."""
     seed_baseline()
     for student, expect in (
-        (fixtures.STUDENT_S1, {"eligible": 2, "marked": 1, "present": 1, "absent": 0, "unmarked": 1}),
-        (fixtures.STUDENT_S2, {"eligible": 2, "marked": 1, "present": 0, "absent": 1, "unmarked": 1}),
-        (fixtures.STUDENT_S3, {"eligible": 1, "marked": 1, "present": 1, "absent": 0, "unmarked": 0}),
+        (
+            fixtures.STUDENT_S1,
+            {"eligible": 2, "marked": 1, "present": 1, "absent": 0, "unmarked": 1},
+        ),
+        (
+            fixtures.STUDENT_S2,
+            {"eligible": 2, "marked": 1, "present": 0, "absent": 1, "unmarked": 1},
+        ),
+        (
+            fixtures.STUDENT_S3,
+            {"eligible": 1, "marked": 1, "present": 1, "absent": 0, "unmarked": 0},
+        ),
     ):
-        response = api.get(
-            f"/attendance/summary?student_id={student}&from={DATE}&to={DATE}"
-        )
+        response = api.get(f"/attendance/summary?student_id={student}&from={DATE}&to={DATE}")
         assert response.status_code == 200, response.content
         body = response.json()
         for key, value in expect.items():
@@ -83,8 +90,9 @@ def test_reconciliation_preserves_history(api, p1_id, timetable, as_persona):
     ).json()
     entry_count_before = AttendanceEntry.objects.filter(session_id=submitted["id"]).count()
     timetable.cancel_session(p1_id)
-    from contracts.identity import AuthLevel, RequestContext
     from datetime import UTC, datetime
+
+    from contracts.identity import AuthLevel, RequestContext
 
     ctx = RequestContext(
         actor_id=fixtures.TEACHER_T1,

@@ -28,7 +28,6 @@ export const attendanceModule: FeatureModule = {
     {
       path: "/attendance/session/:sessionId",
       component: AttendanceSessionPage,
-      navLabelKey: "nav.attendance_session",
       requiredPermission: ATTENDANCE_PERMISSIONS.mark,
     },
   ],

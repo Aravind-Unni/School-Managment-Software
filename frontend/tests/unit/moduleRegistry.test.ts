@@ -9,7 +9,12 @@ describe("module registry", () => {
   it("registers every implemented module when none is selected", () => {
     // A standalone build sets VITE_SCHOOL_MODULE_ID to serve one module; with no
     // selection (the integrated case) every implemented module is registered.
-    expect(REGISTERED_MODULES.map((module) => module.id)).toEqual(["M00", "M01", "M03"]);
+    expect(REGISTERED_MODULES.map((module) => module.id)).toEqual([
+      "M00",
+      "M01",
+      "M03",
+      "M04",
+    ]);
   });
 
   it("every registered module declares a valid shape", () => {
@@ -29,6 +34,7 @@ describe("module registry", () => {
       "nav.timetable_class",
       "nav.timetable_teacher",
       "nav.timetable_student",
+      "nav.attendance",
     ]);
   });
 

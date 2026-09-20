@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import pytest
-from shared import fixtures
+
 from shared.harness.models import HarnessOutboxEvent
 
 pytestmark = pytest.mark.module
@@ -77,7 +77,10 @@ def test_stale_version_409(api, p1_id):
         {
             "expected_version": created["version"] + 5,
             "entries": [
-                {"enrolment_id": created["roster_snapshot"][0]["enrolment_id"], "status": "present"}
+                {
+                    "enrolment_id": created["roster_snapshot"][0]["enrolment_id"],
+                    "status": "present",
+                }
             ],
         },
     )
