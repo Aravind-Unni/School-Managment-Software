@@ -1,0 +1,9 @@
+{
+  "status": "proposed",
+  "concurrent_issue_one_winner": true,
+  "repeat_return_harmless": true,
+  "overdue_date_correct_in_school_timezone": true,
+  "withdrawn_borrower_history_retained": true,
+  "unauthorized_loans_hidden": true,
+  "duplicate_accession_rejected": true
+}

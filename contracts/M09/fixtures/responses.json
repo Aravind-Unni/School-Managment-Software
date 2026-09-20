@@ -1,0 +1,51 @@
+{
+  "status": "proposed",
+  "note": "Consumer examples for TitleDTO, CopyDTO, LoanDTO, AvailabilityView, OverdueItemDTO.",
+  "title": {
+    "id": "a0b1c2d3-4e5f-6677-8899-aabbccdde001",
+    "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "isbn": "978-0-000000-01-1",
+    "name": "കേരള ചരിത്രം",
+    "author": "Synthetic Author",
+    "language": "ml",
+    "version": 1
+  },
+  "copy_available": {
+    "id": "b1c2d3e4-5f60-7788-9900-bbccddeef002",
+    "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "title_id": "a0b1c2d3-4e5f-6677-8899-aabbccdde001",
+    "accession_no": "ACC-1001",
+    "state": "available",
+    "version": 1
+  },
+  "loan_open_s1": {
+    "id": "c2d3e4f5-6071-8899-0011-ccddeeff3003",
+    "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "copy_id": "b1c2d3e4-5f60-7788-9900-bbccddeef002",
+    "borrower_person_id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c",
+    "borrower_type": "student",
+    "issued_at": "2026-09-01T04:30:00Z",
+    "due_date": "2026-10-01",
+    "returned_at": null,
+    "version": 1
+  },
+  "availability_one_of_one": {
+    "available": 1,
+    "total": 1
+  },
+  "overdue_item": {
+    "loan_id": "c2d3e4f5-6071-8899-0011-ccddeeff3003",
+    "copy_id": "b1c2d3e4-5f60-7788-9900-bbccddeef002",
+    "accession_no": "ACC-1001",
+    "borrower_person_id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c",
+    "borrower_display_name": "S1",
+    "due_date": "2026-09-01",
+    "as_of": "2026-09-02"
+  },
+  "open_loan_view_overdue": {
+    "loan_id": "c2d3e4f5-6071-8899-0011-ccddeeff3003",
+    "copy_id": "b1c2d3e4-5f60-7788-9900-bbccddeef002",
+    "due_date": "2026-09-01",
+    "overdue": true
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "status": "proposed",
+  "note": "Reuses frozen ErrorCode values; message_key values are module-owned.",
+  "rows": [
+    {
+      "status": 401,
+      "code": "unauthenticated",
+      "message_key": "error.unauthenticated",
+      "when": "No server-derived session."
+    },
+    {
+      "status": 403,
+      "code": "action_denied",
+      "message_key": "error.action_denied",
+      "when": "Actor lacks the required library.* permission."
+    },
+    {
+      "status": 404,
+      "code": "object_inaccessible",
+      "message_key": "error.object_inaccessible",
+      "when": "Absent or other-school title/copy/loan/borrower. Cross-school always 404. Unauthorized other-student loans are 404."
+    },
+    {
+      "status": 409,
+      "code": "version_conflict",
+      "message_key": "error.version_conflict",
+      "when": "expected_version mismatch on return/renew/adjust."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "library.error.copy_not_available",
+      "when": "Issue attempted while copy is not available or already has an open loan."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "library.error.idempotency_conflict",
+      "when": "Idempotency-Key reused with a different issue payload."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.validation_failed",
+      "when": "Malformed body or unknown field (closed schemas)."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.server_internal_field_rejected",
+      "when": "Body carried school_id/actor_id/auth_level/grant."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "library.error.duplicate_accession",
+      "when": "accession_no already exists for this school."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "library.error.borrower_limit_exceeded",
+      "when": "Open loans would exceed fixture max_active_loans_per_borrower."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "library.error.renewal_limit_exceeded",
+      "when": "Renewals would exceed fixture max_renewals_per_loan."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "library.error.renewal_not_allowed",
+      "when": "new_due_date not after current due, loan closed, or loan overdue at school date."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "library.error.reason_required",
+      "when": "Copy adjustment missing non-empty reason."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "library.error.invalid_due_date",
+      "when": "due_date is before school civil date of issue."
+    }
+  ]
+}
