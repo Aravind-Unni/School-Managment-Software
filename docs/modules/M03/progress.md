@@ -24,7 +24,7 @@ second developer has verified the module from a fresh checkout.**
 | Branched from | `aab4b6d79cc4c8ca9e10fb63b7b9d39c5cd8c81a` (`main`) |
 | Manifest revision | `school-contracts-v4`, status `reviewed` |
 | M03 manifest status | **`frozen`**, reviewed by Abhinav M on 2026-09-20; 27 frozen entries where 20 were before |
-| PR | **Not opened.** No `gh` CLI, no `GH_TOKEN`, and the GitHub MCP server failed to connect. See "Blockers" |
+| PR | **Draft #4** — https://github.com/Aravind-Unni/School-Managment-Software/pull/4 |
 | Recorded | 2026-09-20 |
 
 ## Complete
@@ -154,8 +154,9 @@ python3 scripts/dev.py check M03 --suite browser
 python3 scripts/dev.py evidence M03
 ```
 
-Then open the draft PR (see Blockers) and have a second developer verify the
-module from a fresh checkout. Only after both is `STANDALONE_VERIFIED` true.
+Then have a second developer verify the module from a fresh checkout. Only after
+both is `STANDALONE_VERIFIED` true. The draft PR (#4) is open and must not be
+merged before either happens.
 
 ## Blockers
 
@@ -164,20 +165,16 @@ module from a fresh checkout. Only after both is `STANDALONE_VERIFIED` true.
    cannot run here, and are recorded `not-run` — never as passing. Migrations
    applying to PostgreSQL, JSONB behaviour, row locking and the
    two-simultaneous-stacks requirement are all unverified for this module.
-2. **The draft PR could not be opened.** `gh` is not installed, `GH_TOKEN` is
-   unset, and the GitHub MCP server failed to connect this session
-   (`Authorization header is badly formatted`). The branch is pushed; opening the
-   PR needs one of those three fixed, or a click.
-3. **B00's own acceptance gate is still open** — merged without peer review, four
+2. **B00's own acceptance gate is still open** — merged without peer review, four
    criteria unverified, the container path never executed by anyone. Inherited,
    and not closeable from here.
-4. **Four Registry validations are impossible** with the frozen port: no
+3. **Four Registry validations are impossible** with the frozen port: no
    `get_section`, `get_subject`, `get_staff` or `get_academic_year`. So a slot's
    subject is unvalidated, an unknown teacher is indistinguishable from an
    unassigned one, a version's range is never checked against its year, and the UI
    can offer no picker with names. Recorded in `contracts/M03/ports.md`, not
    worked around.
-5. **A cancellation's version cannot be read back.** The frozen
+4. **A cancellation's version cannot be read back.** The frozen
    `PeriodSessionDTO` is closed and carries none, so a client that did not make
    the cancelling write cannot restore the period. A contract revision item, in
    the handoff.

@@ -191,7 +191,9 @@ calls it makes to Access.
 
 1. No container engine here → the standalone and browser suites cannot run, and
    nothing about PostgreSQL behaviour is verified for this module.
-2. The draft PR is not open: no `gh`, no `GH_TOKEN`, and the GitHub MCP server
-   failed to connect. The branch is pushed and ready.
-3. B00's acceptance gate is still open, and is not closeable from this module.
-4. The six contract revision items above.
+2. B00's acceptance gate is still open, and is not closeable from this module.
+3. The six contract revision items above.
+
+The branch is pushed and draft PR
+[#4](https://github.com/Aravind-Unni/School-Managment-Software/pull/4) is open.
+It is a draft on purpose: two of the three suites have never run.

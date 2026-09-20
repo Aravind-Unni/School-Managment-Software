@@ -14,8 +14,8 @@
     "frozen": true,
     "reviewed_by": "Abhinav M",
     "reviewed_on": "2026-09-20",
-    "pr_url": null,
-    "pr_state": "not opened: gh CLI absent, GH_TOKEN unset, and the GitHub MCP server failed to connect this session",
+    "pr_url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/4",
+    "pr_state": "open, draft",
     "validation_source": "Executed test runs on the SQLite test profile and on Node 22.22.2. NOT standalone evidence: this machine has no container engine and no PostgreSQL."
   },
   "startup_commands": [
@@ -197,7 +197,6 @@
   ],
   "blockers": [
     "No container engine (doctor exits 2): standalone and browser suites cannot run here, so nothing about PostgreSQL behaviour is verified for this module.",
-    "Draft PR not opened: gh CLI absent, GH_TOKEN unset, GitHub MCP server failed to connect. The branch is pushed.",
     "B00's own acceptance gate remains open - merged without peer review, four criteria unverified, container path never executed. Inherited; not closeable from M03.",
     "The six contract revision items listed above."
   ]
