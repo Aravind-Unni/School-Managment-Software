@@ -47,6 +47,8 @@ export function SubstitutionPage() {
           : [
               ...new Set((await readTimetable(latest.id)).slots.map((slot) => slot.section_id)),
             ].sort();
+      // As in ClassSchedulePage: the resolved section is not written back into
+      // state, because that would re-run the effect and fetch everything twice.
       const section = chosenSection !== "" ? chosenSection : (sections[0] ?? "");
       const substitutions = (await listSubstitutions(chosenDate)).items;
       if (section === "") {
@@ -54,7 +56,6 @@ export function SubstitutionPage() {
         return;
       }
       const day = await readSectionDay({ sectionId: section, date: chosenDate });
-      setSectionId(section);
       setState({ status: "ready", value: { sections, day, substitutions } });
     } catch (error) {
       setState(toErrorState(error));
@@ -116,7 +117,7 @@ export function SubstitutionPage() {
       <label>
         {t("timetable.editor.section")}
         <select
-          value={sectionId}
+          value={sectionId !== "" ? sectionId : (day?.section_id ?? "")}
           aria-label={t("timetable.editor.section")}
           onChange={(event) => setSectionId(event.target.value)}
         >

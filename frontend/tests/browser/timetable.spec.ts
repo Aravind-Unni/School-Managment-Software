@@ -68,9 +68,14 @@ test("an unrelated section read is denied, in prose", async ({ page }) => {
   // The standalone persona is T1, class teacher of C1. Registry reports no
   // assignment to C2, so C2's schedule is not theirs to read -- and the screen
   // must say so as a sentence a teacher can act on, never as an error code.
+  //
+  // Use the combobox role, not getByLabel("Class"): that label is also a
+  // substring of the page heading "Class schedule", and Playwright's default
+  // label match is substring, so the locator resolves to the section AND the
+  // select (strict-mode failure in CI).
   const C2 = "f0650aea-6dc0-5f54-8f6e-f7bbb45ae3d6";
   await page.goto("/timetable/class");
-  const sections = page.getByLabel("Class");
+  const sections = page.getByRole("combobox", { name: "Class" });
   await expect(sections.locator("option")).toHaveCount(2);
 
   await sections.selectOption(C2);
@@ -85,10 +90,12 @@ test("an unrelated section read is denied, in prose", async ({ page }) => {
 test("the pupil schedule marks a subject the pupil does not take", async ({ page }) => {
   // S2 takes malayalam only, so C1's maths period is shown and marked as not
   // theirs rather than hidden.
+  // Same label collision as the Class select: "Pupil" is a substring of the
+  // heading "Pupil schedule", so target the textbox by role.
   const S2 = "eceaa8ed-e2db-50cf-a649-557816565032";
   await page.goto("/timetable/student");
-  await page.getByLabel("Pupil").fill(S2);
-  await page.getByLabel("Date").fill(SCHOOL_DAY);
+  await page.getByRole("textbox", { name: "Pupil" }).fill(S2);
+  await page.getByLabel("Date", { exact: true }).fill(SCHOOL_DAY);
   await expect(page.getByTestId("session").first()).toBeVisible();
   await expect(page.getByText("You do not take this subject")).toHaveCount(1);
 });

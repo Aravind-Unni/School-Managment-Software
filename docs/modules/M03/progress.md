@@ -13,9 +13,11 @@ not merge or deploy. Propose contracts for review first.
 
 ## Current phase / source identity
 
-**Phase: all four implementation steps complete, and BOTH container-backed suites
-now pass in CI against a real stack. STANDALONE_VERIFIED is still false, for one
-remaining reason: no second developer has verified the module from a fresh
+**Phase: all four implementation steps complete. Standalone is green in CI;
+m03-browser was red on the tip of this branch because two new Playwright
+assertions used `getByLabel` substrings that also matched page headings — fixed
+this session, awaiting the next CI run. STANDALONE_VERIFIED is still false, for
+one remaining reason: no second developer has verified the module from a fresh
 checkout.**
 
 | Item | Observed value |
@@ -112,9 +114,12 @@ because a SQLite result is not a PostgreSQL result.
 | `npm run lint` / `typecheck` / `build` | clean |
 | `dev.py check M03 --suite standalone` (this machine) | **NOT RUN** — no container engine. Recorded `not-run`, never as passing |
 | `dev.py check M03 --suite browser` (this machine) | **NOT RUN** — no container engine |
-| `dev.py check M03 --suite standalone` (**CI**, commit `b5d91d7`) | **422 passed** against `postgres-container` |
-| `dev.py check M03 --suite browser` (**CI**, commit `b5d91d7`) | **8 passed** — Playwright against the real stack |
+| `dev.py check M03 --suite standalone` (**CI**, commit `b5d91d7` and later) | **422 passed** against `postgres-container` |
+| `dev.py check M03 --suite browser` (**CI**, commit `b5d91d7`) | **8 passed** — before the denial and pupil journeys were added |
+| `m03-browser` (**CI**, commit `08d841a`) | **FAIL** — 7 passed, 2 failed. Cause below |
 | `m03-backend` (CI) | migrations on an EMPTY then a POPULATED PostgreSQL 17.11, the suite, and the served surface matching the frozen OpenAPI |
+| `npx vitest run` / lint / typecheck (this session, Node 22.22.2) | **65 passed**, lint and typecheck clean |
+| `dev.py check M03 --suite contracts` (this session) | **PASS** — manifest, arch, 105 shared + 24 M03 |
 
 `mypy` reports 76 errors under `modules/timetable`, of the same two kinds M01 and
 M02 already report (`request.school_context` on DRF's `Request`, and duck-typed
@@ -154,24 +159,28 @@ touched, no guard was weakened, and no frozen hash was moved.
 
 ## Exact next step
 
-**Run the container-backed suites on a machine with a container engine**, in this
-order, and attach the evidence to the commit actually tested:
+1. **Confirm `m03-browser` is green on the push that fixes the Playwright
+   label collisions** (this session). Do not claim the browser suite green until
+   that CI run is observed.
+2. **A second developer verifies the module from a fresh checkout.** Only then
+   is `STANDALONE_VERIFIED` true. The draft PR (#4) is open and must not be
+   merged before that happens.
 
-```bash
-python3 scripts/dev.py up M03 --profile standalone
-python3 scripts/dev.py migrate M03 --profile standalone
-python3 scripts/dev.py seed M03 --scenario baseline
-python3 scripts/dev.py check M03 --suite standalone
-python3 scripts/dev.py check M03 --suite browser
-python3 scripts/dev.py evidence M03
-```
+## What this session fixed (CI red on `m03-browser`)
 
-**That is now done, in CI, and it found two real defects — see below.** The
-remaining step is the one this session cannot perform:
+After the denial and pupil journeys were added (`f5b3972`, `d672da3`), CI on
+`08d841a` failed two Playwright tests with **strict-mode locator violations**,
+not product regressions:
 
-**A second developer verifies the module from a fresh checkout.** Only then is
-`STANDALONE_VERIFIED` true. The draft PR (#4) is open and must not be merged
-before that happens.
+- `getByLabel("Class")` matched both the select labelled "Class" and the
+  `<section>` whose heading is "Class schedule" (Playwright label match is a
+  substring by default).
+- `getByLabel("Pupil")` likewise matched the "Pupil" field and "Pupil schedule".
+
+Fixed by targeting the controls by role (`combobox` / `textbox`) so they cannot
+collide with the page region. Also kept a small UI fix already in the working
+tree: the class and substitution pages no longer write the resolved default
+section back into state on first load (that re-ran the effect and double-fetched).
 
 ## What running the container path for the first time exposed
 

@@ -40,13 +40,16 @@ export function ClassSchedulePage() {
                   (await readTimetable(latest.id)).slots.map((slot) => slot.section_id),
                 ),
               ].sort();
+        // Deliberately does NOT write the resolved section back into state: that
+        // would re-run this effect and fetch the whole page a second time on
+        // every first load. The select reads the resolved section off the day
+        // instead, so an empty choice means "the first one" everywhere.
         const section = chosenSection !== "" ? chosenSection : (sections[0] ?? "");
         if (section === "") {
           setState({ status: "ready", value: { sections, day: null } });
           return;
         }
         const day = await readSectionDay({ sectionId: section, date: chosenDate });
-        setSectionId(section);
         setState({ status: "ready", value: { sections, day } });
       } catch (error) {
         setState(toErrorState(error));
@@ -89,7 +92,7 @@ export function ClassSchedulePage() {
       <label>
         {t("timetable.editor.section")}
         <select
-          value={sectionId}
+          value={sectionId !== "" ? sectionId : (day?.section_id ?? "")}
           aria-label={t("timetable.editor.section")}
           onChange={(event) => setSectionId(event.target.value)}
         >

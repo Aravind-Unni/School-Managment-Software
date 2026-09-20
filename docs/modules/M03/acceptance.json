@@ -1,9 +1,9 @@
 {
   "module": "M03 central timetable and calendar",
   "recorded_at": "2026-09-20",
-  "phase": "implementation_complete_container_suites_green_in_ci",
+  "phase": "implementation_complete_awaiting_browser_ci_after_locator_fix",
   "standalone_verified": false,
-  "standalone_verified_note": "False, for one remaining reason: no second developer has verified the module from a fresh checkout. The standalone and browser suites now PASS in CI against a real stack (422 and 8, commit b5d91d7), migrations apply to empty and populated PostgreSQL, and both language views render.",
+  "standalone_verified_note": "False, for one remaining reason: no second developer has verified the module from a fresh checkout. Standalone PASS in CI (422, postgres-container). Browser was 8/8 on b5d91d7, then 7/9 on 08d841a because getByLabel('Class'|'Pupil') also matched page headings; locator fix pushed this session — re-check m03-browser before quoting it green.",
   "source_identity": {
     "repository": "https://github.com/Aravind-Unni/School-Managment-Software",
     "branch": "m03/timetable-calendar",
