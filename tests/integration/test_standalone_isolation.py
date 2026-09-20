@@ -107,7 +107,7 @@ def test_an_unimplemented_module_fails_honestly_rather_than_booting_empty():
 
     from shared.module_catalog import address_for
 
-    # M08 has no code yet. Importing its registration must fail, which is what
-    # makes `dev.py up M08` report absence instead of serving an empty app.
+    # M09 has no code yet. Importing its registration must fail, which is what
+    # makes `dev.py up M09` report absence instead of serving an empty app.
     with pytest.raises(ModuleNotFoundError):
-        importlib.import_module(address_for("M08").registration_path)
+        importlib.import_module(address_for("M09").registration_path)

@@ -46,6 +46,7 @@ Standalone / browser: **not-run**. STANDALONE_VERIFIED=false.
 
 ## Exact next step
 
-1. `python3 scripts/dev.py up M08 --profile standalone` (Docker)
-2. migrate + seed; `check M08 --suite standalone` / browser
-3. `evidence M08`; set STANDALONE_VERIFIED only after peer verify from fresh checkout
+1. CI green after advancing unimplemented sentinel M08→M09
+2. `python3 scripts/dev.py up M08 --profile standalone` (Docker)
+3. migrate + seed; `check M08 --suite standalone` / browser
+4. `evidence M08`; set STANDALONE_VERIFIED only after peer verify from fresh checkout

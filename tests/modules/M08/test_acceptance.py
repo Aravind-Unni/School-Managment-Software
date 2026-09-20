@@ -91,9 +91,7 @@ def test_version_conflict_on_patch(client, baseline):
     pid = baseline["participation_id"]
     res = client.patch(
         f"/api/v1/bus-participations/{pid}",
-        data=json.dumps(
-            {"expected_version": 99, "reason": "stale", "to_date": "2026-06-30"}
-        ),
+        data=json.dumps({"expected_version": 99, "reason": "stale", "to_date": "2026-06-30"}),
         content_type="application/json",
     )
     assert res.status_code == 409
@@ -203,9 +201,7 @@ def test_audit_and_events_on_participation(client, baseline):
     assert HarnessOutboxEvent.objects.filter(
         event_type="transport.participation_changed"
     ).exists()
-    assert HarnessAuditRecord.objects.filter(
-        action="transport.participation_created"
-    ).exists()
+    assert HarnessAuditRecord.objects.filter(action="transport.participation_created").exists()
 
 
 def test_transport_port_get_participation(baseline):
@@ -222,8 +218,6 @@ def test_transport_port_get_participation(baseline):
         auth_level=AuthLevel.TWO_FACTOR,
         auth_time=datetime(2026, 6, 15, 9, 30, tzinfo=UTC),
     )
-    view = deps.transport_port().get_participation(
-        ctx, fixtures.STUDENT_S1, date(2026, 6, 15)
-    )
+    view = deps.transport_port().get_participation(ctx, fixtures.STUDENT_S1, date(2026, 6, 15))
     assert view.active is True
     assert str(view.fee_plan_id) == FEE_PLAN_ID

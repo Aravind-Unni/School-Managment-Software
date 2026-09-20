@@ -1,6 +1,7 @@
 # Contract packet -- M08 transport
 
-Status: **FROZEN** under `school-contracts-v9` (see `review-decisions.md`).
+Status: **APPROVED AND FROZEN** under revision `school-contracts-v9` on 2026-09-21
+(see `review-decisions.md`).
 
 Manifest revision this packet targets: `school-contracts-v9`
 
