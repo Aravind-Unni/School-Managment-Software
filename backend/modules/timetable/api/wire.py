@@ -11,7 +11,9 @@ school recognises, and a consumer compares the instant.
 
 from __future__ import annotations
 
+from ..dtos import PeriodSessionDTO
 from ..models import CalendarException, Substitution, TeacherUnavailable, TimetableVersion
+from ..services.port import session_to_dto
 from ..services.reads import CalendarDay, SessionView
 
 
@@ -105,31 +107,40 @@ def conflict_to_wire(conflict) -> dict[str, object]:
     }
 
 
-def session_to_wire(session: SessionView) -> dict[str, object]:
-    """Render one dated teaching period."""
-    dated = session.dated
+def session_dto_to_wire(dto: PeriodSessionDTO) -> dict[str, object]:
+    """Render one dated teaching period from the DTO the port produces.
+
+    ONE mapping of this shape exists, and this is it. A schedule view and a
+    re-read of the same period by id must return the identical object, and two
+    mappings of a closed frozen shape drift the first time a field is added.
+    """
     return {
-        "timetable_session_id": str(dated.timetable_session_id),
-        "school_id": str(dated.school_id),
-        "section_id": str(dated.section_id),
-        "date": dated.date.isoformat(),
-        "slot_id": str(dated.slot_id),
-        "slot_code": dated.slot_code,
-        "subject_id": str(dated.subject_id),
-        "assigned_teacher_id": str(dated.teacher_id),
+        "timetable_session_id": str(dto.timetable_session_id),
+        "school_id": str(dto.school_id),
+        "section_id": str(dto.section_id),
+        "date": dto.date.isoformat(),
+        "slot_id": str(dto.slot_id),
+        "slot_code": dto.slot_code,
+        "subject_id": str(dto.subject_id),
+        "assigned_teacher_id": str(dto.assigned_teacher_id),
         "substitute_teacher_id": (
-            str(session.substitute_teacher_id) if session.substitute_teacher_id else None
+            str(dto.substitute_teacher_id) if dto.substitute_teacher_id else None
         ),
-        "starts_at": dated.starts_at.isoformat(),
-        "ends_at": dated.ends_at.isoformat(),
-        "starts_at_local": _local(dated.starts_at_local),
-        "ends_at_local": _local(dated.ends_at_local),
-        "cancelled": session.cancelled,
-        "cancellation_reason_key": session.cancellation_reason_key,
-        "room_code": dated.room_code,
-        "timetable_id": str(session.timetable_id),
-        "timetable_version": session.timetable_version,
+        "starts_at": dto.starts_at.isoformat(),
+        "ends_at": dto.ends_at.isoformat(),
+        "starts_at_local": _local(dto.starts_at_local),
+        "ends_at_local": _local(dto.ends_at_local),
+        "cancelled": dto.cancelled,
+        "cancellation_reason_key": dto.cancellation_reason_key,
+        "room_code": dto.room_code,
+        "timetable_id": str(dto.timetable_id),
+        "timetable_version": dto.timetable_version,
     }
+
+
+def session_to_wire(session: SessionView) -> dict[str, object]:
+    """Render one reader session, through the same DTO the port hands to M04."""
+    return session_dto_to_wire(session_to_dto(session))
 
 
 def calendar_day_to_wire(day: CalendarDay) -> dict[str, object]:
