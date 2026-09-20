@@ -8,6 +8,7 @@
 
 import type { FeatureModule } from "@app/moduleRegistry";
 import { ClassSchedulePage } from "./ClassSchedulePage";
+import { StudentSchedulePage } from "./StudentSchedulePage";
 import { SubstitutionPage } from "./SubstitutionPage";
 import { TeacherSchedulePage } from "./TeacherSchedulePage";
 import { WeeklyEditorPage } from "./WeeklyEditorPage";
@@ -51,6 +52,12 @@ export const timetableModule: FeatureModule = {
       component: TeacherSchedulePage,
       navLabelKey: "nav.timetable_teacher",
       requiredPermission: TIMETABLE_PERMISSIONS.readTeacher,
+    },
+    {
+      path: "/timetable/student",
+      component: StudentSchedulePage,
+      navLabelKey: "nav.timetable_student",
+      requiredPermission: TIMETABLE_PERMISSIONS.readStudent,
     },
   ],
 };

@@ -18,6 +18,7 @@ export const TIMETABLE_MESSAGES: Record<Language, Record<string, string>> = {
     "nav.timetable_substitutions": "Substitutions",
     "nav.timetable_class": "Class schedule",
     "nav.timetable_teacher": "My schedule",
+    "nav.timetable_student": "Pupil schedule",
 
     "timetable.editor.title": "Weekly timetable",
     "timetable.editor.draft": "Draft",
@@ -47,6 +48,8 @@ export const TIMETABLE_MESSAGES: Record<Language, Record<string, string>> = {
 
     "timetable.schedule.title": "Class schedule",
     "timetable.schedule.teacherTitle": "My schedule",
+    "timetable.schedule.studentTitle": "Pupil schedule",
+    "timetable.schedule.student": "Pupil",
     "timetable.schedule.date": "Date",
     "timetable.schedule.today": "Today",
     "timetable.schedule.notSchoolDay": "No lessons on this day.",
@@ -123,6 +126,7 @@ export const TIMETABLE_MESSAGES: Record<Language, Record<string, string>> = {
     "nav.timetable_substitutions": "പകരം അധ്യാപകർ",
     "nav.timetable_class": "ക്ലാസ് സമയക്രമം",
     "nav.timetable_teacher": "എന്റെ സമയക്രമം",
+    "nav.timetable_student": "വിദ്യാർഥിയുടെ സമയക്രമം",
 
     "timetable.editor.title": "ആഴ്ചത്തെ സമയക്രമം",
     "timetable.editor.draft": "കരട്",
@@ -153,6 +157,8 @@ export const TIMETABLE_MESSAGES: Record<Language, Record<string, string>> = {
 
     "timetable.schedule.title": "ക്ലാസ് സമയക്രമം",
     "timetable.schedule.teacherTitle": "എന്റെ സമയക്രമം",
+    "timetable.schedule.studentTitle": "വിദ്യാർഥിയുടെ സമയക്രമം",
+    "timetable.schedule.student": "വിദ്യാർഥി",
     "timetable.schedule.date": "തീയതി",
     "timetable.schedule.today": "ഇന്ന്",
     "timetable.schedule.notSchoolDay": "ഈ ദിവസം ക്ലാസുകളില്ല.",

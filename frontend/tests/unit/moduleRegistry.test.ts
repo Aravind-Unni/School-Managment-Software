@@ -28,6 +28,7 @@ describe("module registry", () => {
       "nav.timetable_substitutions",
       "nav.timetable_class",
       "nav.timetable_teacher",
+      "nav.timetable_student",
     ]);
   });
 

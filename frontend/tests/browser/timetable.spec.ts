@@ -80,6 +80,17 @@ test("an unrelated section read is denied, in prose", async ({ page }) => {
   }
 });
 
+test("the pupil schedule marks a subject the pupil does not take", async ({ page }) => {
+  // S2 takes malayalam only, so C1's maths period is shown and marked as not
+  // theirs rather than hidden.
+  const S2 = "eceaa8ed-e2db-50cf-a649-557816565032";
+  await page.goto("/timetable/student");
+  await page.getByLabel("Pupil").fill(S2);
+  await page.getByLabel("Date").fill(SCHOOL_DAY);
+  await expect(page.getByTestId("session").first()).toBeVisible();
+  await expect(page.getByText("You do not take this subject")).toHaveCount(1);
+});
+
 test("an unknown route shows the not-available message", async ({ page }) => {
   await page.goto("/timetable/no-such-page");
   await expect(page.getByRole("status")).toBeVisible();

@@ -1,11 +1,12 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { validateModule } from "@app/moduleRegistry";
 import { LanguageProvider } from "@shared/i18n/LanguageContext";
 import { ClassSchedulePage } from "@features/timetable/ClassSchedulePage";
+import { StudentSchedulePage } from "@features/timetable/StudentSchedulePage";
 import { SubstitutionPage } from "@features/timetable/SubstitutionPage";
 import { WeeklyEditorPage } from "@features/timetable/WeeklyEditorPage";
 import { TIMETABLE_MESSAGES } from "@features/timetable/locales/messages";
@@ -375,5 +376,47 @@ describe("SubstitutionPage", () => {
     await waitFor(() =>
       expect(screen.getByText(/No substitutions for this date/i)).toBeInTheDocument(),
     );
+  });
+});
+
+
+describe("StudentSchedulePage", () => {
+  beforeEach(() => {
+    vi.stubGlobal("fetch", vi.fn());
+  });
+
+  it("marks a period whose subject the pupil does not take", async () => {
+    // The distinguishing behaviour of this view. Hiding the period would leave an
+    // unexplained gap; showing it unmarked would tell a pupil to attend a lesson
+    // they are not in, and later mark them absent from it.
+    routeFetch({
+      "/student-schedule": {
+        student_id: "s",
+        section_id: SECTION_ID,
+        date: "2026-07-15",
+        is_school_day: true,
+        reason_key: null,
+        sessions: [
+          { session: SESSION, enrolled: false },
+          {
+            session: { ...SESSION, timetable_session_id: "55555555-5555-4555-8555-555555555555" },
+            enrolled: true,
+          },
+        ],
+      },
+    });
+    renderPage(<StudentSchedulePage />);
+
+    const field = screen.getByLabelText("Pupil");
+    fireEvent.change(field, { target: { value: "s" } });
+
+    await waitFor(() => expect(screen.getAllByTestId("session")).toHaveLength(2));
+    expect(screen.getAllByText("You do not take this subject")).toHaveLength(1);
+  });
+
+  it("shows the empty state before a pupil is named", () => {
+    routeFetch();
+    renderPage(<StudentSchedulePage />);
+    expect(screen.getByRole("status")).toHaveTextContent("Nothing to show yet");
   });
 });

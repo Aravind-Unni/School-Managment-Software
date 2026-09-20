@@ -55,6 +55,12 @@ REGISTRATION = ModuleRegistration(
             nav_label_key="nav.timetable_teacher",
             required_permission="timetable.read_teacher",
         ),
+        FrontendRoute(
+            path="/timetable/student",
+            component="StudentSchedulePage",
+            nav_label_key="nav.timetable_student",
+            required_permission="timetable.read_student",
+        ),
     ),
     #: M03 IS the timetable, so it consumes no timetable port. It consumes Access
     #: for decisions, Registry for sections, rosters and teaching assignments,
