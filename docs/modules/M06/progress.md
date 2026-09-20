@@ -7,7 +7,8 @@
 | Branch | `m06/analytics-warnings-interventions` |
 | Started from | `abe35b7c4621df8b6ebf111293401e80b4b255a1` (`origin/main`) |
 | Manifest revision | `school-contracts-v7` |
-| PR | (opening with this delivery) |
+| PR | https://github.com/Aravind-Unni/School-Managment-Software/pull/7 (draft) |
+| Head commit | `00626e53f031dba52705ffcc8f00363be87a9601` |
 | Last recorded | 2026-09-20 |
 
 ## Original request
