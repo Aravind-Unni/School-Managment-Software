@@ -51,6 +51,11 @@ from .files import (
     UploadSession,
 )
 from .identity import AuthLevel, RequestContext
+from .library import (
+    AvailabilityView,
+    LibraryPort,
+    OpenLoanView,
+)
 from .pagination import (
     DEFAULT_PAGE_SIZE,
     MAX_PAGE_SIZE,
@@ -100,11 +105,6 @@ from .timetable import (
     CalendarDayDTO,
     PeriodSessionDTO,
     TeachingAuthorityDTO,
-)
-from .library import (
-    AvailabilityView,
-    LibraryPort,
-    OpenLoanView,
 )
 from .transport import (
     PeriodChargeResult,
