@@ -1,9 +1,9 @@
 {
   "module": "M03 central timetable and calendar",
   "recorded_at": "2026-09-20",
-  "phase": "implementation_complete_steps_1_to_4",
+  "phase": "implementation_complete_container_suites_green_in_ci",
   "standalone_verified": false,
-  "standalone_verified_note": "False. STANDALONE_VERIFIED requires passing standalone, contract AND browser checks, migrations on fresh and populated PostgreSQL, both language views, and a second developer's verification from a fresh checkout. This machine has no container engine, so two of the three suites recorded not-run, and no second developer has looked at it.",
+  "standalone_verified_note": "False, for one remaining reason: no second developer has verified the module from a fresh checkout. The standalone and browser suites now PASS in CI against a real stack (422 and 8, commit b5d91d7), migrations apply to empty and populated PostgreSQL, and both language views render.",
   "source_identity": {
     "repository": "https://github.com/Aravind-Unni/School-Managment-Software",
     "branch": "m03/timetable-calendar",
@@ -93,7 +93,7 @@
     },
     {
       "command": "MODULE_ID=M03 pytest tests/modules/M03",
-      "result": "147 passed",
+      "result": "148 passed",
       "detail": "SQLite test profile. Contract, draft, conflict, publication, calendar, session, substitution, scoping, isolation and seed tests."
     },
     {
@@ -118,7 +118,7 @@
     },
     {
       "command": "npx vitest run (Node 22.22.2, the version CI pins)",
-      "result": "63 passed",
+      "result": "65 passed",
       "detail": "16 new M03 tests. On the Node v20.19.5 that is on PATH here, vitest cannot start a worker at all."
     },
     {
@@ -140,6 +140,16 @@
       "command": "python3 scripts/dev.py evidence M03",
       "result": "all_suites_passed: false",
       "detail": "contracts PASS; standalone and browser not-run. The bundle is honest about it."
+    },
+    {
+      "command": "CI m03-backend (commit b5d91d7)",
+      "result": "success",
+      "detail": "Migrations on an EMPTY then a POPULATED PostgreSQL 17.11, the M03 suite, and the served surface matching the frozen OpenAPI."
+    },
+    {
+      "command": "CI m03-browser (commit b5d91d7)",
+      "result": "success",
+      "detail": "dev.py up/migrate/seed, then the standalone suite (422 passed, postgres-container) and the browser suite (8 passed) against the allocated URLs."
     }
   ],
   "suites": {
@@ -148,14 +158,12 @@
       "detail": "105 shared + 24 M03 contract tests, manifest current, 7 architecture checks."
     },
     "standalone": {
-      "status": "not-run",
-      "reason": "No container engine on this machine. This suite asserts real PostgreSQL behaviour and must never be replaced by the local SQLite profile.",
-      "substitute_evidence": "146 M03 tests pass on the SQLite test profile. That is not the same claim."
+      "status": "passed_in_ci",
+      "detail": "422 passed, backend postgres-container, CI commit b5d91d7. NOT run on this machine, which has no container engine and recorded not-run."
     },
     "browser": {
-      "status": "not-run",
-      "reason": "No running stack, so Playwright had nothing to drive.",
-      "substitute_evidence": "63 frontend unit tests pass on Node 22.22.2, plus eslint, tsc and a production build. A browser spec exists at frontend/tests/browser/timetable.spec.ts and has never been executed."
+      "status": "passed_in_ci",
+      "detail": "8 Playwright tests passed against the running stack, CI commit b5d91d7: the seeded periods, a holiday, both locales, the weekly editor and its conflicts check, the substitution expiry notice, a teacher's day, the denied journey for an unrelated class, and an unknown route."
     }
   },
   "acceptance_cases": {
@@ -196,8 +204,9 @@
     "Reverse session lookup is a bounded recompute, not an index; correct but not cheap at scale."
   ],
   "blockers": [
-    "No container engine (doctor exits 2): standalone and browser suites cannot run here, so nothing about PostgreSQL behaviour is verified for this module.",
-    "B00's own acceptance gate remains open - merged without peer review, four criteria unverified, container path never executed. Inherited; not closeable from M03.",
+    "No second developer has verified the module from a fresh checkout. This is the one remaining condition for STANDALONE_VERIFIED.",
+    "No container engine on this machine: every container result recorded here is CI's, attached to the commit CI tested.",
+    "B00's own acceptance gate remains open - merged without peer review, four criteria unverified. Inherited; not closeable from M03.",
     "The six contract revision items listed above."
   ],
   "ci": {
@@ -206,6 +215,10 @@
       "m03-browser"
     ],
     "why": "CI is the only place the container-backed suites can run: no machine in this session has a container engine. m03-backend applies migrations to an empty database, seeds, re-applies them to a populated one and runs the suite against real PostgreSQL 17.11. m03-browser brings the real stack up and runs BOTH the standalone and browser suites.",
-    "status": "never executed for M03 at the time this was written; read the result on PR #4"
+    "status": "m03-backend and m03-browser both passed on commit b5d91d7. Running them for the first time found two latent foundation defects, both fixed on this branch.",
+    "defects_found_by_running_it": [
+      "dev.py check <ID> --suite standalone was broken for every module but M00: three shared tests written against the demo placeholder failed at collection under any other profile.",
+      "The containerised stack could not reach its own development persona: the loopback check refused the Docker bridge gateway, so every browser request was 401."
+    ]
   }
 }

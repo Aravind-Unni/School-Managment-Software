@@ -13,9 +13,10 @@ not merge or deploy. Propose contracts for review first.
 
 ## Current phase / source identity
 
-**Phase: all four implementation steps complete. STANDALONE_VERIFIED is false —
-the container-backed suites have never been executed on this machine, and no
-second developer has verified the module from a fresh checkout.**
+**Phase: all four implementation steps complete, and BOTH container-backed suites
+now pass in CI against a real stack. STANDALONE_VERIFIED is still false, for one
+remaining reason: no second developer has verified the module from a fresh
+checkout.**
 
 | Item | Observed value |
 |---|---|
@@ -81,11 +82,15 @@ and the period's start time, so republishing a grid — or moving P2 from 09:30 
 
 ### Frontend (commit `5ecd5f6`)
 
-Four routes: the weekly editor with its conflicts list and publish preview,
-date-specific substitution, a class schedule and a teacher's own schedule. Both
+Five routes: the weekly editor with its conflicts list and publish preview,
+date-specific substitution, and read-only class, teacher and pupil schedules. Both
 languages, today first on mobile, and every loading, empty, error and denied state
-rendered from a message key. 63 frontend tests pass on Node 22.22.2, 16 of them
+rendered from a message key. 65 frontend tests pass on Node 22.22.2, 18 of them
 new. The typed client is generated from the frozen OpenAPI, never hand-written.
+
+The pupil view shows a period teaching a subject the pupil is not enrolled in and
+MARKS it: hiding it leaves an unexplained gap in the day, and showing it unmarked
+tells a pupil to attend a lesson they are not in.
 
 ## Observed checks
 
@@ -96,18 +101,20 @@ because a SQLite result is not a PostgreSQL result.
 |---|---|
 | `dev.py doctor` | **exit 2** — no container engine (dangling Docker Desktop symlinks only) |
 | `dev.py check M03 --suite contracts` | **PASS** — manifest current (27 frozen), 7 architecture checks, 105 shared + 24 M03 contract tests |
-| `pytest tests/modules/M03` (MODULE_ID=M03, SQLite) | **147 passed** |
-| `pytest` (foundation suite, M00 profile, SQLite) | **295 passed** |
+| `pytest tests/modules/M03` (MODULE_ID=M03, SQLite) | **148 passed** |
+| `pytest` (foundation suite, M00 profile, SQLite) | **316 passed** |
 | `ruff check .` / `ruff format --check .` | clean |
 | `arch_check.py` | 7 checks passed |
 | `makemigrations --check --dry-run` | no changes detected |
 | `spectacular --fail-on-warn` | exit 0 |
 | generated schema vs frozen OpenAPI | **identical** — same 21 operationIds, same 16 paths. A contract test asserts it |
-| `npx vitest run` (Node 22.22.2) | **63 passed** (16 new) |
+| `npx vitest run` (Node 22.22.2) | **65 passed** (18 new) |
 | `npm run lint` / `typecheck` / `build` | clean |
-| `dev.py check M03 --suite standalone` | **NOT RUN** — no running stack. Recorded `not-run`, never as passing |
-| `dev.py check M03 --suite browser` | **NOT RUN** — no running stack |
-| `dev.py evidence M03` | bundle written; `all_suites_passed: false`, correctly |
+| `dev.py check M03 --suite standalone` (this machine) | **NOT RUN** — no container engine. Recorded `not-run`, never as passing |
+| `dev.py check M03 --suite browser` (this machine) | **NOT RUN** — no container engine |
+| `dev.py check M03 --suite standalone` (**CI**, commit `b5d91d7`) | **422 passed** against `postgres-container` |
+| `dev.py check M03 --suite browser` (**CI**, commit `b5d91d7`) | **8 passed** — Playwright against the real stack |
+| `m03-backend` (CI) | migrations on an EMPTY then a POPULATED PostgreSQL 17.11, the suite, and the served surface matching the frozen OpenAPI |
 
 `mypy` reports 76 errors under `modules/timetable`, of the same two kinds M01 and
 M02 already report (`request.school_context` on DRF's `Request`, and duck-typed
@@ -136,6 +143,8 @@ silently; each is listed here and in the handoff.
 | `frontend/playwright.config.ts` | `MODULE_ID` selects the spec | A one-module stack serves one module's routes. Generalised from the existing M01 special case rather than adding a third `if` |
 | `scripts/dev.py` | passes `MODULE_ID` into the browser suite | Without it the runner collected every spec and drove them at routes the running stack does not serve |
 | `frontend/package.json`, `frontend/src/app/registeredModules.ts`, `frontend/tests/unit/moduleRegistry.test.ts` | M03 registered | The module's own registration entry |
+| `tests/conftest.py`, `tests/integration/test_standalone_isolation.py`, `tests/contracts/test_registration_contract.py` | the standalone suite works for every module | Defect 1 below. Two assertions widened to cover every module rather than the M00 placeholder |
+| `backend/shared/http/context.py`, `backend/shared/http/middleware.py`, `backend/config/settings/standalone.py`, `dev/harness/compose.py` | the containerised stack can reach its own dev persona | Defect 2 below. **A shared runtime change; wants review on its own terms** |
 | `.github/workflows/ci.yml` | two M03 jobs added | `m03-backend` runs the suite and both migration paths against real PostgreSQL; `m03-browser` brings the stack up and runs the standalone AND browser suites. Copied from the `m01-backend`/`m01-browser` pattern. This is the only place those two suites CAN run, since no machine here has a container engine |
 
 No file under `backend/contracts`, `backend/shared` or `contracts/common` was
@@ -155,33 +164,58 @@ python3 scripts/dev.py check M03 --suite browser
 python3 scripts/dev.py evidence M03
 ```
 
-CI now does exactly this: the `m03-backend` and `m03-browser` jobs added on this
-branch run both migration paths, the suite against real PostgreSQL, and the
-standalone and browser suites against a real stack. **Read their result on PR #4
-before believing anything about the container path** — at the time this was
-written they had never run for M03 anywhere.
+**That is now done, in CI, and it found two real defects — see below.** The
+remaining step is the one this session cannot perform:
 
-Then have a second developer verify the module from a fresh checkout. Only after
-both is `STANDALONE_VERIFIED` true. The draft PR (#4) is open and must not be
-merged before either happens.
+**A second developer verifies the module from a fresh checkout.** Only then is
+`STANDALONE_VERIFIED` true. The draft PR (#4) is open and must not be merged
+before that happens.
+
+## What running the container path for the first time exposed
+
+Two defects, both latent since B00 and both invisible until now, because no
+module's standalone or browser suite had ever been executed against a real stack.
+M01's CI job runs only its browser suite, and no machine in this session has a
+container engine.
+
+1. **`dev.py check <ID> --suite standalone` was broken for every module but M00.**
+   It runs the whole `tests/` tree under the target profile, which installs one
+   business app — so three shared tests written against the M00 placeholder
+   failed at COLLECTION and took the entire run with them. Fixed in `1667571`:
+   the two demo-specific integration files are collected under M00 only, and the
+   isolation and registration assertions now read `MODULE_ID` instead of
+   hardcoding the demo. Two assertions got WIDER, not weaker — they now verify
+   the isolation property for whichever module is under test.
+2. **The containerised stack could not reach its own development persona.** Every
+   browser request came back 401. The persona requires a loopback peer; the stack
+   publishes the API to `127.0.0.1` only, but Docker NATs the connection, so the
+   peer the container sees is the bridge gateway. Fixed in `b5d91d7` by letting a
+   profile declare trusted peer NETWORKS — empty by default, the private ranges
+   in the generated Compose file, and refused outright in production, which is
+   pinned by 21 new tests including "production refuses even with `0.0.0.0/0`
+   declared" and "the generated stack still publishes to 127.0.0.1, never
+   0.0.0.0".
+
+Both are **shared runtime changes** and want review on their own terms. They are
+on this branch because no module's browser suite can pass without them.
 
 ## Blockers
 
-1. **No container engine on this machine.** `dev.py doctor` exits 2. The
-   standalone suite against real PostgreSQL and the Playwright browser suite
-   cannot run here, and are recorded `not-run` — never as passing. Migrations
-   applying to PostgreSQL, JSONB behaviour, row locking and the
-   two-simultaneous-stacks requirement are all unverified for this module.
-2. **B00's own acceptance gate is still open** — merged without peer review, four
+1. **No second developer has verified the module from a fresh checkout.** This is
+   the one remaining condition for `STANDALONE_VERIFIED`.
+2. **Nothing about the container path can be verified on this machine.**
+   `dev.py doctor` exits 2. Every container result quoted above is CI's, attached
+   to the commit CI actually tested.
+3. **B00's own acceptance gate is still open** — merged without peer review, four
    criteria unverified, the container path never executed by anyone. Inherited,
    and not closeable from here.
-3. **Four Registry validations are impossible** with the frozen port: no
+4. **Four Registry validations are impossible** with the frozen port: no
    `get_section`, `get_subject`, `get_staff` or `get_academic_year`. So a slot's
    subject is unvalidated, an unknown teacher is indistinguishable from an
    unassigned one, a version's range is never checked against its year, and the UI
    can offer no picker with names. Recorded in `contracts/M03/ports.md`, not
    worked around.
-4. **A cancellation's version cannot be read back.** The frozen
+5. **A cancellation's version cannot be read back.** The frozen
    `PeriodSessionDTO` is closed and carries none, so a client that did not make
    the cancelling write cannot restore the period. A contract revision item, in
    the handoff.

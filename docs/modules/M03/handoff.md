@@ -4,19 +4,20 @@
 
 The contract gate is **closed**: the packet was approved as proposed and frozen
 under revision `school-contracts-v4` on 2026-09-20 by Abhinav M. **All four
-implementation steps are complete and passing on the SQLite profile.**
+implementation steps are complete. Both container-backed suites now pass in CI
+against a real stack: 422 standalone tests on PostgreSQL and 8 Playwright tests
+on the running UI.**
 
-`STANDALONE_VERIFIED` is **false**, and nothing in this session could make it
-true. This machine has no container engine, so the standalone suite against real
-PostgreSQL and the Playwright browser suite recorded `not-run`, and no second
-developer has verified the module from a fresh checkout.
+`STANDALONE_VERIFIED` is still **false**, for one reason: no second developer has
+verified the module from a fresh checkout. That is the remaining condition.
 
 Read [progress.md](progress.md) first — it lists every check actually run, with
 the profile each ran on. Then the [packet](../../../contracts/M03/PACKET.md),
 [review decisions](../../../contracts/M03/review-decisions.md) and
 [ports.md](../../../contracts/M03/ports.md).
 
-Do not mistake the SQLite test profile for standalone verification.
+Do not mistake the SQLite test profile for standalone verification. Every
+container result quoted here is CI's, attached to the commit CI actually tested.
 
 Session source: branch `m03/timetable-calendar`, branched from `main`
 `aab4b6d79cc4c8ca9e10fb63b7b9d39c5cd8c81a`, revision `school-contracts-v4`.
@@ -69,8 +70,10 @@ python3 scripts/dev.py down M03
 
 ## Printed URLs
 
-None recorded — no stack was started. `dev.py up` prints the allocated API and
-frontend URLs. Do not assume a port.
+None recorded on this machine — no stack could be started here. In CI the stack
+comes up and the suites run against the URLs `dev.py up` allocated; the ports are
+dynamic per developer and per worktree, so `up` is the only source. Do not assume
+a port.
 
 ## Fictional login instructions
 
@@ -118,9 +121,12 @@ to PostgreSQL, empty and seeded, is outstanding.
 | `spectacular --fail-on-warn` | exit 0; output matches the frozen OpenAPI exactly |
 | `npx vitest run` on Node 22.22.2 | **63 passed** |
 | `npm run lint` / `typecheck` / `build` | clean |
-| `dev.py check M03 --suite standalone` | **not-run**: no running stack |
-| `dev.py check M03 --suite browser` | **not-run**: no running stack |
-| `dev.py evidence M03` | `all_suites_passed: false` |
+| `dev.py check M03 --suite standalone` (here) | **not-run**: no container engine |
+| `dev.py check M03 --suite browser` (here) | **not-run**: no container engine |
+| `dev.py evidence M03` (here) | `all_suites_passed: false`, correctly |
+| `dev.py check M03 --suite standalone` (**CI**, `b5d91d7`) | **422 passed**, backend `postgres-container` |
+| `dev.py check M03 --suite browser` (**CI**, `b5d91d7`) | **8 passed**, Playwright against the running stack |
+| `m03-backend` (**CI**) | migrations on EMPTY then POPULATED PostgreSQL 17.11, the suite, and the served surface matching the frozen OpenAPI |
 
 Node on PATH is v20.19.5, on which `vitest` cannot start a worker at all
 (`webidl.util.markAsUncloneable is not a function`, from jsdom's undici). The
@@ -139,8 +145,38 @@ pattern, because CI is the only place the container-backed suites can run:
   seeds, and runs **both** the standalone and the browser suites against the
   allocated URLs, uploading the evidence bundle.
 
-Their result on PR #4 is the only evidence that the container path works. Do not
-assume it from this document.
+Both passed on `b5d91d7`. Read the latest result on PR #4 rather than trusting
+this paragraph: CI evidence belongs to the commit CI tested, and this branch has
+moved since.
+
+**Running them for the first time found two real defects**, both latent since B00
+and both fixed on this branch — see "Shared changes" below. That is the argument
+for the jobs existing: nothing else in the project had ever exercised the
+container path.
+
+## Shared changes on this branch
+
+Both were forced by defects that only appeared when the container path ran. Each
+wants review on its own terms.
+
+1. **The standalone suite worked only for M00** (`1667571`). `dev.py check <ID>
+   --suite standalone` runs the whole `tests/` tree under a profile that installs
+   ONE business app, and three shared tests written against the demo placeholder
+   failed at collection. The two demo-specific integration files are now
+   collected under M00 only; the isolation and registration assertions read
+   `MODULE_ID` instead of hardcoding the demo, which makes them cover every
+   module rather than the placeholder alone.
+2. **The containerised stack could not reach its own dev persona** (`b5d91d7`).
+   Every browser request was 401: the persona requires a loopback peer, the stack
+   publishes the API to `127.0.0.1` only, and Docker NATs the connection so the
+   container sees the bridge gateway. A profile can now declare trusted peer
+   NETWORKS — empty by default, the private ranges in the generated Compose file,
+   and never in production. 21 tests pin it, including that a public address is
+   still refused, that a malformed peer or typo'd network fails closed, that
+   production refuses even with `0.0.0.0/0` declared, and that the generated
+   stack still publishes to `127.0.0.1` and never `0.0.0.0` — the port
+   publication is what makes the allowlist safe, so the two are asserted side by
+   side rather than in files that drift.
 
 ## Contract revision items found by implementing
 
@@ -205,10 +241,12 @@ calls it makes to Access.
 
 ## Blockers for whoever picks this up
 
-1. No container engine here → the standalone and browser suites cannot run, and
-   nothing about PostgreSQL behaviour is verified for this module.
-2. B00's acceptance gate is still open, and is not closeable from this module.
-3. The six contract revision items above.
+1. **No second developer has verified the module from a fresh checkout.** This is
+   the one remaining condition for `STANDALONE_VERIFIED`.
+2. No container engine here → nothing about the container path can be verified on
+   this machine; CI is the source for all of it.
+3. B00's acceptance gate is still open, and is not closeable from this module.
+4. The six contract revision items above.
 
 The branch is pushed and draft PR
 [#4](https://github.com/Aravind-Unni/School-Managment-Software/pull/4) is open.

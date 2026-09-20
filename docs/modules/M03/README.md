@@ -1,6 +1,9 @@
 # M03 timetable
 
-Status: **implemented, contract frozen, not standalone-verified.**
+Status: **implemented and green in CI against a real stack; not yet
+standalone-verified.** The standalone (422 tests on PostgreSQL) and browser
+(8 Playwright journeys) suites both pass. What is missing is the last condition:
+a second developer verifying the module from a fresh checkout.
 
 - Where things stand: [progress.md](progress.md)
 - How to pick this up cold: [handoff.md](handoff.md)
