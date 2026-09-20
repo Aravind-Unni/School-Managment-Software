@@ -391,11 +391,74 @@
       "status": "frozen"
     },
     "M05": {
-      "artefacts": [],
-      "fixtures": [],
+      "artefacts": [
+        {
+          "frozen": true,
+          "id": "M05/error-codes.json",
+          "kind": "json-schema",
+          "owner": "M05 assessment",
+          "path": "contracts/M05/error-codes.json",
+          "sha256": "4ff1adb506abdd8e2b854bb184707d263787c19f48961b50ea64f8bc3ca7b2e0"
+        },
+        {
+          "frozen": true,
+          "id": "M05/openapi.json",
+          "kind": "openapi",
+          "owner": "M05 assessment",
+          "path": "contracts/M05/openapi.json",
+          "sha256": "d159bd0dfd6a51bf308edc253a0c4ebe381736890a66adfaee1323937acb53dc"
+        },
+        {
+          "frozen": true,
+          "id": "M05/schemas/dtos.schema.json",
+          "kind": "json-schema",
+          "owner": "M05 assessment",
+          "path": "contracts/M05/schemas/dtos.schema.json",
+          "sha256": "6c19072de8c3c87bd2f4dbfebb634b41114d17f701be5c1fdfc937a78ca409c7"
+        },
+        {
+          "frozen": true,
+          "id": "M05/schemas/events.schema.json",
+          "kind": "json-schema",
+          "owner": "M05 assessment",
+          "path": "contracts/M05/schemas/events.schema.json",
+          "sha256": "2cb468b959e567d204b2e95bc2e70ffbcb0fd29b6f800161692e655377a76fee"
+        }
+      ],
+      "fixtures": [
+        {
+          "frozen": true,
+          "id": "M05/fixtures/expected-results.json",
+          "kind": "consumer-fixture",
+          "owner": "M05 assessment",
+          "path": "contracts/M05/fixtures/expected-results.json",
+          "sha256": "f523e94fb47ac342a65c96912169fa78304d11656c9dd617b17c4d8977d34b66"
+        },
+        {
+          "frozen": true,
+          "id": "M05/fixtures/responses.json",
+          "kind": "consumer-fixture",
+          "owner": "M05 assessment",
+          "path": "contracts/M05/fixtures/responses.json",
+          "sha256": "296ade955cd793af1c8144219fe0a470017fd2c42f6889442ab1c419ad0cb0a3"
+        },
+        {
+          "frozen": true,
+          "id": "M05/fixtures/scenario.json",
+          "kind": "consumer-fixture",
+          "owner": "M05 assessment",
+          "path": "contracts/M05/fixtures/scenario.json",
+          "sha256": "c19bddafca0a3d95dfaaf57caaba420f2a211f98b6e2e99e55bfe49d8b8205f3"
+        }
+      ],
       "packet": "contracts/M05/PACKET.md",
+      "review": {
+        "note": "Assessment packet, OpenAPI, DTO/event schemas, error rows, port signatures and consumer fixtures approved as proposed (items 1\u201311). Shared FilesPort addition approved. No invented CBSE grade boundaries; grade letter stays null until school policy supplied. Distinct approver off in baseline.",
+        "reviewed_on": "2026-09-20",
+        "reviewer": "Abhinav M"
+      },
       "slug": "assessment",
-      "status": "not_started"
+      "status": "frozen"
     },
     "M06": {
       "artefacts": [],
@@ -462,6 +525,6 @@
     }
   },
   "note": "Revision data, not code. The generator reads this file; it decides nothing itself. A module is listed under 'frozen_modules' only after its contract packet passed a human review gate, and the reviewer is named alongside the date. Adding a module here is the freeze; removing one un-freezes it and the drift guard will report every hash that moves.",
-  "revision": "school-contracts-v5",
+  "revision": "school-contracts-v6",
   "status": "reviewed"
 }

@@ -1,0 +1,108 @@
+{
+  "status": "frozen",
+  "name": "baseline",
+  "note": "Wholly synthetic. Reuses B00 people (S1/S2/G1/G2/T1, C1, maths). year_id/term_id are M05 synthetic labels (not shared Registry year aggregates yet). File v1 unconfirmed; v2 quality-confirmed. Illustrative policy only \u2014 not approved CBSE rules.",
+  "namespaces": {
+    "people_and_structure": {
+      "uuid5_namespace": "6f1a9c2e-0b3d-4f5a-8c7b-1d2e3f4a5b6c"
+    },
+    "m05_seed_rows": {
+      "uuid5_namespace": "bd7584b0-e55f-5ede-bd7b-9c0f1ea14349",
+      "derivation": "uuid5(NAMESPACE_URL, 'https://school.example/contracts/M05/seed')"
+    }
+  },
+  "clock": {
+    "frozen_at": "2026-07-15T04:30:00+00:00",
+    "school_local": "2026-07-15 10:00 Asia/Kolkata"
+  },
+  "school": {
+    "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "isolation_counterparty": {
+      "school_id": "8e1e985f-ba74-5baa-82c6-b884525e416c"
+    }
+  },
+  "people": {
+    "T1": {
+      "staff_id": "eda913d7-a893-5ecc-af4e-766d1332b2ee",
+      "note": "Assigned maths teacher for C1"
+    },
+    "S1": {
+      "student_id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c"
+    },
+    "S2": {
+      "student_id": "eceaa8ed-e2db-50cf-a649-557816565032"
+    },
+    "G1": {
+      "guardian_id": "a98bf46f-c03f-59a9-96e4-5eb94f0cf4a7",
+      "note": "Guardian of S1 and S2; may see S1 published sheet only for S1 result"
+    },
+    "G2": {
+      "guardian_id": "7731fd5f-a464-53df-9429-a515f8a06301",
+      "note": "Unrelated to S1; denied S1 evidence"
+    }
+  },
+  "structure": {
+    "C1": {
+      "section_id": "86847c87-bedd-505d-9e2f-3bb35275320c"
+    },
+    "maths": {
+      "subject_id": "a0ba60ad-0b03-5fbc-8a07-11bb5c400ae4"
+    },
+    "year_2026": {
+      "year_id": "66632073-44d5-5c85-9583-95ee9424d514",
+      "note": "uuid5(m05_ns, year_2026)"
+    },
+    "term_1": {
+      "term_id": "bb72592f-20fa-5e9c-ba91-2f81cd0f47eb",
+      "note": "uuid5(m05_ns, term_1)"
+    }
+  },
+  "assessment": {
+    "id": "2247cd89-db77-5471-ac2a-c0b9eea94cc5",
+    "type": "written_test",
+    "max_score": "100.00",
+    "policy_version": "illustrative-v0",
+    "components": [
+      {
+        "id": "b0d00c56-b6e9-5025-a036-6c49617e1d5b",
+        "max_score": "100.00",
+        "weight": "1.000",
+        "topic": null,
+        "question_type": null
+      }
+    ]
+  },
+  "files": {
+    "candidate_v1": {
+      "file_id": "c987840d-f4e9-5f2f-b7fd-dbdc2e4cfc8c",
+      "canonical_version": 1,
+      "review_confirmed": false,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "confirmed_v2": {
+      "file_id": "4fe00323-e39e-5eb4-80f0-00468702ffce",
+      "canonical_version": 2,
+      "review_confirmed": true,
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    }
+  },
+  "results": {
+    "S1": {
+      "result_id": "a250f220-9462-5a9d-96df-b20464fd62ef",
+      "attempt_id": "8f5529f7-c6ac-517e-90e9-1052291aa2a4",
+      "marking_outcome": "scored",
+      "score": "73.50",
+      "binding_id": "489141dd-3639-5abe-9f5c-9aab70f25f8e",
+      "page_no": 1
+    },
+    "S2": {
+      "result_id": "78a05f7a-bf3c-5b32-b883-b6302f857640",
+      "marking_outcome": "absent",
+      "score": null,
+      "note": "Absent is not zero"
+    }
+  },
+  "publication": {
+    "publication_id": "1f4598ca-66b6-55e2-8868-f5d6c597d8e7"
+  }
+}

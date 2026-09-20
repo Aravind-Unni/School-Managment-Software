@@ -1,0 +1,97 @@
+{
+  "status": "frozen",
+  "note": "ACCEPTANCE CASES, NOT TEST EVIDENCE.",
+  "scenario": "fixtures/scenario.json (baseline)",
+  "cases": [
+    {
+      "id": "A1",
+      "name": "score above max rejected",
+      "given": "PATCH S1 with component score 100.01 on max 100",
+      "expect": "422 assessment.error.score_above_max"
+    },
+    {
+      "id": "A2",
+      "name": "absent not zero",
+      "given": "S2 marking_outcome=absent",
+      "expect": "score null; never coerced to 0.00; publish retains absent"
+    },
+    {
+      "id": "A3",
+      "name": "policy version reproducible",
+      "given": "Create with policy_version illustrative-v0",
+      "expect": "Every ResultDTO and publication manifest carries the same policy_version"
+    },
+    {
+      "id": "A4",
+      "name": "unconfirmed image blocks publication",
+      "given": "Evidence bound to candidate_v1 (review_confirmed=false)",
+      "expect": "422 assessment.error.unconfirmed_evidence on publish"
+    },
+    {
+      "id": "A5",
+      "name": "publish confirmed v2 visible to S1 and G1",
+      "given": "S1 scored 73.50 with confirmed_v2; approved; publish with Idempotency-Key",
+      "expect": "S1 and G1 get ResultDTO score 73.50 evidence version 2; exact sha256"
+    },
+    {
+      "id": "A6",
+      "name": "G2 and S2 denied S1 sheet",
+      "given": "Published S1 evidence view URL",
+      "expect": "G2 and S2 receive 404 object_inaccessible (wrong-child / unrelated)"
+    },
+    {
+      "id": "A7",
+      "name": "guardian before publish",
+      "given": "Approved but not published",
+      "expect": "G1 published-results empty; evidence.view 404"
+    },
+    {
+      "id": "A8",
+      "name": "correction preserves old manifest",
+      "given": "Reopen with reason; change mark; republish",
+      "expect": "Old revision+evidence manifest retained; new revision_id; assessment.result_revised emitted"
+    },
+    {
+      "id": "A9",
+      "name": "repeated publish one batch",
+      "given": "Same Idempotency-Key twice",
+      "expect": "One assessment.results_published outbox row; same publication_id"
+    },
+    {
+      "id": "A10",
+      "name": "stale version 409",
+      "given": "expected_version behind",
+      "expect": "409 version_conflict"
+    },
+    {
+      "id": "A11",
+      "name": "foreign school 404",
+      "given": "School B assessment id while actor is School A",
+      "expect": "404 never 403"
+    },
+    {
+      "id": "A12",
+      "name": "unassigned teacher denied",
+      "given": "T2 marks C1 maths",
+      "expect": "403 action_denied"
+    },
+    {
+      "id": "A13",
+      "name": "incomplete marks block submit",
+      "given": "S1 scored without component_scores complete",
+      "expect": "422 assessment.error.incomplete_marks"
+    },
+    {
+      "id": "A14",
+      "name": "publish requires 2FA",
+      "given": "Stale or missing 2FA on FakeAccess",
+      "expect": "401 stale_auth"
+    },
+    {
+      "id": "A15",
+      "name": "draft never in get_published_results",
+      "given": "Draft/submitted/approved rows exist",
+      "expect": "Student/guardian service page items empty until published"
+    }
+  ]
+}

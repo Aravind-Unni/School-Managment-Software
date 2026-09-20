@@ -1,0 +1,132 @@
+{
+  "status": "frozen",
+  "note": "Reuses frozen ErrorCode values; message_key values are module-owned.",
+  "rows": [
+    {
+      "status": 400,
+      "code": "validation_failed",
+      "message_key": "error.client_asserted_identity",
+      "when": "Identity header present; rejected by shared transport."
+    },
+    {
+      "status": 401,
+      "code": "unauthenticated",
+      "message_key": "error.unauthenticated",
+      "when": "No server-derived session."
+    },
+    {
+      "status": 401,
+      "code": "stale_auth",
+      "message_key": "error.two_factor_required",
+      "when": "Publish/reopen without ever asserting 2FA."
+    },
+    {
+      "status": 401,
+      "code": "stale_auth",
+      "message_key": "error.two_factor_stale",
+      "when": "Publish/reopen with 2FA older than 300s."
+    },
+    {
+      "status": 403,
+      "code": "action_denied",
+      "message_key": "error.action_denied",
+      "when": "Actor lacks permission or is not assigned for section+subject."
+    },
+    {
+      "status": 404,
+      "code": "object_inaccessible",
+      "message_key": "error.object_inaccessible",
+      "when": "Absent or other-school assessment/result/evidence. Never 403 for cross-school. Wrong-child evidence URL."
+    },
+    {
+      "status": 409,
+      "code": "version_conflict",
+      "message_key": "error.version_conflict",
+      "when": "expected_version mismatch."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "assessment.error.invalid_transition",
+      "when": "Workflow transition not allowed from current state."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "assessment.error.already_published",
+      "when": "Publish when already published without reopen; idempotent retry with same key returns existing batch."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.validation_failed",
+      "when": "Malformed body or unknown field (closed schemas)."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.server_internal_field_rejected",
+      "when": "Body carried school_id/actor_id/auth_level/grant."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "assessment.error.score_above_max",
+      "when": "Component or total score exceeds max_score."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "assessment.error.absent_not_zero",
+      "when": "marking_outcome=absent|exempt supplied with a numeric score."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "assessment.error.incomplete_marks",
+      "when": "Submit/approve/publish while scored results lack complete component scores."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "assessment.error.evidence_required",
+      "when": "Written scored work lacks ordered evidence bindings."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "assessment.error.unconfirmed_evidence",
+      "when": "Evidence file not quality-confirmed (review_confirmed=false)."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "assessment.error.weight_total_invalid",
+      "when": "Component weights do not sum to 1.000 within policy tolerance."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "assessment.error.reason_required",
+      "when": "Reopen missing non-empty reason."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "assessment.error.idempotency_key_required",
+      "when": "Publish without Idempotency-Key header."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "assessment.error.due_at_required",
+      "when": "type=assignment create without due_at."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "assessment.error.distinct_approver_required",
+      "when": "Policy requires distinct approver and actor authored the marks."
+    }
+  ]
+}

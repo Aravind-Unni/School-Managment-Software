@@ -15,7 +15,16 @@ from .registry import AdapterKind, PortRegistry
 #: Every port the harness can fake. A module declaring a consumer absent from
 #: this map is a configuration error, not a silent no-op.
 FAKEABLE_PORTS: frozenset[str] = frozenset(
-    {"access", "registry", "timetable", "platform", "notifications", "object_storage", "clock"}
+    {
+        "access",
+        "registry",
+        "timetable",
+        "platform",
+        "notifications",
+        "object_storage",
+        "files",
+        "clock",
+    }
 )
 
 
@@ -40,13 +49,14 @@ def build_fake_registry(
     """
     from shared.fakes import (
         FakeAccess,
+        FakeFiles,
         FakeNotifications,
         FakeObjectStorage,
         FakeRegistry,
         FakeTimetable,
         TestPlatformAdapter,
     )
-    from shared.fakes.registry import m04_baseline_registry_kwargs
+    from shared.fakes.registry import m04_baseline_registry_kwargs, m05_baseline_registry_kwargs
 
     consumers = tuple(registration.consumers) if registration else ()
     unknown = sorted(set(consumers) - FAKEABLE_PORTS)
@@ -70,10 +80,18 @@ def build_fake_registry(
         return adapter
 
     def registry_factory():
-        """Bind FakeRegistry, applying M04 baseline overlays when that module runs."""
+        """Bind FakeRegistry, applying M04/M05 baseline overlays when needed."""
         if registration is not None and registration.id == "M04":
             return FakeRegistry(**m04_baseline_registry_kwargs())
+        if registration is not None and registration.id == "M05":
+            return FakeRegistry(**m05_baseline_registry_kwargs())
         return FakeRegistry()
+
+    def files_factory():
+        """Bind FakeFiles with the profile clock for grant expiry checks."""
+        adapter = FakeFiles()
+        adapter._clock = clock
+        return adapter
 
     factories = {
         "access": access_factory,
@@ -82,6 +100,7 @@ def build_fake_registry(
         "platform": lambda: TestPlatformAdapter(worker_available=worker_available),
         "notifications": FakeNotifications,
         "object_storage": FakeObjectStorage,
+        "files": files_factory,
         "clock": lambda: clock,
     }
 

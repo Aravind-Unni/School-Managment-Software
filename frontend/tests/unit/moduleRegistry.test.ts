@@ -14,6 +14,7 @@ describe("module registry", () => {
       "M01",
       "M03",
       "M04",
+      "M05",
     ]);
   });
 
@@ -35,6 +36,8 @@ describe("module registry", () => {
       "nav.timetable_teacher",
       "nav.timetable_student",
       "nav.attendance",
+      "nav.assessment_setup",
+      "nav.assessment_results",
     ]);
   });
 

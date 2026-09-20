@@ -1,0 +1,31 @@
+{
+  "module_id": "M05",
+  "slug": "assessment",
+  "STANDALONE_VERIFIED": false,
+  "reason_not_verified": "Standalone PostgreSQL suite not-run this session (no container stack). Contracts suite and local SQLite module suite observed green.",
+  "contract_revision": "school-contracts-v6",
+  "branch": "m05/assessments-grades",
+  "pr": null,
+  "suites": {
+    "contracts": "passed — manifest OK, arch_check 7, shared 105, M05 contract 6",
+    "standalone": "not-run (no running stack)",
+    "module_sqlite": "23 passed (tests/modules/M05 under test_sqlite)",
+    "browser": "not-run"
+  },
+  "pending_integration": [
+    "real_m12_files",
+    "report_snapshot_contents",
+    "guardian_revocation",
+    "real_m01_2fa",
+    "worker_crash_retry"
+  ],
+  "anti_cheat": {
+    "grade_always_null_until_policy": true,
+    "absent_score_never_zero": true,
+    "unconfirmed_evidence_blocks_publish": true,
+    "cross_school_404": true,
+    "teaching_assignment_gate": true,
+    "publish_reopen_require_2fa": true,
+    "revision_manifest_retained_on_reopen": true
+  }
+}

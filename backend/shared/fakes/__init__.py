@@ -16,6 +16,7 @@ dependency fails.
 from .access import DEFAULT_STALE_AUTH_WINDOW, FakeAccess, PolicyRule, stale_context
 from .clock import FixedClock
 from .failures import FailureInjector, InjectedFailure
+from .files import FakeFiles
 from .notifications import FakeNotifications, SentMessage
 from .platform import EagerModeNotAsserted, TestPlatformAdapter
 from .registry import FakeRegistry
@@ -27,6 +28,7 @@ __all__ = [
     "EagerModeNotAsserted",
     "FailureInjector",
     "FakeAccess",
+    "FakeFiles",
     "FakeNotifications",
     "FakeObjectStorage",
     "FakeRegistry",
