@@ -5,6 +5,8 @@
 | Phase | Implementation complete; awaiting standalone PostgreSQL + browser evidence |
 | Status | Contracts **frozen** under `school-contracts-v11`. Module code on branch. |
 | Branch | `m10/alumni-records-contact-permissions` |
+| Draft PR | https://github.com/Aravind-Unni/School-Managment-Software/pull/11 |
+| Head | `76700d9883eddba0aebe0f773feba1d543bbfd07` |
 | Started from | `3ae3f8cbc25e09d04cb9a409411072cd6fd9a1bc` (`origin/main`) |
 | Manifest revision | `school-contracts-v11` |
 | Last recorded | 2026-09-21 |

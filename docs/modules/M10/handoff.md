@@ -13,7 +13,8 @@ PostgreSQL and browser suites not run.
 |---|---|
 | Branched from | `3ae3f8cbc25e09d04cb9a409411072cd6fd9a1bc` |
 | Manifest | `school-contracts-v11` |
-| Head (uncommitted work present) | parent will commit |
+| Head | `76700d9883eddba0aebe0f773feba1d543bbfd07` (+ docs follow-up) |
+| Draft PR | https://github.com/Aravind-Unni/School-Managment-Software/pull/11 |
 
 ## Startup
 
