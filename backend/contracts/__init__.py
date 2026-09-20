@@ -55,11 +55,13 @@ from .people import (
 )
 from .ports import (
     AccessPort,
+    AttendancePort,
     ClockPort,
     NotificationPort,
     ObjectStoragePort,
     PlatformPort,
     RegistryPort,
+    TimetablePort,
 )
 from .registration import (
     FrontendRoute,
@@ -69,6 +71,12 @@ from .registration import (
     assert_no_registration_collisions,
 )
 from .scope import Relationship, RelationshipFacts, ScopeFacts
+from .timetable import (
+    AttendanceSummaryDTO,
+    CalendarDayDTO,
+    PeriodSessionDTO,
+    TeachingAuthorityDTO,
+)
 from .values import (
     MARKS_DECIMAL_PLACES,
     SCHOOL_TIMEZONE,
@@ -90,8 +98,11 @@ __all__ = [
     "UNAUTHENTICATED_REASONS",
     "AccessPort",
     "ActionDenied",
+    "AttendancePort",
+    "AttendanceSummaryDTO",
     "AuditRecord",
     "AuthLevel",
+    "CalendarDayDTO",
     "ClockPort",
     "ContractError",
     "Decision",
@@ -107,6 +118,7 @@ __all__ = [
     "ObjectInaccessible",
     "ObjectStoragePort",
     "Page",
+    "PeriodSessionDTO",
     "PlatformPort",
     "RateLimited",
     "ReasonCode",
@@ -124,6 +136,8 @@ __all__ = [
     "StudentDTO",
     "StudentStatus",
     "TeachingAssignment",
+    "TeachingAuthorityDTO",
+    "TimetablePort",
     "Unauthenticated",
     "ValidationFailed",
     "VersionConflict",

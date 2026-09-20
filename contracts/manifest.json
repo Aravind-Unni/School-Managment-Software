@@ -321,11 +321,74 @@
       "status": "frozen"
     },
     "M04": {
-      "artefacts": [],
-      "fixtures": [],
+      "artefacts": [
+        {
+          "frozen": true,
+          "id": "M04/error-codes.json",
+          "kind": "json-schema",
+          "owner": "M04 attendance",
+          "path": "contracts/M04/error-codes.json",
+          "sha256": "aa0c1ed45186841cd2a09ca1c3821e98aa870f8ad9f7625a8c4442bfd4344316"
+        },
+        {
+          "frozen": true,
+          "id": "M04/openapi.json",
+          "kind": "openapi",
+          "owner": "M04 attendance",
+          "path": "contracts/M04/openapi.json",
+          "sha256": "1883432bf93b3fe9c8d43c32e789cccb597db016c8734240eaa41e28b018382b"
+        },
+        {
+          "frozen": true,
+          "id": "M04/schemas/dtos.schema.json",
+          "kind": "json-schema",
+          "owner": "M04 attendance",
+          "path": "contracts/M04/schemas/dtos.schema.json",
+          "sha256": "48bd4e15f87094941c71df249247992139d718afb60c2852e18183ae4d9e8c7d"
+        },
+        {
+          "frozen": true,
+          "id": "M04/schemas/events.schema.json",
+          "kind": "json-schema",
+          "owner": "M04 attendance",
+          "path": "contracts/M04/schemas/events.schema.json",
+          "sha256": "511e383fab2f8ec1dcfed8ed10505eb83fa8808a7cb5478894b47b0ce3b1e311"
+        }
+      ],
+      "fixtures": [
+        {
+          "frozen": true,
+          "id": "M04/fixtures/expected-results.json",
+          "kind": "consumer-fixture",
+          "owner": "M04 attendance",
+          "path": "contracts/M04/fixtures/expected-results.json",
+          "sha256": "89d0a9750a892b87a11f3a8ddc105a4a360b53e06f545b96ae09b89a7ffcfbbb"
+        },
+        {
+          "frozen": true,
+          "id": "M04/fixtures/responses.json",
+          "kind": "consumer-fixture",
+          "owner": "M04 attendance",
+          "path": "contracts/M04/fixtures/responses.json",
+          "sha256": "7c17cf377012168a1928b72cdb48be06fa43ab158e03459def21279cc0dbe4f1"
+        },
+        {
+          "frozen": true,
+          "id": "M04/fixtures/scenario.json",
+          "kind": "consumer-fixture",
+          "owner": "M04 attendance",
+          "path": "contracts/M04/fixtures/scenario.json",
+          "sha256": "e0430a7d2fcc5ce5f04ac387f9fd1de216dddfd46fcb2cf16b471323ee124e7f"
+        }
+      ],
       "packet": "contracts/M04/PACKET.md",
+      "review": {
+        "note": "Teacher attendance packet, OpenAPI, DTO/event schemas, error rows, port signatures and consumer fixtures approved as proposed. Shared TimetablePort/AttendancePort addition approved. Item 7 defers only the dedicated reconcile HTTP path; reconciliation behaviour itself must be real. Anti-cheat: no allow_all, no invented percentage, eligible from timetable+enrolment.",
+        "reviewed_on": "2026-09-20",
+        "reviewer": "Abhinav M"
+      },
       "slug": "attendance",
-      "status": "not_started"
+      "status": "frozen"
     },
     "M05": {
       "artefacts": [],
@@ -399,6 +462,6 @@
     }
   },
   "note": "Revision data, not code. The generator reads this file; it decides nothing itself. A module is listed under 'frozen_modules' only after its contract packet passed a human review gate, and the reviewer is named alongside the date. Adding a module here is the freeze; removing one un-freezes it and the drift guard will report every hash that moves.",
-  "revision": "school-contracts-v4",
+  "revision": "school-contracts-v5",
   "status": "reviewed"
 }

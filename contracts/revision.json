@@ -1,5 +1,5 @@
 {
-  "revision": "school-contracts-v4",
+  "revision": "school-contracts-v5",
   "status": "reviewed",
   "note": "Revision data, not code. The generator reads this file; it decides nothing itself. A module is listed under 'frozen_modules' only after its contract packet passed a human review gate, and the reviewer is named alongside the date. Adding a module here is the freeze; removing one un-freezes it and the drift guard will report every hash that moves.",
   "envelope_versions": {
@@ -20,6 +20,11 @@
       "reviewed_on": "2026-09-20",
       "reviewer": "Abhinav M",
       "note": "Central timetable and calendar packet, OpenAPI, DTO/event schemas, error rows, port signatures and consumer fixtures reviewed and approved as proposed. The three decisions that needed the reviewer -- event naming against the frozen envelope, how long a substitution's authority lasts, and what makes a date a school day -- are recorded with their alternatives in contracts/M03/review-decisions.md."
+    },
+    "M04": {
+      "reviewed_on": "2026-09-20",
+      "reviewer": "Abhinav M",
+      "note": "Teacher attendance packet, OpenAPI, DTO/event schemas, error rows, port signatures and consumer fixtures approved as proposed. Shared TimetablePort/AttendancePort addition approved. Item 7 defers only the dedicated reconcile HTTP path; reconciliation behaviour itself must be real. Anti-cheat: no allow_all, no invented percentage, eligible from timetable+enrolment."
     }
   },
   "unfrozen_note": "M01 access is implemented and merged to main, but no tracked record shows its packet passing the review gate, so it stays 'not_started' here. Its artefacts are still hashed, so drift is reported; they are simply not claimed as approved. Freezing M01 is a separate reviewed decision and must not be done as a side effect of another module's freeze."

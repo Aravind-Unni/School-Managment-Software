@@ -20,6 +20,7 @@ from .notifications import FakeNotifications, SentMessage
 from .platform import EagerModeNotAsserted, TestPlatformAdapter
 from .registry import FakeRegistry
 from .storage import FakeObjectStorage
+from .timetable import FakeTimetable
 
 __all__ = [
     "DEFAULT_STALE_AUTH_WINDOW",
@@ -29,6 +30,7 @@ __all__ = [
     "FakeNotifications",
     "FakeObjectStorage",
     "FakeRegistry",
+    "FakeTimetable",
     "FixedClock",
     "InjectedFailure",
     "PolicyRule",
