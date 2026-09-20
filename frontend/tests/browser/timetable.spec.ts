@@ -65,19 +65,21 @@ test("a teacher's own schedule loads and an empty field shows the empty state", 
 });
 
 test("an unrelated section read is denied, in prose", async ({ page }) => {
-  // The standalone persona is T1, class teacher of C1. C2's schedule is not
-  // theirs to read, and the screen must say so as a sentence, not as a code.
+  // The standalone persona is T1, class teacher of C1. Registry reports no
+  // assignment to C2, so C2's schedule is not theirs to read -- and the screen
+  // must say so as a sentence a teacher can act on, never as an error code.
+  const C2 = "f0650aea-6dc0-5f54-8f6e-f7bbb45ae3d6";
   await page.goto("/timetable/class");
   const sections = page.getByLabel("Class");
-  const values = await sections.locator("option").all();
-  if (values.length > 1) {
-    await sections.selectOption({ index: 1 });
-    const alert = page.getByRole("alert");
-    if (await alert.isVisible()) {
-      await expect(alert).toContainText("You do not have permission");
-      await expect(alert).not.toContainText("action_denied");
-    }
-  }
+  await expect(sections.locator("option")).toHaveCount(2);
+
+  await sections.selectOption(C2);
+
+  const alert = page.getByRole("alert");
+  await expect(alert).toBeVisible();
+  await expect(alert).toContainText("You do not have permission");
+  await expect(alert).not.toContainText("action_denied");
+  await expect(page.getByTestId("session")).toHaveCount(0);
 });
 
 test("the pupil schedule marks a subject the pupil does not take", async ({ page }) => {

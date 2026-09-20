@@ -610,9 +610,16 @@ jobs:
       - name: browser suite against the allocated URLs
         run: python3 scripts/dev.py check M03 --suite browser
 
+      # Run here too, so the bundle this job uploads carries all THREE suites.
+      # Without it `evidence` reports a missing contracts report and says the
+      # module is not ready for review, which is true of the bundle rather than
+      # of the module -- an honest command giving a misleading answer.
+      - name: contracts suite, so the evidence bundle is complete
+        run: python3 scripts/dev.py check M03 --suite contracts
+
       - name: evidence bundle
         if: always()
-        run: python3 scripts/dev.py evidence M03 || true
+        run: python3 scripts/dev.py evidence M03
 
       - name: stack diagnostics on failure
         if: failure()
