@@ -28,6 +28,7 @@ from .files import (
 )
 from .identity import RequestContext
 from .people import RosterDTO, StudentDTO, TeachingAssignment
+from .performance import DashboardDTO, InterventionPage
 from .scope import RelationshipFacts, ScopeFacts
 from .timetable import (
     AttendanceSummaryDTO,
@@ -462,4 +463,35 @@ class AssessmentPort(Protocol):
         window_to: datetime,
     ) -> dict[str, object]:
         """Return assignment counts for one pupil in a closed time window."""
+        ...
+
+
+@runtime_checkable
+class PerformancePort(Protocol):
+    """Dashboards, warnings and interventions. Owned by M06 performance."""
+
+    def get_dashboard(
+        self,
+        context: RequestContext,
+        subject_id: UUID | None,
+        scope: str,
+        window: str,
+        *,
+        student_id: UUID | None = None,
+        section_id: UUID | None = None,
+    ) -> DashboardDTO:
+        """Return metrics, warnings, source freshness and definition versions.
+
+        Cohort distributions hide identifiable peers. Topic metrics without
+        tagged item data return status=insufficient_data.
+        """
+        ...
+
+    def get_interventions(
+        self,
+        context: RequestContext,
+        student_id: UUID,
+        cursor: str | None = None,
+    ) -> InterventionPage:
+        """Return interventions visible to the actor for one pupil."""
         ...

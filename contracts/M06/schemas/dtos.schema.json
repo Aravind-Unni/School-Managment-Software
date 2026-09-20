@@ -1,0 +1,298 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M06/dtos",
+  "title": "M06 performance DTOs",
+  "$defs": {
+    "MetricStatus": {
+      "type": "string",
+      "enum": ["ok", "insufficient_data", "incomplete", "incompatible"]
+    },
+    "WarningState": {
+      "type": "string",
+      "enum": ["open", "acknowledged", "dismissed", "closed"]
+    },
+    "InterventionState": {
+      "type": "string",
+      "enum": ["active", "reviewed", "completed", "cancelled"]
+    },
+    "Visibility": {
+      "type": "string",
+      "enum": ["staff", "guardian_visible", "restricted"]
+    },
+    "MetricDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "definition_version", "status"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "value": { "type": ["string", "null"], "description": "Decimal string percent or null" },
+        "denominator": { "type": ["string", "null"] },
+        "definition_version": { "type": "integer", "minimum": 1 },
+        "status": { "$ref": "#/$defs/MetricStatus" },
+        "window_label": { "type": "string" },
+        "cohort_label": { "type": ["string", "null"] }
+      }
+    },
+    "WarningSummaryDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "rule_id", "state", "explanation_key"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "rule_id": { "type": "string", "format": "uuid" },
+        "state": { "$ref": "#/$defs/WarningState" },
+        "explanation_key": { "type": "string" },
+        "student_id": { "type": "string", "format": "uuid" }
+      }
+    },
+    "SourceFreshnessDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assessment_updated_at", "attendance_updated_at"],
+      "properties": {
+        "assessment_updated_at": { "type": ["string", "null"], "format": "date-time" },
+        "attendance_updated_at": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "DashboardDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["metrics", "warnings", "source_freshness", "updated_at"],
+      "properties": {
+        "metrics": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/MetricDTO" }
+        },
+        "warnings": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/WarningSummaryDTO" }
+        },
+        "source_freshness": { "$ref": "#/$defs/SourceFreshnessDTO" },
+        "updated_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "CreateWarningRuleRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "threshold", "window", "minimum_samples"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "threshold": { "type": "string", "description": "Decimal string" },
+        "window": { "type": "string" },
+        "minimum_samples": { "type": "integer", "minimum": 1 },
+        "exclusions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        }
+      }
+    },
+    "WarningRuleDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "code",
+        "version",
+        "threshold",
+        "window",
+        "minimum_samples",
+        "exclusions"
+      ],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "code": { "type": "string" },
+        "version": { "type": "integer", "minimum": 1 },
+        "threshold": { "type": "string" },
+        "window": { "type": "string" },
+        "minimum_samples": { "type": "integer", "minimum": 1 },
+        "exclusions": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "WarningActionRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reason", "expected_version"],
+      "properties": {
+        "reason": { "type": "string", "minLength": 1 },
+        "expected_version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "WarningDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "student_id",
+        "rule_id",
+        "rule_version",
+        "state",
+        "version",
+        "source_refs",
+        "explanation_key"
+      ],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "student_id": { "type": "string", "format": "uuid" },
+        "rule_id": { "type": "string", "format": "uuid" },
+        "rule_version": { "type": "integer", "minimum": 1 },
+        "state": { "$ref": "#/$defs/WarningState" },
+        "version": { "type": "integer", "minimum": 1 },
+        "source_refs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "explanation_key": { "type": "string" },
+        "reason": { "type": ["string", "null"] }
+      }
+    },
+    "CreateInterventionRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "student_id",
+        "goal",
+        "owner_id",
+        "review_date",
+        "visibility"
+      ],
+      "properties": {
+        "student_id": { "type": "string", "format": "uuid" },
+        "goal": { "type": "string", "minLength": 1 },
+        "owner_id": { "type": "string", "format": "uuid" },
+        "review_date": { "type": "string", "format": "date" },
+        "resource_ids": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" },
+          "default": []
+        },
+        "visibility": { "$ref": "#/$defs/Visibility" }
+      }
+    },
+    "InterventionDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "student_id",
+        "goal",
+        "owner_id",
+        "review_date",
+        "state",
+        "visibility",
+        "version"
+      ],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "student_id": { "type": "string", "format": "uuid" },
+        "goal": { "type": "string" },
+        "owner_id": { "type": "string", "format": "uuid" },
+        "review_date": { "type": "string", "format": "date" },
+        "state": { "$ref": "#/$defs/InterventionState" },
+        "visibility": { "$ref": "#/$defs/Visibility" },
+        "version": { "type": "integer", "minimum": 1 },
+        "resource_ids": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" }
+        }
+      }
+    },
+    "InterventionPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/InterventionDTO" }
+        },
+        "next_cursor": { "type": ["string", "null"] }
+      }
+    },
+    "CreateMeetingRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "student_id",
+        "date",
+        "participants",
+        "notes",
+        "actions",
+        "visibility"
+      ],
+      "properties": {
+        "student_id": { "type": "string", "format": "uuid" },
+        "date": { "type": "string", "format": "date" },
+        "participants": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" },
+          "minItems": 1
+        },
+        "notes": { "type": "string" },
+        "actions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "visibility": { "$ref": "#/$defs/Visibility" }
+      }
+    },
+    "MeetingDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "student_id",
+        "date",
+        "participants",
+        "notes",
+        "actions",
+        "visibility",
+        "version"
+      ],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "student_id": { "type": "string", "format": "uuid" },
+        "date": { "type": "string", "format": "date" },
+        "participants": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" }
+        },
+        "notes": { "type": "string" },
+        "actions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "visibility": { "$ref": "#/$defs/Visibility" },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "ErrorEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message_key", "request_id"],
+      "properties": {
+        "code": { "type": "string" },
+        "message_key": { "type": "string" },
+        "field_errors": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "request_id": { "type": "string" }
+      }
+    }
+  }
+}

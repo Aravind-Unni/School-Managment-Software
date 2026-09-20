@@ -11,6 +11,7 @@ import type { ReactNode } from "react";
 import { ACCESS_MESSAGES } from "@features/access/locales/messages";
 import { ASSESSMENT_MESSAGES } from "@features/assessment/locales/messages";
 import { ATTENDANCE_MESSAGES } from "@features/attendance/locales/messages";
+import { performanceMessages as PERFORMANCE_MESSAGES } from "@features/performance/locales/messages";
 import { TIMETABLE_MESSAGES } from "@features/timetable/locales/messages";
 import { LANGUAGES, SHARED_MESSAGES, translate, type Language } from "./messages";
 
@@ -64,6 +65,7 @@ export function LanguageProvider({ children }: { readonly children: ReactNode })
             ...TIMETABLE_MESSAGES.en,
             ...ATTENDANCE_MESSAGES.en,
             ...ASSESSMENT_MESSAGES.en,
+            ...PERFORMANCE_MESSAGES.en,
           },
           ml: {
             ...SHARED_MESSAGES.ml,
@@ -71,6 +73,7 @@ export function LanguageProvider({ children }: { readonly children: ReactNode })
             ...TIMETABLE_MESSAGES.ml,
             ...ATTENDANCE_MESSAGES.ml,
             ...ASSESSMENT_MESSAGES.ml,
+            ...PERFORMANCE_MESSAGES.ml,
           },
         }),
     }),

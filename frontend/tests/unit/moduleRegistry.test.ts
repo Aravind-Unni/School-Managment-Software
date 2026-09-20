@@ -15,6 +15,7 @@ describe("module registry", () => {
       "M03",
       "M04",
       "M05",
+      "M06",
     ]);
   });
 
@@ -38,6 +39,9 @@ describe("module registry", () => {
       "nav.attendance",
       "nav.assessment_setup",
       "nav.assessment_results",
+      "nav.performance_dashboard",
+      "nav.performance_at_risk",
+      "nav.performance_interventions",
     ]);
   });
 

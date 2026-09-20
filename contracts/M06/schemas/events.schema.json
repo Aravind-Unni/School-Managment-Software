@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M06/events",
+  "title": "M06 performance event payloads",
+  "description": "Payloads only. Envelope is frozen common.",
+  "$defs": {
+    "performance.warning_opened": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["warning_id", "student_id", "rule_version"],
+      "properties": {
+        "warning_id": { "type": "string", "format": "uuid" },
+        "student_id": { "type": "string", "format": "uuid" },
+        "rule_version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "performance.intervention_reviewed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intervention_id", "state"],
+      "properties": {
+        "intervention_id": { "type": "string", "format": "uuid" },
+        "state": {
+          "type": "string",
+          "enum": ["active", "reviewed", "completed", "cancelled"]
+        }
+      }
+    }
+  }
+}

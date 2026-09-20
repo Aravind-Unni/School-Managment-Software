@@ -1,0 +1,36 @@
+/** en/ml message catalog for M06 performance. */
+
+export const performanceMessages = {
+  en: {
+    "nav.performance_dashboard": "Progress",
+    "nav.performance_at_risk": "At risk",
+    "nav.performance_interventions": "Interventions",
+    "performance.title": "Student progress",
+    "performance.at_risk_title": "At-risk warnings",
+    "performance.interventions_title": "Intervention tasks",
+    "performance.loading": "Loading…",
+    "performance.empty": "No metrics yet.",
+    "performance.denied": "You cannot view this summary.",
+    "performance.insufficient": "Insufficient data",
+    "performance.metric.overall_mean": "Overall mean",
+    "performance.metric.attendance_percentage": "Attendance",
+    "performance.metric.topic_weakness": "Topic analysis",
+    "performance.warning.low_attendance": "Attendance below threshold",
+  },
+  ml: {
+    "nav.performance_dashboard": "പുരോഗതി",
+    "nav.performance_at_risk": "അപകടത്തിൽ",
+    "nav.performance_interventions": "ഇടപെടലുകൾ",
+    "performance.title": "വിദ്യാർത്ഥി പുരോഗതി",
+    "performance.at_risk_title": "മുന്നറിയിപ്പുകൾ",
+    "performance.interventions_title": "ഇടപെടൽ ജോലികൾ",
+    "performance.loading": "ലോഡ് ചെയ്യുന്നു…",
+    "performance.empty": "മെട്രിക്‌സ് ഇല്ല.",
+    "performance.denied": "ഈ സംഗ്രഹം കാണാൻ കഴിയില്ല.",
+    "performance.insufficient": "ഡാറ്റ അപര്യാപ്തം",
+    "performance.metric.overall_mean": "ശരാശരി",
+    "performance.metric.attendance_percentage": "ഹാജർ",
+    "performance.metric.topic_weakness": "വിഷയ വിശകലനം",
+    "performance.warning.low_attendance": "ഹാജർ പരിധിക്ക് താഴെ",
+  },
+} as const;

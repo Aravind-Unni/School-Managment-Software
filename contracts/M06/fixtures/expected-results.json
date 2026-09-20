@@ -1,0 +1,79 @@
+{
+  "status": "frozen",
+  "note": "ACCEPTANCE CASES, NOT TEST EVIDENCE.",
+  "scenario": "fixtures/scenario.json (baseline)",
+  "cases": [
+    {
+      "id": "A1",
+      "name": "hand-calculated mean and attendance",
+      "given": "S1 scores 60/100 and 70/100; attendance 8/10",
+      "expect": "overall_mean value 65.00 definition_version 1; attendance metric 80.00"
+    },
+    {
+      "id": "A2",
+      "name": "missing inputs labeled",
+      "given": "S2 has no published scores and null attendance summary",
+      "expect": "metrics status insufficient_data or incomplete; no invented values"
+    },
+    {
+      "id": "A3",
+      "name": "topic analysis insufficient",
+      "given": "No tagged item-level data",
+      "expect": "topic metric status insufficient_data; no advice generated"
+    },
+    {
+      "id": "A4",
+      "name": "incompatible policies not compared",
+      "given": "Two results with different policy_version",
+      "expect": "422 performance.error.incompatible_grading_basis or metric status incompatible"
+    },
+    {
+      "id": "A5",
+      "name": "repeated event no duplicate warning",
+      "given": "Replay performance.warning_opened / re-evaluate same fingerprint",
+      "expect": "Still one open warning for S1 low_attendance"
+    },
+    {
+      "id": "A6",
+      "name": "dismissed warning traceable",
+      "given": "Dismiss with reason and expected_version",
+      "expect": "state dismissed; reason retained; history row present"
+    },
+    {
+      "id": "A7",
+      "name": "unrelated guardian denied",
+      "given": "G2 requests S1 dashboard or warnings",
+      "expect": "404 object_inaccessible"
+    },
+    {
+      "id": "A8",
+      "name": "restricted notes absent from guardian export",
+      "given": "Observation visibility=restricted exists for S1",
+      "expect": "G1 export has no restricted observation fields"
+    },
+    {
+      "id": "A9",
+      "name": "full rebuild matches projections",
+      "given": "Rebuild projections for school A baseline",
+      "expect": "S1 mean 65.00 and attendance 80.00 unchanged after rebuild"
+    },
+    {
+      "id": "A10",
+      "name": "incomplete attendance not low attendance",
+      "given": "Eligible with unmarked > 0 and no percentage",
+      "expect": "No low_attendance warning; incomplete path only"
+    },
+    {
+      "id": "A11",
+      "name": "stale version 409",
+      "given": "Acknowledge with stale expected_version",
+      "expect": "409 version_conflict"
+    },
+    {
+      "id": "A12",
+      "name": "foreign school 404",
+      "given": "School B student id while actor is School A",
+      "expect": "404 never 403"
+    }
+  ]
+}

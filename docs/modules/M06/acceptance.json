@@ -1,0 +1,36 @@
+{
+  "module_id": "M06",
+  "slug": "performance",
+  "branch": "m06/analytics-warnings-interventions",
+  "started_from": "abe35b7c4621df8b6ebf111293401e80b4b255a1",
+  "contract_revision": "school-contracts-v7",
+  "STANDALONE_VERIFIED": false,
+  "suites": {
+    "contracts": {
+      "status": "pass",
+      "detail": "manifest + arch 7 + shared 105 + M06 contract 6"
+    },
+    "module_sqlite": {
+      "status": "pass",
+      "detail": "19 passed (tests/modules/M06)"
+    },
+    "frontend": {
+      "status": "pass",
+      "detail": "65 passed"
+    },
+    "standalone": {
+      "status": "not-run",
+      "detail": "Docker/Compose path not executed this session"
+    },
+    "browser": {
+      "status": "not-run",
+      "detail": "Playwright suite not executed this session"
+    }
+  },
+  "pending_integration": [
+    "rebuild_against_real_M04_M05",
+    "comparable_grading_policies",
+    "real_M01_2fa",
+    "worker_crash_retry_real_broker"
+  ]
+}
