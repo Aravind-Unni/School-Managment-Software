@@ -1,0 +1,197 @@
+{
+  "status": "proposed",
+  "name": "baseline",
+  "note": "PROPOSED, NOT FROZEN. Wholly synthetic. Every identifier is a uuid5 over a fixed namespace, so these values are byte-identical on every machine and in CI. Nothing here describes a real school, a real person, a real holiday or a real curriculum: the school publishes its own period pattern, subject list and calendar.",
+  "namespaces": {
+    "people_and_structure": {
+      "source": "backend/shared/fixtures.py",
+      "uuid5_namespace": "6f1a9c2e-0b3d-4f5a-8c7b-1d2e3f4a5b6c"
+    },
+    "m03_seed_rows": {
+      "source": "modules.timetable.seeds.SEED_NAMESPACE",
+      "uuid5_namespace": "c7a62e05-0100-52d2-9afe-e4ac6928960e",
+      "derivation": "uuid5(NAMESPACE_URL, 'https://school.example/contracts/M03/seed')"
+    },
+    "timetable_session_identity": {
+      "source": "modules.timetable.sessions.TIMETABLE_SESSION_NAMESPACE",
+      "uuid5_namespace": "65fcadea-36c5-5d1a-a7ff-24c96473c1da",
+      "derivation": "uuid5(NAMESPACE_URL, 'https://school.example/contracts/M03/timetable-session')",
+      "key": "{school_id}:{section_id}:{iso_date}:{slot_code}"
+    }
+  },
+  "clock": {
+    "frozen_at": "2026-07-15T04:30:00+00:00",
+    "school_local": "2026-07-15 10:00 Asia/Kolkata",
+    "weekday": "Wednesday"
+  },
+  "school": {
+    "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "label": "School A (synthetic)",
+    "isolation_counterparty": {
+      "school_id": "8e1e985f-ba74-5baa-82c6-b884525e416c",
+      "label": "School B (synthetic)",
+      "purpose": "A School A actor asking about School B's timetable must get 404, never 403."
+    }
+  },
+  "people": {
+    "T1": {
+      "staff_id": "eda913d7-a893-5ecc-af4e-766d1332b2ee",
+      "note": "Class teacher of C1. Registry reports dated assignments for C1 maths and C1 malayalam."
+    },
+    "T2": {
+      "staff_id": "428b0e24-5a46-5ad0-8bc3-0c805633ad48",
+      "note": "Registry reports no teaching assignment. Used both as the substitute and as the unrelated actor whose section read is denied."
+    },
+    "S1": {
+      "student_id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c",
+      "section": "C1",
+      "subjects": ["maths", "malayalam"]
+    },
+    "S2": {
+      "student_id": "eceaa8ed-e2db-50cf-a649-557816565032",
+      "section": "C1",
+      "subjects": ["malayalam"],
+      "note": "Takes malayalam only. A student day view that ignores the subject-filtered roster shows S2 a maths lesson and is wrong."
+    },
+    "S3": {
+      "student_id": "ed637961-b9dc-5669-be2d-8abe74934aa8",
+      "section": "C2"
+    },
+    "G1": {
+      "guardian_id": "a98bf46f-c03f-59a9-96e4-5eb94f0cf4a7",
+      "guards": ["S1", "S2"]
+    },
+    "G2": {
+      "guardian_id": "7731fd5f-a464-53df-9429-a515f8a06301",
+      "guards": ["S3"],
+      "note": "Unrelated to S1, and to C1."
+    }
+  },
+  "structure": {
+    "C1": { "section_id": "86847c87-bedd-505d-9e2f-3bb35275320c" },
+    "C2": { "section_id": "f0650aea-6dc0-5f54-8f6e-f7bbb45ae3d6" },
+    "maths": { "subject_id": "a0ba60ad-0b03-5fbc-8a07-11bb5c400ae4" },
+    "malayalam": { "subject_id": "fbe5644b-2bda-5073-9cd3-d10640a0f568" },
+    "year": {
+      "year_id": "13d8c901-51bc-5bd1-ae81-50658384b061",
+      "label": "2026-2027 (synthetic)",
+      "start": "2026-06-01",
+      "end": "2027-03-31",
+      "note": "Stored opaquely. RegistryPort exposes no academic year, so M03 cannot check a version's range against it — see ports.md gap 4."
+    }
+  },
+  "timetable_v1": {
+    "timetable_id": "98f5dd44-124d-5b56-9427-de2e0628b6dd",
+    "state": "published",
+    "version": 2,
+    "effective_from": "2026-06-01",
+    "effective_to": null,
+    "periods": [
+      {
+        "day_of_week": [1, 2, 3, 4, 5],
+        "slot_code": "P1",
+        "starts_at_local": "08:45",
+        "ends_at_local": "09:30"
+      },
+      {
+        "day_of_week": [1, 2, 3, 4, 5],
+        "slot_code": "P2",
+        "starts_at_local": "09:30",
+        "ends_at_local": "10:15"
+      }
+    ],
+    "period_note": "Two periods on five weekdays is synthetic fixture data, not a claim about any school's week. A deployment's PeriodTemplate rows are supplied by the school; nothing in this module assumes which weekdays a school teaches.",
+    "slots": [
+      {
+        "weekdays": [1, 2, 3, 4, 5],
+        "slot_code": "P1",
+        "section": "C1",
+        "subject": "maths",
+        "teacher": "T1",
+        "room_code": "R1"
+      },
+      {
+        "weekdays": [1, 2, 3, 4, 5],
+        "slot_code": "P2",
+        "section": "C1",
+        "subject": "malayalam",
+        "teacher": "T1",
+        "room_code": "R1"
+      },
+      {
+        "weekdays": [1, 2, 3, 4, 5],
+        "slot_code": "P1",
+        "section": "C2",
+        "subject": "malayalam",
+        "teacher": "T2",
+        "room_code": null
+      },
+      {
+        "weekdays": [1, 2, 3, 4, 5],
+        "slot_code": "P2",
+        "section": "C2",
+        "subject": "maths",
+        "teacher": "T2",
+        "room_code": null
+      }
+    ]
+  },
+  "calendar_exceptions": [
+    {
+      "date": "2026-07-16",
+      "kind": "holiday",
+      "reason_key": "timetable.reason.holiday",
+      "note": "A Thursday inside the term, chosen with no reference to any real observance."
+    },
+    {
+      "date": "2026-07-22",
+      "kind": "exam",
+      "reason_key": "timetable.reason.exam",
+      "note": "An exam day is still a teaching day: is_school_day stays true and its periods stay eligible."
+    }
+  ],
+  "teacher_unavailability": [
+    {
+      "staff_id": "T1",
+      "starts_at": "2026-07-20T03:00:00+00:00",
+      "ends_at": "2026-07-21T03:00:00+00:00",
+      "reason_key": "timetable.reason.unavailable",
+      "note": "Half-open. Used by the conflict test: a draft that timetables T1 inside this interval reports teacher_unavailable."
+    }
+  ],
+  "substitutions": [
+    {
+      "label": "active",
+      "date": "2026-07-15",
+      "section": "C1",
+      "slot_code": "P1",
+      "timetable_session_id": "97c3fae2-e694-53d6-aa64-b496ca2fef50",
+      "original_teacher": "T1",
+      "substitute_teacher": "T2",
+      "reason": "synthetic fixture",
+      "valid_until": "2026-07-15T18:30:00+00:00",
+      "note": "Exclusive instant: 2026-07-16 00:00 Asia/Kolkata. Valid while now < valid_until."
+    },
+    {
+      "label": "expired",
+      "date": "2026-07-08",
+      "section": "C1",
+      "slot_code": "P1",
+      "timetable_session_id": "60623131-eb0f-536e-8fee-abed0cf42f9d",
+      "original_teacher": "T1",
+      "substitute_teacher": "T2",
+      "reason": "synthetic fixture",
+      "valid_until": "2026-07-08T18:30:00+00:00",
+      "note": "A week before the frozen clock. T2 must hold no teaching authority for it now."
+    }
+  ],
+  "session_identities": {
+    "C1 2026-07-15 P1": "97c3fae2-e694-53d6-aa64-b496ca2fef50",
+    "C1 2026-07-15 P2": "54db473a-8d8c-599a-81b3-55678d37d3a8",
+    "C1 2026-07-16 P1": "064822f5-85d5-57d6-88cb-cc2986252bde",
+    "C1 2026-07-08 P1": "60623131-eb0f-536e-8fee-abed0cf42f9d",
+    "C2 2026-07-15 P1": "4165f5e0-881c-5c07-a43b-1936451af09d",
+    "C2 2026-07-15 P2": "0f9eb1e3-b496-5074-88d9-c74ab25296a8",
+    "note": "2026-07-16 ids exist as derivations but resolve to no eligible session: that date is a holiday."
+  }
+}

@@ -191,14 +191,27 @@ def test_a_route_cannot_require_an_undeclared_permission():
         )
 
 
-def test_the_demo_registration_is_valid_and_declares_only_fakeable_ports():
-    from modules.demo.registration import REGISTRATION
+def test_the_active_module_registration_is_valid_and_declares_only_fakeable_ports():
+    """Assert the registration of whichever module this profile installed.
+
+    Was hardcoded to the M00 demo, which imported ``modules.demo`` under EVERY
+    profile and so broke the very isolation assertion next door -- "no other
+    business module is even imported". Reading MODULE_ID instead checks each
+    module's own registration, which is the property worth having.
+    """
+    import importlib
+
+    from django.conf import settings
+
     from shared.ports import FAKEABLE_PORTS
 
-    assert REGISTRATION.id == "M00"
-    assert REGISTRATION.slug == "demo"
-    assert set(REGISTRATION.consumers) <= FAKEABLE_PORTS
-    assert REGISTRATION.api_prefix == "/api/demo/"
+    address = address_for(settings.MODULE_ID)
+    registration = importlib.import_module(address.registration_path).REGISTRATION
+
+    assert registration.id == address.id
+    assert registration.slug == address.slug
+    assert set(registration.consumers) <= FAKEABLE_PORTS
+    assert registration.api_prefix.startswith("/api/")
 
 
 def test_every_business_module_has_a_contract_directory():

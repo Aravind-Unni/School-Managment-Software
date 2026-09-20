@@ -52,16 +52,16 @@ def test_every_declaration_slug_matches_the_backend_catalogue():
 def test_implemented_modules_are_exactly_those_with_a_registration():
     """Implementation status is derived from registration.py, never declared.
 
-    M00 (placeholder), M01 (access) and M02 (registry) are implemented. Everything
-    else must report
-    not-implemented so `dev.py up` fails honestly rather than booting an empty app.
+    M00 (placeholder), M01 (access), M02 (registry) and M03 (timetable) are
+    implemented. Everything else must report not-implemented so `dev.py up` fails
+    honestly rather than booting an empty app.
     """
     from harness.modules import KNOWN_MODULE_IDS, load
 
     implemented = [
         module_id for module_id in KNOWN_MODULE_IDS if load(REPO_ROOT, module_id).implemented
     ]
-    assert implemented == ["M00", "M01", "M02"]
+    assert implemented == ["M00", "M01", "M02", "M03"]
 
 
 @pytest.mark.parametrize(

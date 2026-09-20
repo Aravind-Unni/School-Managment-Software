@@ -470,3 +470,176 @@ jobs:
       - name: down
         if: always()
         run: python3 scripts/dev.py down M01 || true
+
+  m03-backend:
+    name: M03 timetable suite on real PostgreSQL
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17.11-alpine
+        env:
+          POSTGRES_DB: school_ci_ci_m03
+          POSTGRES_USER: school_dev
+          POSTGRES_PASSWORD: school_dev_local_only
+          LANG: C
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U school_dev -d school_ci_ci_m03"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+
+    env:
+      APP_ENV: standalone
+      MODULE_ID: M03
+      SCHOOL_ID: 83cfc7d4-738c-5527-ba46-c61563fe7c1c
+      DATABASE_URL: postgresql://school_dev:school_dev_local_only@127.0.0.1:5432/school_ci_ci_m03
+      SESSION_SECRET: ci-only-not-a-real-secret
+      DEV_PERSONA_MODE: fixed
+      DEMO_FIXTURES_ENABLED: "true"
+      DJANGO_SETTINGS_MODULE: config.settings.standalone
+      PYTHONPATH: backend
+
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: install from hash-pinned lockfiles
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --require-hashes --no-deps \
+            -r backend/requirements.txt -r backend/requirements-dev.txt
+
+      - name: migrations match the models (no drift)
+        run: python backend/manage.py makemigrations --check --dry-run
+
+      - name: apply M03 migrations to an EMPTY database
+        run: python backend/manage.py migrate --noinput
+
+      - name: seed, then re-apply migrations to a POPULATED database
+        run: |
+          python backend/manage.py seed_scenario --scenario baseline
+          # Migrations must be verified on fresh AND populated data, and the seed
+          # must be idempotent: running it twice is part of the assertion.
+          python backend/manage.py migrate --noinput
+          python backend/manage.py seed_scenario --scenario baseline
+
+      - name: M03 suite against PostgreSQL
+        run: |
+          pytest tests/modules/M03 tests/contracts -q \
+            --ds=config.settings.standalone \
+            --json-report --json-report-file=pytest-m03.json
+
+      - name: the served API still matches the frozen M03 OpenAPI
+        run: |
+          # The frozen artefact is hand-authored and richer than the generated
+          # one, so this compares the SURFACE -- paths and operationIds -- which
+          # is what a consumer binds to. The same assertion runs as a contract
+          # test; here it runs against the PostgreSQL profile as well.
+          python backend/manage.py spectacular --fail-on-warn --format openapi-json --file /tmp/m03.json
+          python - <<'PY'
+          import json
+          frozen = json.load(open("contracts/M03/openapi.json"))
+          served = json.load(open("/tmp/m03.json"))
+          methods = {"get", "post", "put", "patch", "delete"}
+          expected = {o["operationId"] for p in frozen["paths"].values() for o in p.values()}
+          actual = {
+              o["operationId"]
+              for p in served["paths"].values()
+              for m, o in p.items()
+              if m in methods
+          }
+          assert actual == expected, f"operation drift: {actual ^ expected}"
+          assert set(served["paths"]) == {f"/api/v1{p}" for p in frozen["paths"]}
+          print(f"{len(expected)} operations match the frozen contract")
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: m03-test-report
+          path: pytest-m03.json
+          if-no-files-found: warn
+
+  m03-browser:
+    name: M03 browser suite against a real stack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: install backend dependencies from lockfiles
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install --upgrade pip
+          .venv/bin/python -m pip install --require-hashes --no-deps \
+            -r backend/requirements.txt -r backend/requirements-dev.txt
+
+      - name: install frontend dependencies and Chromium
+        run: |
+          npm ci --no-audit --no-fund --prefix frontend
+          npx --prefix frontend playwright install --with-deps chromium
+
+      - name: doctor (gating, after install)
+        run: python3 scripts/dev.py doctor
+
+      # This is what makes the browser and standalone suites REAL rather than
+      # recorded as not-run: the generated Compose file brings up PostgreSQL, the
+      # Django API and the Vite dev server on dynamically allocated ports.
+      - name: bring up the M03 stack
+        run: python3 scripts/dev.py up M03 --profile standalone
+
+      - name: migrate and seed
+        run: |
+          python3 scripts/dev.py migrate M03 --profile standalone
+          python3 scripts/dev.py seed M03 --scenario baseline
+
+      - name: standalone suite against the running stack
+        run: python3 scripts/dev.py check M03 --suite standalone
+
+      - name: browser suite against the allocated URLs
+        run: python3 scripts/dev.py check M03 --suite browser
+
+      # Run here too, so the bundle this job uploads carries all THREE suites.
+      # Without it `evidence` reports a missing contracts report and says the
+      # module is not ready for review, which is true of the bundle rather than
+      # of the module -- an honest command giving a misleading answer.
+      - name: contracts suite, so the evidence bundle is complete
+        run: python3 scripts/dev.py check M03 --suite contracts
+
+      - name: evidence bundle
+        if: always()
+        run: python3 scripts/dev.py evidence M03
+
+      - name: stack diagnostics on failure
+        if: failure()
+        run: |
+          for file in dev/state/*.compose.yaml; do
+            echo "::group::$file"
+            docker compose -f "$file" ps || true
+            docker compose -f "$file" logs --tail 200 || true
+            echo "::endgroup::"
+          done
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: m03-browser-evidence
+          path: |
+            dev/evidence/
+            dev/state/frontend-playwright.json
+          if-no-files-found: warn
+
+      - name: down
+        if: always()
+        run: python3 scripts/dev.py down M03 || true

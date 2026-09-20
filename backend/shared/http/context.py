@@ -8,7 +8,9 @@ dropping a spoofed header hides an attack and a bug equally well.
 Development personas are available only when all three hold:
   * ``DEV_PERSONA_MODE=fixed``
   * ``APP_ENV`` is not ``production``
-  * the connection is from loopback
+  * the peer is loopback, or is inside a network the profile explicitly trusts
+    -- which only the containerised development stack configures, and which is
+    explained in full on ``is_trusted_persona_peer``
 
 Does not handle: real login, sessions, TOTP or recovery. M01 replaces the
 persona path with real authentication; until then modules leave real
@@ -97,6 +99,50 @@ def is_loopback(remote_addr: str | None) -> bool:
     return (remote_addr or "") in LOOPBACK_ADDRESSES
 
 
+def is_trusted_persona_peer(
+    remote_addr: str | None, *, trusted_networks: tuple[str, ...] = ()
+) -> bool:
+    """Return whether a peer may use the fixed development persona.
+
+    Loopback always qualifies. ``trusted_networks`` extends that, and is EMPTY
+    unless a profile deliberately configures it.
+
+    Why it exists: in the containerised development stack the API's port is
+    published to 127.0.0.1 only, so the persona is unreachable from any network
+    -- but Docker NATs the connection, so the peer the container SEES is the
+    bridge gateway (172.x.0.1), never 127.0.0.1. The loopback test therefore
+    refused every browser request with 401, which is why no module's browser
+    suite had ever passed against a real stack.
+
+    The property being preserved is "the persona is reachable only from the
+    developer's own machine", and the port publication is what enforces it. This
+    function widens WHICH peer addresses count, for a profile that has said so;
+    it does not widen who can reach the port.
+
+    Does not handle: production. The caller refuses the persona branch outright
+    when APP_ENV is production, and PortRegistry.assert_production_safe refuses
+    to start at all with DEV_PERSONA_MODE set. Both still apply, and a
+    production profile must never populate ``trusted_networks``.
+    """
+    if is_loopback(remote_addr):
+        return True
+    if not remote_addr or not trusted_networks:
+        return False
+    import ipaddress
+
+    try:
+        peer = ipaddress.ip_address(remote_addr)
+    except ValueError:
+        return False
+    for network in trusted_networks:
+        try:
+            if peer in ipaddress.ip_network(network, strict=False):
+                return True
+        except ValueError:
+            continue
+    return False
+
+
 def build_dev_context(
     persona: DevPersona,
     *,
@@ -125,6 +171,7 @@ def resolve_request_context(
     dev_persona_mode: str,
     persona: DevPersona | None,
     clock,
+    trusted_persona_networks: tuple[str, ...] = (),
 ) -> RequestContext:
     """Return the trusted context for a request, or raise.
 
@@ -141,7 +188,10 @@ def resolve_request_context(
     if dev_persona_mode == "fixed":
         if app_env == "production":
             raise Unauthenticated("error.dev_persona_forbidden_in_production")
-        if not is_loopback(meta.get("REMOTE_ADDR")):  # type: ignore[arg-type]
+        if not is_trusted_persona_peer(
+            meta.get("REMOTE_ADDR"),  # type: ignore[arg-type]
+            trusted_networks=trusted_persona_networks,
+        ):
             raise Unauthenticated("error.dev_persona_requires_loopback")
         if persona is None:
             raise Unauthenticated("error.dev_persona_not_configured")

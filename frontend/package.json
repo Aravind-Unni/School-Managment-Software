@@ -15,7 +15,7 @@
     "test": "vitest run --reporter=default --reporter=json --outputFile=../dev/state/frontend-vitest.json",
     "test:watch": "vitest",
     "test:browser": "playwright test",
-    "generate:client": "openapi-typescript ../contracts/M00/openapi.yaml -o src/features/demo/generated/schema.d.ts && openapi-typescript ../contracts/M01/openapi.yaml -o src/features/access/generated/schema.d.ts"
+    "generate:client": "openapi-typescript ../contracts/M00/openapi.yaml -o src/features/demo/generated/schema.d.ts && openapi-typescript ../contracts/M01/openapi.yaml -o src/features/access/generated/schema.d.ts && openapi-typescript ../contracts/M03/openapi.json -o src/features/timetable/generated/schema.d.ts"
   },
   "dependencies": {
     "react": "19.3.0",

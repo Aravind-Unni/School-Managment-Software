@@ -1,0 +1,159 @@
+{
+  "status": "proposed",
+  "note": "PROPOSED ACCEPTANCE CASES, NOT TEST EVIDENCE. Nothing here has been executed. Observed results live in docs/modules/M03/acceptance.json and in dev/evidence/, and are written only after a run.",
+  "scenario": "fixtures/scenario.json (baseline)",
+  "cases": [
+    {
+      "id": "A1",
+      "name": "teacher double-booking rejected",
+      "given": "A draft placing T1 in C1 P1 and C2 P1 on the same weekday",
+      "expect": "validate reports teacher_double_booked with both slot_ids and teacher_id; publish returns 409 state_conflict timetable.error.conflicts_present and the draft stays draft"
+    },
+    {
+      "id": "A2",
+      "name": "class overlap rejected",
+      "given": "A draft placing C1 in two slots whose period windows overlap on one weekday",
+      "expect": "422 timetable.error.duplicate_slot at write time for an identical period, and section_double_booked from validate for overlapping distinct periods; the unique constraint refuses it in the database as well"
+    },
+    {
+      "id": "A3",
+      "name": "holiday excluded",
+      "given": "2026-07-16 has a holiday exception",
+      "expect": "get_current_timetable returns is_school_day false, reason_key timetable.reason.holiday and zero sessions; get_calendar agrees; a substitution on that date is 409 timetable.error.date_is_holiday"
+    },
+    {
+      "id": "A4",
+      "name": "current version selected correctly",
+      "given": "V1 effective 2026-06-01 and V2 published effective 2026-09-01",
+      "expect": "a read for 2026-08-31 resolves V1, a read for 2026-09-01 resolves V2, and V1's effective_to is closed at 2026-08-31 rather than V1 being deleted"
+    },
+    {
+      "id": "A5",
+      "name": "historical version remains available",
+      "given": "V1 superseded by V2",
+      "expect": "V1 is still listable and readable with its whole grid, and a session on a date inside V1's range still reports timetable_id V1 with V1's version number"
+    },
+    {
+      "id": "A6",
+      "name": "revision does not duplicate attendance identity",
+      "given": "V2 republishes the same weekly grid for C1 P1",
+      "expect": "timetable_session_id for C1 on a date under V2 equals the id the same section, date and slot code produced under V1"
+    },
+    {
+      "id": "A7",
+      "name": "substitution expires",
+      "given": "The expired substitution on 2026-07-08 and the clock at 2026-07-15T04:30Z",
+      "expect": "get_teaching_authority reports substitute_teacher_id null and substitution_valid_until null; the active 2026-07-15 substitution reports T2 with its valid_until"
+    },
+    {
+      "id": "A8",
+      "name": "substitution is never a standing permission",
+      "given": "A substitution request with valid_until beyond the end of its own school day",
+      "expect": "422 timetable.error.valid_until_after_session_day"
+    },
+    {
+      "id": "A9",
+      "name": "concurrent publish conflict",
+      "given": "Two publishes of the same draft, both sending expected_version 1",
+      "expect": "one 200, one 409 version_conflict; exactly one published version exists and exactly one TimetablePublished event was appended"
+    },
+    {
+      "id": "A10",
+      "name": "unrelated class denied",
+      "given": "T2, for whom Registry reports no assignment to C1, reads C1's schedule",
+      "expect": "403 action_denied"
+    },
+    {
+      "id": "A11",
+      "name": "two-school isolation",
+      "given": "A School A actor names a School B section, timetable or session id",
+      "expect": "404 object_inaccessible in every case, never 403, so existence is not disclosed"
+    },
+    {
+      "id": "A12",
+      "name": "relationship denial for a guardian",
+      "given": "G2, who guards only S3 in C2, reads C1's schedule with student_id S1",
+      "expect": "403 action_denied; G1 reading C1 with student_id S1 succeeds"
+    },
+    {
+      "id": "A13",
+      "name": "stale edit",
+      "given": "A draft replaced with expected_version 1 after another writer moved it to 2",
+      "expect": "409 version_conflict, and the grid is unchanged"
+    },
+    {
+      "id": "A14",
+      "name": "published grid is immutable",
+      "given": "A PUT against a published version",
+      "expect": "409 timetable.error.not_draft"
+    },
+    {
+      "id": "A15",
+      "name": "transaction rollback leaves no audit or outbox row",
+      "given": "A publish that fails after the audit and event writes",
+      "expect": "no timetable state change, no audit row and no outbox row; the Platform test adapter asserts all three"
+    },
+    {
+      "id": "A16",
+      "name": "publication notifies only after commit",
+      "given": "A successful publish",
+      "expect": "an outbox row appended in the same transaction and no direct send; no notification port is consumed, so an SMS outage cannot block publication"
+    },
+    {
+      "id": "A17",
+      "name": "invalid input",
+      "given": "A period whose end equals its start, an unknown slot code, an unknown query parameter, a hand-edited cursor, and a body carrying school_id",
+      "expect": "422 with the matching module message_key in each case, and error.server_internal_field_rejected for the last"
+    },
+    {
+      "id": "A18",
+      "name": "teacher unavailability blocks publication",
+      "given": "T1 unavailable 2026-07-20T03:00Z to 2026-07-21T03:00Z and a draft effective over that window",
+      "expect": "validate reports teacher_unavailable naming the date and the slot; publish is refused"
+    },
+    {
+      "id": "A19",
+      "name": "exam day is still a teaching day",
+      "given": "2026-07-22 has an exam exception",
+      "expect": "is_school_day true, kinds ['exam'], and its periods remain eligible for attendance"
+    },
+    {
+      "id": "A20",
+      "name": "cancelled session is shown, not lost",
+      "given": "C1 P1 on 2026-07-15 cancelled",
+      "expect": "the session is returned with cancelled true and its reason key; get_teaching_authority reports eligible_for_attendance false; the recurring schedule is unchanged and no new timetable version exists"
+    },
+    {
+      "id": "A21",
+      "name": "subject-filtered roster reaches the pupil view",
+      "given": "S2, who takes malayalam only",
+      "expect": "the maths period is returned with enrolled false and the malayalam period with enrolled true"
+    },
+    {
+      "id": "A22",
+      "name": "both locales render",
+      "given": "The weekly editor, conflicts list, publish preview and read-only schedules",
+      "expect": "every string resolves from the module catalogue in en and ml; no message key renders as itself"
+    }
+  ],
+  "pending_integration": [
+    {
+      "id": "P1",
+      "name": "real attendance authorisation for a dated substitution",
+      "why": "M04 does not exist and real Access is not bound in standalone. M03 proves that it publishes the trusted fact and that the fact expires; it cannot prove that attendance honours it.",
+      "run_when": "M04 is implemented and real Access is bound (Section C)"
+    },
+    {
+      "id": "P2",
+      "name": "real authentication and 2FA",
+      "why": "Standalone derives a fixed synthetic persona on loopback. The stale-2FA path on publish is exercised against the fake only.",
+      "run_when": "M01 is integrated"
+    },
+    {
+      "id": "P3",
+      "name": "real Registry provider",
+      "why": "Section, subject, staff and year existence are unvalidated because the frozen RegistryPort exposes no lookup for them (ports.md gaps 1-4).",
+      "run_when": "the proposed additive Registry signatures are reviewed and M02 provides them"
+    }
+  ]
+}

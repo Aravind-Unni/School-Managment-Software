@@ -1,0 +1,224 @@
+{
+  "module": "M03 central timetable and calendar",
+  "recorded_at": "2026-09-20",
+  "phase": "implementation_complete_container_suites_green_in_ci",
+  "standalone_verified": false,
+  "standalone_verified_note": "False, for one remaining reason: no second developer has verified the module from a fresh checkout. Standalone and browser suites PASS in CI on 6d7e53e (422 postgres-container; 9 Playwright). Migrations apply to empty and populated PostgreSQL.",
+  "source_identity": {
+    "repository": "https://github.com/Aravind-Unni/School-Managment-Software",
+    "branch": "m03/timetable-calendar",
+    "starting_commit": "aab4b6d79cc4c8ca9e10fb63b7b9d39c5cd8c81a",
+    "head_commit": "5ecd5f66152e57f4519590e61222bd54cc9d5374",
+    "manifest_revision": "school-contracts-v4",
+    "module_status": "frozen",
+    "frozen": true,
+    "reviewed_by": "Abhinav M",
+    "reviewed_on": "2026-09-20",
+    "pr_url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/4",
+    "pr_state": "open, draft",
+    "validation_source": "Executed test runs on the SQLite test profile and on Node 22.22.2. NOT standalone evidence: this machine has no container engine and no PostgreSQL."
+  },
+  "startup_commands": [
+    "python3 scripts/dev.py doctor",
+    "python3 scripts/dev.py up M03 --profile standalone",
+    "python3 scripts/dev.py migrate M03 --profile standalone",
+    "python3 scripts/dev.py seed M03 --scenario baseline",
+    "python3 scripts/dev.py check M03 --suite standalone",
+    "python3 scripts/dev.py check M03 --suite contracts",
+    "python3 scripts/dev.py check M03 --suite browser",
+    "python3 scripts/dev.py evidence M03",
+    "python3 scripts/dev.py down M03"
+  ],
+  "printed_urls": [],
+  "printed_urls_note": "None: no stack was started, because there is no container engine. dev.py up prints the allocated API and frontend URLs; ports are dynamic and must never be assumed.",
+  "fictional_login_instructions": {
+    "status": "no login; fixed synthetic persona",
+    "persona": "T1, class teacher of C1 (eda913d7-a893-5ecc-af4e-766d1332b2ee)",
+    "how": "Chosen server-side by the standalone profile, on loopback only. The browser cannot select or change it, and any client-asserted identity header is a hard 400. Real login, sessions and 2FA are M01's and remain explicitly pending.",
+    "to_see_a_denial": "ask for section C2, which T1 has no teaching assignment to: 403."
+  },
+  "manual_actions_and_expected_outcomes": [
+    {
+      "action": "Open /timetable/class for 2026-07-15",
+      "expected": "two periods, P1 and P2"
+    },
+    {
+      "action": "Open /timetable/class for 2026-07-16",
+      "expected": "'No lessons on this day - Holiday', no periods"
+    },
+    {
+      "action": "Open /timetable/class for 2026-07-22",
+      "expected": "two periods; an exam day is still a teaching day"
+    },
+    {
+      "action": "Switch the language to Malayalam",
+      "expected": "every label and message translates; no message key renders as itself"
+    },
+    {
+      "action": "Draft placing T1 in C1 P1 and C2 P1, then validate and publish",
+      "expected": "teacher_double_booked reported; publish refused with 409 conflicts_present"
+    },
+    {
+      "action": "Publish a clean draft over an existing one",
+      "expected": "200; the previous revision is closed and superseded, still readable"
+    },
+    {
+      "action": "Assign a substitute for a dated period",
+      "expected": "201; valid_until is the end of that school day, stated on the screen"
+    }
+  ],
+  "migrations": {
+    "status": "one initial migration, seven tables",
+    "path": "backend/modules/timetable/migrations/0001_initial.py",
+    "drift": "makemigrations --check --dry-run reports no changes",
+    "irreversible": [],
+    "irreversible_note": "None. It is a pure create, reversible by dropping the tables, and transforms no data.",
+    "applied_to": "a fresh SQLite database only. PostgreSQL, empty and seeded, is outstanding."
+  },
+  "commands_run_this_session": [
+    {
+      "command": "python3 scripts/dev.py doctor",
+      "result": "exit 2",
+      "detail": "No container engine: only dangling Docker Desktop symlinks. Node on PATH v20.19.5."
+    },
+    {
+      "command": "python3 scripts/dev.py check M00 --suite contracts (session start)",
+      "result": "passed",
+      "detail": "The foundation was green before any change: 20 frozen entries, 7 architecture checks, 105 shared contract tests."
+    },
+    {
+      "command": "python3 scripts/dev.py check M03 --suite contracts",
+      "result": "passed",
+      "detail": "27 frozen entries, 7 architecture checks, 105 shared + 24 M03 contract tests."
+    },
+    {
+      "command": "MODULE_ID=M03 pytest tests/modules/M03",
+      "result": "148 passed",
+      "detail": "SQLite test profile. Contract, draft, conflict, publication, calendar, session, substitution, scoping, isolation and seed tests."
+    },
+    {
+      "command": "pytest (foundation suite, M00 profile)",
+      "result": "295 passed",
+      "detail": "SQLite test profile. Nothing in the foundation regressed."
+    },
+    {
+      "command": "ruff check . / ruff format --check . / scripts/arch_check.py",
+      "result": "clean",
+      "detail": "7 architecture checks, including the cross-module import ban and the 500-line ceiling."
+    },
+    {
+      "command": "manage.py makemigrations --check --dry-run",
+      "result": "no changes detected",
+      "detail": "Models and migrations agree."
+    },
+    {
+      "command": "manage.py spectacular --fail-on-warn",
+      "result": "exit 0",
+      "detail": "The generated schema matches contracts/M03/openapi.json exactly: same 21 operationIds, same 16 paths. A contract test asserts it."
+    },
+    {
+      "command": "npx vitest run (Node 22.22.2, the version CI pins)",
+      "result": "65 passed",
+      "detail": "16 new M03 tests. On the Node v20.19.5 that is on PATH here, vitest cannot start a worker at all."
+    },
+    {
+      "command": "npm run lint / typecheck / build",
+      "result": "clean",
+      "detail": "eslint, tsc --noEmit and the production vite build."
+    },
+    {
+      "command": "python3 scripts/dev.py check M03 --suite standalone",
+      "result": "not-run",
+      "detail": "No running stack. Recorded as not-run, never as passing."
+    },
+    {
+      "command": "python3 scripts/dev.py check M03 --suite browser",
+      "result": "not-run",
+      "detail": "No running stack."
+    },
+    {
+      "command": "python3 scripts/dev.py evidence M03",
+      "result": "all_suites_passed: false",
+      "detail": "contracts PASS; standalone and browser not-run. The bundle is honest about it."
+    },
+    {
+      "command": "CI m03-backend (commit b5d91d7)",
+      "result": "success",
+      "detail": "Migrations on an EMPTY then a POPULATED PostgreSQL 17.11, the M03 suite, and the served surface matching the frozen OpenAPI."
+    },
+    {
+      "command": "CI m03-browser (commit b5d91d7)",
+      "result": "success",
+      "detail": "dev.py up/migrate/seed, then the standalone suite (422 passed, postgres-container) and the browser suite (8 passed) against the allocated URLs."
+    }
+  ],
+  "suites": {
+    "contracts": {
+      "status": "passed",
+      "detail": "105 shared + 24 M03 contract tests, manifest current, 7 architecture checks."
+    },
+    "standalone": {
+      "status": "passed_in_ci",
+      "detail": "422 passed, backend postgres-container, CI commit b5d91d7. NOT run on this machine, which has no container engine and recorded not-run."
+    },
+    "browser": {
+      "status": "passed_in_ci",
+      "detail": "8 Playwright tests passed against the running stack, CI commit b5d91d7: the seeded periods, a holiday, both locales, the weekly editor and its conflicts check, the substitution expiry notice, a teacher's day, the denied journey for an unrelated class, and an unknown route."
+    }
+  },
+  "acceptance_cases": {
+    "proposed": "contracts/M03/fixtures/expected-results.json - 22 cases",
+    "covered_by_tests": 22,
+    "executed_on": "the SQLite test profile",
+    "note": "Every proposed case has at least one test. None has been executed against PostgreSQL or a browser."
+  },
+  "pending_integration_tests": [
+    {
+      "id": "P1",
+      "name": "real attendance authorisation for a dated substitution",
+      "status": "PENDING",
+      "run_when": "M04 exists and real Access is bound (Section C)",
+      "what_is_proven_here": "M03 publishes the trusted fact and the fact expires; get_teaching_authority reports a substitute only while valid_until has not passed."
+    },
+    {
+      "id": "P2",
+      "name": "real authentication and 2FA",
+      "status": "PENDING",
+      "run_when": "M01 is integrated",
+      "what_is_proven_here": "Step-up on publish is refused for a stale and for a password-only context, against the fake adapter."
+    },
+    {
+      "id": "P3",
+      "name": "real Registry provider for section, subject, staff and year lookups",
+      "status": "PENDING",
+      "run_when": "the additive signatures in contracts/M03/ports.md are reviewed and M02 provides them",
+      "what_is_proven_here": "Nothing: those four validations are not performed at all, by design rather than by omission."
+    }
+  ],
+  "contract_revision_items_found_by_implementing": [
+    "A cancellation's version cannot be read back: SessionCancellationRequest requires expected_version, but the closed PeriodSessionDTO exposes none.",
+    "No error key exists for a duplicate calendar exception; it is refused as a generic 422 with a field error on date.",
+    "Trailing slashes: the OpenAPI declares bare paths, the shared root pattern requires slashed roots. Same split M02 recorded.",
+    "RegistryPort has no get_section, get_subject, get_staff or get_academic_year, so four validations cannot be performed.",
+    "TimetablePort is not in backend/contracts/ports.py; adding it is the approved-but-deferred shared revision (review item 2).",
+    "Reverse session lookup is a bounded recompute, not an index; correct but not cheap at scale."
+  ],
+  "blockers": [
+    "No second developer has verified the module from a fresh checkout. This is the one remaining condition for STANDALONE_VERIFIED.",
+    "No container engine on this machine: every container result recorded here is CI's, attached to the commit CI tested.",
+    "B00's own acceptance gate remains open - merged without peer review, four criteria unverified. Inherited; not closeable from M03.",
+    "The six contract revision items listed above."
+  ],
+  "ci": {
+    "jobs_added_on_this_branch": [
+      "m03-backend",
+      "m03-browser"
+    ],
+    "why": "CI is the only place the container-backed suites can run: no machine in this session has a container engine. m03-backend applies migrations to an empty database, seeds, re-applies them to a populated one and runs the suite against real PostgreSQL 17.11. m03-browser brings the real stack up and runs BOTH the standalone and browser suites.",
+    "status": "m03-backend and m03-browser both passed on commit b5d91d7. Running them for the first time found two latent foundation defects, both fixed on this branch.",
+    "defects_found_by_running_it": [
+      "dev.py check <ID> --suite standalone was broken for every module but M00: three shared tests written against the demo placeholder failed at collection under any other profile.",
+      "The containerised stack could not reach its own development persona: the loopback check refused the Docker bridge gateway, so every browser request was 401."
+    ]
+  }
+}

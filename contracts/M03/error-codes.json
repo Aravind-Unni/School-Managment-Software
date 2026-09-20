@@ -1,0 +1,248 @@
+{
+  "status": "proposed",
+  "note": "PROPOSED, NOT FROZEN. M03 adds no member to the frozen ErrorCode enum: every row below reuses an existing code and supplies a module-owned message_key. The frontend renders the key in English or Malayalam; the server never returns prose.",
+  "rows": [
+    {
+      "status": 400,
+      "code": "validation_failed",
+      "message_key": "error.client_asserted_identity",
+      "when": "The request carried an identity header. Rejected by shared transport before M03 sees it."
+    },
+    {
+      "status": 401,
+      "code": "unauthenticated",
+      "message_key": "error.unauthenticated",
+      "when": "No server-derived session. Real authentication is M01's; standalone derives a fixed persona on loopback."
+    },
+    {
+      "status": 401,
+      "code": "stale_auth",
+      "message_key": "error.two_factor_required",
+      "when": "Publishing without ever having asserted a second factor."
+    },
+    {
+      "status": 401,
+      "code": "stale_auth",
+      "message_key": "error.two_factor_stale",
+      "when": "Publishing with a second factor older than the reviewed 300-second window."
+    },
+    {
+      "status": 403,
+      "code": "action_denied",
+      "message_key": "error.action_denied",
+      "when": "The actor may know the object exists but may not perform this action: an unassigned teacher reading another section's schedule, a teacher publishing."
+    },
+    {
+      "status": 404,
+      "code": "object_inaccessible",
+      "message_key": "error.object_inaccessible",
+      "when": "Absent, or belonging to another school. The two are deliberately indistinguishable."
+    },
+    {
+      "status": 409,
+      "code": "version_conflict",
+      "message_key": "error.version_conflict",
+      "when": "expected_version did not match the stored aggregate. Two academic heads publishing the same draft: one wins, one is told."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "timetable.error.not_draft",
+      "when": "Editing a published or superseded version. A published grid is immutable; correcting it is a new revision."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "timetable.error.already_published",
+      "when": "Publishing a version that is no longer a draft."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "timetable.error.conflicts_present",
+      "when": "Publishing while a blocking conflict stands. field_errors names each conflict code."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "timetable.error.effective_from_not_after_effective",
+      "when": "Publishing a version whose effective_from is not later than the currently effective version's effective_from. Retrospective republication would rewrite the schedule a past register was taken against."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "timetable.error.no_effective_timetable",
+      "when": "Reading or substituting on a date no published version covers."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "timetable.error.date_is_holiday",
+      "when": "Assigning a substitute on a date with a holiday in force. A holiday has no eligible teaching period."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "timetable.error.session_cancelled",
+      "when": "Assigning a substitute to a session already cancelled."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "timetable.error.substitution_exists",
+      "when": "A second, non-withdrawn substitution for the same dated period. One period has one substitute."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.validation_failed",
+      "when": "Malformed body: a missing field, a wrong type, or an unknown field. Write bodies are closed at every nesting depth."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.server_internal_field_rejected",
+      "when": "The body carried school_id, actor_id, auth_level or a resource grant. Rejected, never silently dropped."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.malformed_cursor",
+      "when": "A hand-edited or foreign pagination cursor."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "timetable.error.period_end_not_after_start",
+      "when": "A period template whose end is not strictly after its start."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "timetable.error.period_overlap",
+      "when": "Two period templates on the same weekday whose half-open [start, end) windows overlap."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "timetable.error.duplicate_period",
+      "when": "Two period templates with the same weekday and slot code."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "timetable.error.unknown_slot_code",
+      "when": "A slot naming a weekday and slot code the grid does not define."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "timetable.error.duplicate_slot",
+      "when": "Two slots for the same section in the same period. The database refuses it too; this is the readable form."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "timetable.error.effective_to_before_from",
+      "when": "A version whose effective_to precedes its effective_from."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "timetable.error.unknown_section",
+      "when": "A slot naming a section Registry does not report for this school."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "timetable.error.unavailability_end_not_after_start",
+      "when": "An unavailability interval whose end is not strictly after its start."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "timetable.error.slot_not_taught_on_date",
+      "when": "A substitution whose date is not the weekday its slot is taught on."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "timetable.error.date_outside_effective_range",
+      "when": "A substitution whose date falls outside the effective version's range."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "timetable.error.substitute_same_as_assigned",
+      "when": "Substituting a teacher for themselves."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "timetable.error.valid_until_after_session_day",
+      "when": "A substitution valid beyond the end of its own school day. A substitution is a dated authority, never a standing class permission."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "timetable.error.valid_until_before_session_end",
+      "when": "A substitution that would expire before the period it covers has finished."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "timetable.error.to_date_before_from_date",
+      "when": "A calendar range whose end precedes its start."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "timetable.error.range_too_wide",
+      "when": "A calendar range longer than 400 days. Bounded so one request cannot expand an unbounded date walk."
+    }
+  ],
+  "conflict_codes": [
+    {
+      "code": "teacher_double_booked",
+      "blocking": true,
+      "message_key": "timetable.conflict.teacher_double_booked",
+      "when": "One teacher in two slots whose periods overlap on the same weekday, in any section."
+    },
+    {
+      "code": "section_double_booked",
+      "blocking": true,
+      "message_key": "timetable.conflict.section_double_booked",
+      "when": "One section in two slots whose periods overlap on the same weekday."
+    },
+    {
+      "code": "teacher_unavailable",
+      "blocking": true,
+      "message_key": "timetable.conflict.teacher_unavailable",
+      "when": "A slot whose teacher has a recorded unavailability covering that period on a date inside the version's effective range."
+    },
+    {
+      "code": "period_overlap",
+      "blocking": true,
+      "message_key": "timetable.conflict.period_overlap",
+      "when": "Two period templates on one weekday whose windows overlap. Also refused at write time; detected again here because a version may predate the rule."
+    },
+    {
+      "code": "slot_references_unknown_period",
+      "blocking": true,
+      "message_key": "timetable.conflict.slot_references_unknown_period",
+      "when": "A slot pointing at a period template the version no longer has."
+    },
+    {
+      "code": "section_unknown_to_registry",
+      "blocking": true,
+      "message_key": "timetable.conflict.section_unknown_to_registry",
+      "when": "Registry does not report the section for this school on the effective date."
+    },
+    {
+      "code": "teacher_not_assigned",
+      "blocking": false,
+      "message_key": "timetable.conflict.teacher_not_assigned",
+      "when": "Registry reports no dated teaching assignment for this teacher, section and subject. PROPOSED as non-blocking: schools commonly build the grid before recording assignments, and blocking would make the timetable depend on another module's data entry order. Review item 4."
+    }
+  ]
+}

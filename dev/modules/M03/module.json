@@ -1,8 +1,8 @@
 {
   "module_id": "M03",
   "slug": "timetable",
-  "_comment": "Minimum declaration. If this module turns out to own asynchronous work or files, its contract packet must say so and this file must be updated before implementation.",
-  "_status": "module not implemented; this declaration describes the stack `dev.py up` would start once it is",
+  "_comment": "M03 owns no asynchronous work, so it starts no broker and no worker: several standalone stacks must be able to run at once.",
+  "_status": "implemented; backend, migrations and React feature routes are served by `dev.py up M03 --profile standalone`",
   "resources": {
     "postgres": true,
     "frontend": true,

@@ -9,6 +9,7 @@
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { ACCESS_MESSAGES } from "@features/access/locales/messages";
+import { TIMETABLE_MESSAGES } from "@features/timetable/locales/messages";
 import { LANGUAGES, SHARED_MESSAGES, translate, type Language } from "./messages";
 
 const STORAGE_KEY = "school.language";
@@ -55,8 +56,8 @@ export function LanguageProvider({ children }: { readonly children: ReactNode })
       // resolve anywhere in the tree without each screen wiring its own lookup.
       t: (key: string) =>
         translate(language, key, {
-          en: { ...SHARED_MESSAGES.en, ...ACCESS_MESSAGES.en },
-          ml: { ...SHARED_MESSAGES.ml, ...ACCESS_MESSAGES.ml },
+          en: { ...SHARED_MESSAGES.en, ...ACCESS_MESSAGES.en, ...TIMETABLE_MESSAGES.en },
+          ml: { ...SHARED_MESSAGES.ml, ...ACCESS_MESSAGES.ml, ...TIMETABLE_MESSAGES.ml },
         }),
     }),
     [language, setLanguage],
