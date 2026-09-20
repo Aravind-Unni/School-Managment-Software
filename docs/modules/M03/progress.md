@@ -145,6 +145,8 @@ silently; each is listed here and in the handoff.
 | `frontend/package.json`, `frontend/src/app/registeredModules.ts`, `frontend/tests/unit/moduleRegistry.test.ts` | M03 registered | The module's own registration entry |
 | `tests/conftest.py`, `tests/integration/test_standalone_isolation.py`, `tests/contracts/test_registration_contract.py` | the standalone suite works for every module | Defect 1 below. Two assertions widened to cover every module rather than the M00 placeholder |
 | `backend/shared/http/context.py`, `backend/shared/http/middleware.py`, `backend/config/settings/standalone.py`, `dev/harness/compose.py` | the containerised stack can reach its own dev persona | Defect 2 below. **A shared runtime change; wants review on its own terms** |
+| `tests/integration/test_dev_persona_peer.py` | new | The 21 assertions pinning that fix, including production's refusal and the port publication it depends on |
+| `frontend/tests/unit/timetable.test.tsx`, `frontend/tests/browser/timetable.spec.ts` | new | M03's own frontend tests. They live in the shared test directories because that is where the runner and Playwright collect from |
 | `.github/workflows/ci.yml` | two M03 jobs added | `m03-backend` runs the suite and both migration paths against real PostgreSQL; `m03-browser` brings the stack up and runs the standalone AND browser suites. Copied from the `m01-backend`/`m01-browser` pattern. This is the only place those two suites CAN run, since no machine here has a container engine |
 
 No file under `backend/contracts`, `backend/shared` or `contracts/common` was
