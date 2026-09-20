@@ -37,6 +37,13 @@ from .events import (
     EventEnvelope,
 )
 from .evidence import EvidenceRef, ResourceGrant
+from .files import (
+    ArtifactRef,
+    FileDTO,
+    FileEvidenceRef,
+    ReadUrlDTO,
+    UploadSession,
+)
 from .identity import AuthLevel, RequestContext
 from .pagination import (
     DEFAULT_PAGE_SIZE,
@@ -55,8 +62,10 @@ from .people import (
 )
 from .ports import (
     AccessPort,
+    AssessmentPort,
     AttendancePort,
     ClockPort,
+    FilesPort,
     NotificationPort,
     ObjectStoragePort,
     PlatformPort,
@@ -98,6 +107,8 @@ __all__ = [
     "UNAUTHENTICATED_REASONS",
     "AccessPort",
     "ActionDenied",
+    "ArtifactRef",
+    "AssessmentPort",
     "AttendancePort",
     "AttendanceSummaryDTO",
     "AuditRecord",
@@ -111,6 +122,9 @@ __all__ = [
     "EventEnvelope",
     "EvidenceRef",
     "FieldError",
+    "FileDTO",
+    "FileEvidenceRef",
+    "FilesPort",
     "FrontendRoute",
     "HealthCheck",
     "ModuleRegistration",
@@ -121,6 +135,7 @@ __all__ = [
     "PeriodSessionDTO",
     "PlatformPort",
     "RateLimited",
+    "ReadUrlDTO",
     "ReasonCode",
     "RegistryPort",
     "Relationship",
@@ -139,6 +154,7 @@ __all__ = [
     "TeachingAuthorityDTO",
     "TimetablePort",
     "Unauthenticated",
+    "UploadSession",
     "ValidationFailed",
     "VersionConflict",
     "assert_no_registration_collisions",

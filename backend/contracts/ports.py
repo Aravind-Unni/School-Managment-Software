@@ -19,6 +19,13 @@ from uuid import UUID
 from .decisions import Decision
 from .events import AuditRecord, EventEnvelope
 from .evidence import EvidenceRef, ResourceGrant
+from .files import (
+    ArtifactRef,
+    FileDTO,
+    FileEvidenceRef,
+    ReadUrlDTO,
+    UploadSession,
+)
 from .identity import RequestContext
 from .people import RosterDTO, StudentDTO, TeachingAssignment
 from .scope import RelationshipFacts, ScopeFacts
@@ -368,4 +375,91 @@ class AttendancePort(Protocol):
         ``eligible`` includes non-cancelled scheduled periods with no attendance
         row yet. ``percentage`` is None until a calculation version is configured.
         """
+        ...
+
+
+@runtime_checkable
+class FilesPort(Protocol):
+    """Private file lifecycle. Owned by M12 files.
+
+    Only ``purpose=answer_sheet`` supports quality review and evidence pinning.
+    Implementations must not accept browser-supplied ResourceGrant values.
+    """
+
+    def begin_upload(
+        self,
+        context: RequestContext,
+        purpose: str,
+        client_name: str,
+        declared_bytes: int,
+        mime: str,
+    ) -> UploadSession:
+        """Open an upload session for an approved purpose."""
+        ...
+
+    def get_status(self, context: RequestContext, file_id: UUID) -> FileDTO:
+        """Return file status. Cross-school ids are ObjectInaccessible."""
+        ...
+
+    def confirm_quality(
+        self,
+        context: RequestContext,
+        file_id: UUID,
+        candidate_version: int,
+    ) -> FileDTO:
+        """Mark a candidate version as teacher-confirmed canonical."""
+        ...
+
+    def pin_evidence(
+        self,
+        context: RequestContext,
+        file_id: UUID,
+        canonical_version: int,
+        binding_id: UUID,
+    ) -> FileEvidenceRef:
+        """Pin an immutable confirmed version into a binding."""
+        ...
+
+    def issue_read(self, context: RequestContext, grant: ResourceGrant) -> ReadUrlDTO:
+        """Mint a short-lived read URL for a server-internal grant."""
+        ...
+
+    def store_artifact(
+        self,
+        context: RequestContext,
+        purpose: str,
+        content_ref: str,
+        mime: str,
+        sha256: str,
+    ) -> ArtifactRef:
+        """Store a service-generated report artifact."""
+        ...
+
+
+@runtime_checkable
+class AssessmentPort(Protocol):
+    """Published assessment facts. Owned by M05 assessment."""
+
+    def get_published_results(
+        self,
+        context: RequestContext,
+        student_id: UUID,
+        term_id: UUID,
+        cursor: str | None = None,
+    ) -> dict[str, object]:
+        """Return published results for one pupil in one term.
+
+        Draft/submitted/approved rows are never returned to student or guardian
+        scopes.
+        """
+        ...
+
+    def get_assignment_summary(
+        self,
+        context: RequestContext,
+        student_id: UUID,
+        window_from: datetime,
+        window_to: datetime,
+    ) -> dict[str, object]:
+        """Return assignment counts for one pupil in a closed time window."""
         ...

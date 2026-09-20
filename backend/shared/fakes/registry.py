@@ -249,6 +249,25 @@ def m04_baseline_registry_kwargs() -> dict[str, object]:
     }
 
 
+def m05_baseline_registry_kwargs() -> dict[str, object]:
+    """Return FakeRegistry kwargs for the M05 baseline scenario.
+
+    S1 and S2 enrol in maths on C1 so both appear on the marking roster.
+    """
+    return {
+        "enrolment_overlay": {
+            fixtures.STUDENT_S1: (fixtures.SUBJECT_MATHS, fixtures.SUBJECT_MALAYALAM),
+            fixtures.STUDENT_S2: (fixtures.SUBJECT_MATHS, fixtures.SUBJECT_MALAYALAM),
+            fixtures.STUDENT_S3: (fixtures.SUBJECT_MATHS,),
+        },
+        "section_membership_overlay": (
+            (fixtures.STUDENT_S1, fixtures.CLASS_C1),
+            (fixtures.STUDENT_S2, fixtures.CLASS_C1),
+            (fixtures.STUDENT_S3, fixtures.CLASS_C2),
+        ),
+    }
+
+
 #: Dated teaching assignments. T1 teaches C1; T2 appears nowhere.
 TEACHING_ASSIGNMENTS: dict[UUID, tuple[TeachingAssignment, ...]] = {
     fixtures.TEACHER_T1: (

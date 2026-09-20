@@ -1,28 +1,33 @@
 # Contract packet -- M05 assessment
 
-Status: **NOT STARTED**. No executable contract exists for this module yet.
+Status: **APPROVED AND FROZEN** under revision `school-contracts-v6` on 2026-09-20
+by Abhinav M. Artefacts live under `contracts/M05/`.
 
-Manifest revision this packet targets: `school-contracts-v3-draft`
-(the current draft in `contracts/manifest.json`; replace with the approved
-revision once review completes).
+Manifest revision: `school-contracts-v6`.
+
+---
+
+## Artefacts in this proposal
+
+| Artefact | Path |
+|---|---|
+| Review decisions (11 items) | `review-decisions.md` |
+| OpenAPI | `openapi.json` |
+| DTO / request schemas | `schemas/dtos.schema.json` |
+| Event payloads | `schemas/events.schema.json` |
+| Error rows | `error-codes.json` |
+| Port signatures | `ports.md` |
+| Baseline scenario | `fixtures/scenario.json` |
+| Acceptance cases | `fixtures/expected-results.json` |
+| Consumer response samples | `fixtures/responses.json` |
 
 ---
 
 ## The rule this packet exists to enforce
 
-**Contract approval comes before module coding.** The module task must first
-produce, for developer review:
-
-1. the exact **OpenAPI** document for this module's REST API
-2. the **JSON Schema** for every request, response and event payload
-3. the **Protocol signatures** for every service port this module provides
-4. the **error enums** -- which `code`/`message_key` pairs this module returns
-5. **example fixtures** a consumer suite can assert against
-
-Those are then **frozen in `contracts/manifest.json`** before implementation
-starts. A later provider of the same contract must pass the same consumer
-fixture suite. A mismatch needs a reviewed contract revision -- **not** an
-invented per-module field and **not** a local adapter.
+**Contract approval comes before module coding.** After review, freeze hashes in
+`contracts/manifest.json`, then implement steps 1–4 (setup/marking → evidence →
+publication → revisions).
 
 ## What this module must declare
 
@@ -32,31 +37,22 @@ A `ModuleRegistration` in `backend/modules/assessment/registration.py`:
 |---|---|
 | `id` | `M05` |
 | `slug` | `assessment` |
-| `api_prefix` | `/api/assessment/` |
-| `frontend_routes` | React routes, each with nav metadata and required permission |
-| `permission_codes` | all namespaced `assessment.<verb>_<noun>` |
-| `consumers` | service ports this module requires from others |
-| `scheduled_jobs` | periodic work, cron interpreted in Asia/Kolkata |
-| `migration_dependencies` | module ids whose migrations must apply first |
-| `health_checks` | readiness probes contributed to `/readyz` |
+| `api_prefix` | `/api/v1/assessments/` (proposed; see review item 3) |
+| `frontend_routes` | setup, marking grid+viewer, missing-evidence queue, publish preview, student/guardian published view |
+| `permission_codes` | `assessment.manage`, `marks.edit`, `marks.submit`, `results.approve`, `results.publish`, `results.reopen`, `evidence.view` |
+| `consumers` | Access, Registry, Files (proposed), Platform, Clock |
+| `scheduled_jobs` | none required for standalone; report job is on-demand enqueue |
+| `migration_dependencies` | harness only in standalone |
+| `health_checks` | readiness for assessment DB |
 
-## Inherited, non-negotiable constraints
+## Inherited constraints
 
-These come from the foundation and are already enforced; a module does not
-restate or relax them:
+UUID `id`, trusted `school_id`, integer `version`; `expected_version` → 409;
+errors 401/403/404/409/422; cross-school is **404**; cursor pagination; UTC +
+Asia/Kolkata; decimal-string marks; audit+outbox same transaction; never trust
+client role/school/relationship; `ResourceGrant` never from browser.
 
-- UUID `id`, trusted `school_id`, integer `version` on mutable aggregates
-- `expected_version` on every update; stale means **409**
-- errors use the frozen envelope: 401 / 403 / 404 / 409 / 422
-- **cross-school access is 404, never 403**
-- collections return `items` + `next_cursor`; no offset pagination
-- UTC instants, Asia/Kolkata civil dates, integer INR paise, decimal-string marks
-- audit + outbox appended in the **same transaction** as the write
-- Access checks apply to API, service, workers, exports and private files
-- client role, school and relationship claims are never trusted
-- `ResourceGrant` is server-internal and never accepted from a browser
-
-## Standalone development
+## Standalone development (after freeze)
 
 ```bash
 python scripts/dev.py up M05 --profile standalone
@@ -65,16 +61,9 @@ python scripts/dev.py seed M05 --scenario baseline
 python scripts/dev.py check M05 --suite standalone
 ```
 
-Dependency ports bind to deterministic fakes. Real authentication and 2FA
-integration stay **explicitly pending** until M01 is integrated.
-
-## B00 notes specific to this module
-
-Teachers grade written work. Students and authorised guardians see their own answer sheets only AFTER grading and result publication.
-
-## Human gates before this module ships
+## Human gates
 
 - this packet reviewed and frozen in the manifest
-- every equivalence/authorisation rule reviewed before being enabled
-- the phase exit gate
-- first customer-facing report for each design partner, where applicable
+- FilesPort shared addition approved (or alternative recorded)
+- no invented CBSE grade boundaries (review item 5)
+- phase exit gate; first customer-facing report gate where applicable

@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M05/events",
+  "title": "M05 assessment event payloads",
+  "description": "Payloads only. Envelope is frozen common. Manual ResultsPublished.v1 maps to assessment.results_published (review item 1).",
+  "$defs": {
+    "assessment.results_published": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assessment_id",
+        "publication_id",
+        "result_revision_ids"
+      ],
+      "properties": {
+        "assessment_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "publication_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "result_revision_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      }
+    },
+    "assessment.result_revised": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "old_revision_id",
+        "new_revision_id",
+        "reason_code"
+      ],
+      "properties": {
+        "old_revision_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "new_revision_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reason_code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        }
+      }
+    },
+    "assessment.assignment_submission_changed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assignment_id",
+        "student_id",
+        "state"
+      ],
+      "properties": {
+        "assignment_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "assigned",
+            "submitted",
+            "missing",
+            "returned"
+          ]
+        }
+      }
+    }
+  }
+}
