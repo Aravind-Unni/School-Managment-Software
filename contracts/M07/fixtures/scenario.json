@@ -1,0 +1,63 @@
+{
+  "status": "proposed",
+  "note": "Synthetic baseline for M07 standalone. Not real school data.",
+  "school_a": {
+    "school_id": "11111111-1111-1111-1111-111111111111",
+    "finance_actor_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    "student_s1": {
+      "id": "b1111111-1111-1111-1111-111111111111",
+      "admission_no": "A-1001",
+      "display_name": "Student One"
+    },
+    "student_s2": {
+      "id": "b2222222-2222-2222-2222-222222222222",
+      "admission_no": "A-1002",
+      "display_name": "Student Two"
+    },
+    "guardian_g1": {
+      "id": "g1111111-1111-1111-1111-111111111111",
+      "linked_student_id": "b1111111-1111-1111-1111-111111111111"
+    },
+    "guardian_g2": {
+      "id": "g2222222-2222-2222-2222-222222222222",
+      "linked_student_id": "b2222222-2222-2222-2222-222222222222"
+    },
+    "fee_heads": [
+      { "code": "tuition", "label_key": "fees.head.tuition" },
+      { "code": "bus", "label_key": "fees.head.bus" },
+      { "code": "opening_balance", "label_key": "fees.head.opening_balance" }
+    ],
+    "charges": [
+      {
+        "student": "s1",
+        "fee_head_code": "tuition",
+        "amount_paise": 100000,
+        "due_date": "2026-06-01",
+        "source_key": "plan:v1:tuition:s1"
+      },
+      {
+        "student": "s1",
+        "fee_head_code": "opening_balance",
+        "amount_paise": 25000,
+        "due_date": "2026-04-01",
+        "source_key": "opening:b1111111-1111-1111-1111-111111111111"
+      },
+      {
+        "student": "s1",
+        "fee_head_code": "bus",
+        "amount_paise": 30000,
+        "due_date": "2026-06-15",
+        "source_key": "bus:route-a:2026-06:s1"
+      }
+    ],
+    "as_of": "2026-06-20"
+  },
+  "school_b": {
+    "school_id": "22222222-2222-2222-2222-222222222222",
+    "student_foreign": {
+      "id": "b9999999-9999-9999-9999-999999999999",
+      "admission_no": "B-9",
+      "display_name": "Foreign Student"
+    }
+  }
+}

@@ -1,28 +1,28 @@
 # Contract packet -- M07 fees
 
-Status: **NOT STARTED**. No executable contract exists for this module yet.
+Status: **PROPOSED**. Artefacts exist under `contracts/M07/` and await human
+review before freeze. Do not implement against these as frozen until
+`contracts/revision.json` lists M07 and `manifest.json` status is `frozen`.
 
-Manifest revision this packet targets: `school-contracts-v3-draft`
-(the current draft in `contracts/manifest.json`; replace with the approved
-revision once review completes).
+Manifest revision this packet targets: `school-contracts-v8` (proposed next
+revision after current `school-contracts-v7`).
+
+Review checklist: [`review-decisions.md`](review-decisions.md).
 
 ---
 
 ## The rule this packet exists to enforce
 
-**Contract approval comes before module coding.** The module task must first
-produce, for developer review:
+**Contract approval comes before module coding.** This packet proposes:
 
-1. the exact **OpenAPI** document for this module's REST API
-2. the **JSON Schema** for every request, response and event payload
-3. the **Protocol signatures** for every service port this module provides
-4. the **error enums** -- which `code`/`message_key` pairs this module returns
-5. **example fixtures** a consumer suite can assert against
+1. OpenAPI — [`openapi.json`](openapi.json)
+2. JSON Schema — [`schemas/dtos.schema.json`](schemas/dtos.schema.json),
+   [`schemas/events.schema.json`](schemas/events.schema.json)
+3. Protocol signatures — [`ports.md`](ports.md) (`FeesPort`)
+4. Error enums — [`error-codes.json`](error-codes.json)
+5. Example fixtures — [`fixtures/`](fixtures/)
 
-Those are then **frozen in `contracts/manifest.json`** before implementation
-starts. A later provider of the same contract must pass the same consumer
-fixture suite. A mismatch needs a reviewed contract revision -- **not** an
-invented per-module field and **not** a local adapter.
+Those are frozen in `contracts/manifest.json` only after review.
 
 ## What this module must declare
 
@@ -32,13 +32,14 @@ A `ModuleRegistration` in `backend/modules/fees/registration.py`:
 |---|---|
 | `id` | `M07` |
 | `slug` | `fees` |
-| `api_prefix` | `/api/fees/` |
-| `frontend_routes` | React routes, each with nav metadata and required permission |
-| `permission_codes` | all namespaced `fees.<verb>_<noun>` |
-| `consumers` | service ports this module requires from others |
-| `scheduled_jobs` | periodic work, cron interpreted in Asia/Kolkata |
-| `migration_dependencies` | module ids whose migrations must apply first |
-| `health_checks` | readiness probes contributed to `/readyz` |
+| `api_prefix` | `/api/v1/` |
+| `api_path_roots` | `fee-plans/`, `charges/`, `payments/`, `concessions/`, `refunds/`, `students/`, `fees/` |
+| `frontend_routes` | setup, statement, collection, receipt, overdue, concessions, reversal |
+| `permission_codes` | `fees.configure`, `fees.read`, `fees.record_payment`, `fees.concede`, `fees.reverse_payment`, `fees.refund` |
+| `consumers` | `access`, `registry`, `platform`, `clock` |
+| `scheduled_jobs` | none in baseline |
+| `migration_dependencies` | none |
+| `health_checks` | fees tables readiness |
 
 ## Inherited, non-negotiable constraints
 
@@ -71,10 +72,11 @@ integration stay **explicitly pending** until M01 is integrated.
 ## B00 notes specific to this module
 
 Money is integer INR paise. No full accounting and no payroll are in scope.
+No online payment gateway. Bus/library charges use this ledger via `FeesPort`.
 
 ## Human gates before this module ships
 
 - this packet reviewed and frozen in the manifest
-- every equivalence/authorisation rule reviewed before being enabled
+- late-fee / bus-proration / concession-authority policy examples signed
 - the phase exit gate
 - first customer-facing report for each design partner, where applicable

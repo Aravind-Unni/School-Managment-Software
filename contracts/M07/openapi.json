@@ -1,0 +1,419 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "M07 Fees, Payments, Balances and Receipts",
+    "version": "1.0.0",
+    "description": "Paths relative to /api/v1. Integer INR paise only. Posted entries are immutable; correct via reversal. No payment gateway. Closed write schemas."
+  },
+  "servers": [{ "url": "/api/v1" }],
+  "security": [{ "session": [] }],
+  "paths": {
+    "/fee-plans": {
+      "post": {
+        "operationId": "create_fee_plan",
+        "summary": "Create a versioned fee plan with heads and schedule",
+        "x-permission": "fees.configure",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateFeePlanRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FeePlanDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/charges": {
+      "post": {
+        "operationId": "create_charge",
+        "summary": "Raise a charge with school-unique source_key",
+        "x-permission": "fees.configure",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateChargeRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ChargeDTO" }
+              }
+            }
+          },
+          "200": {
+            "description": "Idempotent replay of identical source_key",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ChargeDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" },
+          "409": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/payments": {
+      "post": {
+        "operationId": "create_payment",
+        "summary": "Record a manual payment and allocations",
+        "x-permission": "fees.record_payment",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string", "minLength": 1 }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreatePaymentRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created receipt and balance",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PaymentReceiptDTO" }
+              }
+            }
+          },
+          "200": {
+            "description": "Idempotent replay",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PaymentReceiptDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" },
+          "409": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/payments/{id}": {
+      "get": {
+        "operationId": "get_payment",
+        "summary": "Fetch a payment/receipt by id",
+        "x-permission": "fees.read",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PaymentDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/payments/{id}/reversals": {
+      "post": {
+        "operationId": "reverse_payment",
+        "summary": "Reverse a posted payment (requires recent 2FA)",
+        "x-permission": "fees.reverse_payment",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateReversalRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reversal and new balance",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ReversalDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" },
+          "409": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/concessions": {
+      "post": {
+        "operationId": "create_concession",
+        "summary": "Post an approved concession credit against a charge",
+        "x-permission": "fees.concede",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateConcessionRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CreditDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" },
+          "409": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/refunds": {
+      "post": {
+        "operationId": "create_refund",
+        "summary": "Record an explicit refund of available credit (requires recent 2FA)",
+        "x-permission": "fees.refund",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateRefundRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RefundRecordDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" },
+          "409": { "$ref": "#/components/responses/Error" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/students/{id}/fee-statement": {
+      "get": {
+        "operationId": "get_fee_statement",
+        "summary": "Ledger statement and balance for one student",
+        "x-permission": "fees.read",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Statement",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FeeStatementDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/fees/overdue": {
+      "get": {
+        "operationId": "list_overdue",
+        "summary": "Overdue open charge balances",
+        "x-permission": "fees.read",
+        "parameters": [
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Overdue page",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OverduePage" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/fees/daily-collections": {
+      "get": {
+        "operationId": "get_daily_collections",
+        "summary": "Reconcile collections for one Asia/Kolkata civil date",
+        "x-permission": "fees.read",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "date" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daily collection totals",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DailyCollectionDTO" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Error" },
+          "403": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "sessionid"
+      }
+    },
+    "schemas": {
+      "CreateFeePlanRequest": {
+        "$ref": "schemas/dtos.schema.json#/$defs/CreateFeePlanRequest"
+      },
+      "FeePlanDTO": { "$ref": "schemas/dtos.schema.json#/$defs/FeePlanDTO" },
+      "CreateChargeRequest": {
+        "$ref": "schemas/dtos.schema.json#/$defs/CreateChargeRequest"
+      },
+      "ChargeDTO": { "$ref": "schemas/dtos.schema.json#/$defs/ChargeDTO" },
+      "CreatePaymentRequest": {
+        "$ref": "schemas/dtos.schema.json#/$defs/CreatePaymentRequest"
+      },
+      "PaymentDTO": { "$ref": "schemas/dtos.schema.json#/$defs/PaymentDTO" },
+      "PaymentReceiptDTO": {
+        "$ref": "schemas/dtos.schema.json#/$defs/PaymentReceiptDTO"
+      },
+      "CreateReversalRequest": {
+        "$ref": "schemas/dtos.schema.json#/$defs/CreateReversalRequest"
+      },
+      "ReversalDTO": { "$ref": "schemas/dtos.schema.json#/$defs/ReversalDTO" },
+      "CreateConcessionRequest": {
+        "$ref": "schemas/dtos.schema.json#/$defs/CreateConcessionRequest"
+      },
+      "CreditDTO": { "$ref": "schemas/dtos.schema.json#/$defs/CreditDTO" },
+      "CreateRefundRequest": {
+        "$ref": "schemas/dtos.schema.json#/$defs/CreateRefundRequest"
+      },
+      "RefundRecordDTO": {
+        "$ref": "schemas/dtos.schema.json#/$defs/RefundRecordDTO"
+      },
+      "FeeStatementDTO": {
+        "$ref": "schemas/dtos.schema.json#/$defs/FeeStatementDTO"
+      },
+      "BalanceDTO": { "$ref": "schemas/dtos.schema.json#/$defs/BalanceDTO" },
+      "OverduePage": { "$ref": "schemas/dtos.schema.json#/$defs/OverduePage" },
+      "DailyCollectionDTO": {
+        "$ref": "schemas/dtos.schema.json#/$defs/DailyCollectionDTO"
+      },
+      "ErrorEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message_key", "request_id"],
+        "properties": {
+          "code": { "type": "string" },
+          "message_key": { "type": "string" },
+          "field_errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "request_id": { "type": "string" }
+        }
+      }
+    },
+    "responses": {
+      "Error": {
+        "description": "Error envelope",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+          }
+        }
+      }
+    }
+  }
+}

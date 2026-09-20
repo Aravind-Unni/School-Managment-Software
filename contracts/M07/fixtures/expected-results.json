@@ -1,0 +1,91 @@
+{
+  "status": "proposed",
+  "note": "ACCEPTANCE CASES, NOT TEST EVIDENCE. Seeded numbers from the manual.",
+  "scenario": "fixtures/scenario.json (baseline)",
+  "cases": [
+    {
+      "id": "A1",
+      "name": "partial payment reduces outstanding",
+      "given": "Charge 100000 paise; payment 40000 allocated",
+      "expect": "Outstanding on that charge becomes 60000; paid_paise includes 40000"
+    },
+    {
+      "id": "A2",
+      "name": "credit after partial",
+      "given": "After A1, credit 10000 on the same charge",
+      "expect": "Charge balance 50000; outstanding reflects credit"
+    },
+    {
+      "id": "A3",
+      "name": "duplicate idempotency key",
+      "given": "Retry POST /payments with same Idempotency-Key and payload",
+      "expect": "Same receipt number; balance unchanged"
+    },
+    {
+      "id": "A4",
+      "name": "idempotency payload conflict",
+      "given": "Same Idempotency-Key, different amount_paise",
+      "expect": "409 fees.error.idempotency_payload_conflict"
+    },
+    {
+      "id": "A5",
+      "name": "concurrent allocations safe",
+      "given": "Two concurrent allocation attempts against same payment remainder",
+      "expect": "One succeeds; other 409 fees.error.allocation_exceeds_available; payment not double-spent"
+    },
+    {
+      "id": "A6",
+      "name": "reversal restores balance",
+      "given": "Reverse the 40000 payment with reason + expected_version + recent 2FA",
+      "expect": "Charge balance restored; fees.payment_reversed emitted"
+    },
+    {
+      "id": "A7",
+      "name": "overpayment tracked as credit",
+      "given": "Payment amount exceeds allocated charge balances",
+      "expect": "Remainder on Credit kind=overpayment; credit_available_paise > 0"
+    },
+    {
+      "id": "A8",
+      "name": "unauthorized guardian denied",
+      "given": "G2 requests S1 fee-statement",
+      "expect": "404 object_inaccessible"
+    },
+    {
+      "id": "A9",
+      "name": "bus source_key conflict",
+      "given": "Raise bus charge with existing source_key but different amount",
+      "expect": "409 fees.error.source_key_conflict"
+    },
+    {
+      "id": "A10",
+      "name": "opening totals match import",
+      "given": "Opening balance charge source_key=opening:{student_id} amount 25000",
+      "expect": "Statement charged_paise includes 25000; no second ledger"
+    },
+    {
+      "id": "A11",
+      "name": "no float rounding",
+      "given": "All amounts integer paise throughout charge/pay/credit/reverse",
+      "expect": "No float; totals exact integer arithmetic"
+    },
+    {
+      "id": "A12",
+      "name": "foreign school 404",
+      "given": "School B student id while actor is School A",
+      "expect": "404 never 403"
+    },
+    {
+      "id": "A13",
+      "name": "stale reversal version",
+      "given": "Reversal with stale expected_version",
+      "expect": "409 version_conflict"
+    },
+    {
+      "id": "A14",
+      "name": "stale 2FA on reversal",
+      "given": "Reversal with auth_time older than 300s",
+      "expect": "401 error.two_factor_stale"
+    }
+  ]
+}
