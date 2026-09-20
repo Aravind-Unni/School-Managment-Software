@@ -35,7 +35,7 @@ export function AtRiskListPage() {
       <ul>
         {warnings.map((w) => (
           <li key={w.id}>
-            {t[w.explanation_key as keyof typeof t] ?? w.explanation_key} — {w.state}
+            {t[w.explanation_key as keyof typeof t] ?? w.explanation_key} - {w.state}
           </li>
         ))}
       </ul>

@@ -118,10 +118,10 @@ def test_no_secret_value_survives_doctor_output(monkeypatch):
 
 
 def test_an_unimplemented_module_is_refused_with_its_own_exit_code():
-    result = run_dev("up", "M06")
+    result = run_dev("up", "M07")
     assert result.returncode == 3
     assert "not implemented" in result.stderr
-    assert "contracts/M06/PACKET.md" in result.stderr
+    assert "contracts/M07/PACKET.md" in result.stderr
 
 
 def test_an_unknown_module_id_is_refused():

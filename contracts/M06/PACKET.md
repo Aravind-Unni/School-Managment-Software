@@ -1,6 +1,7 @@
 # Contract packet -- M06 performance
 
-Status: **FROZEN** under `school-contracts-v7` (see `review-decisions.md`).
+Status: **APPROVED AND FROZEN** under revision `school-contracts-v7` on 2026-09-20
+by Abhinav M. Artefacts live under `contracts/M06/`.
 
 Manifest revision: `school-contracts-v7`.
 
@@ -10,12 +11,13 @@ Manifest revision: `school-contracts-v7`.
 
 | Artefact | Path |
 |---|---|
-| OpenAPI | `contracts/M06/openapi.json` |
-| DTO schemas | `contracts/M06/schemas/dtos.schema.json` |
-| Event schemas | `contracts/M06/schemas/events.schema.json` |
-| Error rows | `contracts/M06/error-codes.json` |
-| Port signatures | `contracts/M06/ports.md` |
-| Consumer fixtures | `contracts/M06/fixtures/*.json` |
+| Review decisions (10 items) | `review-decisions.md` |
+| OpenAPI | `openapi.json` |
+| DTO schemas | `schemas/dtos.schema.json` |
+| Event schemas | `schemas/events.schema.json` |
+| Error rows | `error-codes.json` |
+| Port signatures | `ports.md` |
+| Consumer fixtures | `fixtures/*.json` |
 
 ---
 
@@ -26,7 +28,7 @@ Manifest revision: `school-contracts-v7`.
 | `id` | `M06` |
 | `slug` | `performance` |
 | `api_prefix` | `/api/v1/` |
-| `api_path_roots` | `performance/`, `warning-rules`, `warnings/`, `interventions`, `meetings` |
+| `api_path_roots` | `performance/`, `warning-rules/`, `warnings/`, `interventions/`, `meetings/` |
 | `permission_codes` | `performance.read`, `warnings.manage`, `interventions.manage`, `meetings.record`, `observations.read_sensitive` |
 | `consumers` | `access`, `registry`, `assessment`, `attendance`, `platform`, `clock` |
 | `scheduled_jobs` | `performance.reconcile_projections` (Asia/Kolkata daily) |

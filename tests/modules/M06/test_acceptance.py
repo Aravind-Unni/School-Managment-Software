@@ -6,7 +6,6 @@ import json
 from decimal import Decimal
 
 import pytest
-from django.db import transaction
 
 from shared import fixtures
 
@@ -55,9 +54,7 @@ def test_incompatible_policies_not_averaged(db, clock):
     """A4: mixed policy_version → incompatible status."""
     from modules.performance.services.metrics import simple_mean_percent
 
-    value, status = simple_mean_percent(
-        [("60.00", "100.00", "a"), ("70.00", "100.00", "b")]
-    )
+    value, status = simple_mean_percent([("60.00", "100.00", "a"), ("70.00", "100.00", "b")])
     assert value is None
     assert status == "incompatible"
 
@@ -65,10 +62,10 @@ def test_incompatible_policies_not_averaged(db, clock):
 def test_repeated_evaluate_no_duplicate_warning(client, baseline, clock):
     """A5: re-evaluate does not open a second warning."""
     from contracts.identity import AuthLevel, RequestContext
-    from modules.performance.models import Warning
+    from modules.performance.models import Warning as WarningRow
     from modules.performance.services import wire
 
-    before = Warning.objects.filter(student_id=fixtures.STUDENT_S1, state="open").count()
+    before = WarningRow.objects.filter(student_id=fixtures.STUDENT_S1, state="open").count()
     assert before == 1
     ctx = RequestContext(
         actor_id=fixtures.TEACHER_T1,
@@ -78,15 +75,16 @@ def test_repeated_evaluate_no_duplicate_warning(client, baseline, clock):
         auth_time=clock.now(),
     )
     wire.warning_service().evaluate_student(ctx, fixtures.STUDENT_S1)
-    after = Warning.objects.filter(student_id=fixtures.STUDENT_S1, state="open").count()
+    after = WarningRow.objects.filter(student_id=fixtures.STUDENT_S1, state="open").count()
     assert after == 1
 
 
 def test_dismiss_warning_traceable(client, baseline):
     """A6: dismiss retains reason and history."""
-    from modules.performance.models import Warning, WarningHistory
+    from modules.performance.models import Warning as WarningRow
+    from modules.performance.models import WarningHistory
 
-    warning = Warning.objects.get(student_id=fixtures.STUDENT_S1, state="open")
+    warning = WarningRow.objects.get(student_id=fixtures.STUDENT_S1, state="open")
     res = client.post(
         f"/api/v1/warnings/{warning.id}/dismiss",
         data=json.dumps({"reason": "parent conference planned", "expected_version": 1}),
@@ -128,7 +126,11 @@ def test_restricted_notes_absent_from_guardian_export(client, baseline, as_perso
 
 def test_full_rebuild_matches_projections(client, baseline):
     """A9: rebuild keeps S1 mean 65 and attendance 80."""
-    res = client.post("/api/v1/performance/rebuild", data=b"{}", content_type="application/json")
+    res = client.post(
+        "/api/v1/performance/rebuild",
+        data=b"{}",
+        content_type="application/json",
+    )
     assert res.status_code == 202
     dash = client.get(
         "/api/v1/performance/dashboard",
@@ -144,10 +146,10 @@ def test_full_rebuild_matches_projections(client, baseline):
 
 
 def test_stale_version_409(client, baseline):
-    """A11: acknowledge with stale expected_version → 409."""
-    from modules.performance.models import Warning
+    """A11: acknowledge with stale expected_version -> 409."""
+    from modules.performance.models import Warning as WarningRow
 
-    warning = Warning.objects.get(student_id=fixtures.STUDENT_S1, state="open")
+    warning = WarningRow.objects.get(student_id=fixtures.STUDENT_S1, state="open")
     res = client.post(
         f"/api/v1/warnings/{warning.id}/acknowledge",
         data=json.dumps({"reason": "seen", "expected_version": 99}),
@@ -157,7 +159,7 @@ def test_stale_version_409(client, baseline):
 
 
 def test_foreign_school_404(client, baseline, as_persona):
-    """A12: School B student id while actor is School A → 404."""
+    """A12: School B student id while actor is School A -> 404."""
     res = client.get(
         "/api/v1/performance/dashboard",
         {
@@ -205,12 +207,12 @@ def test_intervention_and_meeting_create(client, baseline):
 
 def test_audit_rolls_back_with_failed_write(client, baseline, clock):
     """Failed dismiss does not leave a partial audit when version conflicts."""
-    from modules.performance.models import Warning
+    from modules.performance.models import Warning as WarningRow
     from shared.ports import runtime
 
     platform = runtime.get_registry().resolve("platform")
     before = len(platform.audit_rows(school_id=fixtures.SCHOOL_A))
-    warning = Warning.objects.get(student_id=fixtures.STUDENT_S1, state="open")
+    warning = WarningRow.objects.get(student_id=fixtures.STUDENT_S1, state="open")
     res = client.post(
         f"/api/v1/warnings/{warning.id}/dismiss",
         data=json.dumps({"reason": "x", "expected_version": 999}),

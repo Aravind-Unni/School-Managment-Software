@@ -28,8 +28,8 @@ from .files import (
 )
 from .identity import RequestContext
 from .people import RosterDTO, StudentDTO, TeachingAssignment
-from .scope import RelationshipFacts, ScopeFacts
 from .performance import DashboardDTO, InterventionPage
+from .scope import RelationshipFacts, ScopeFacts
 from .timetable import (
     AttendanceSummaryDTO,
     CalendarDayDTO,

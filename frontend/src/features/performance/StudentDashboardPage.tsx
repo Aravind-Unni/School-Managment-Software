@@ -18,7 +18,6 @@ export function StudentDashboardPage() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     fetchDashboard(DEFAULT_STUDENT)
       .then((dto) => {
         if (!cancelled) {
@@ -28,9 +27,11 @@ export function StudentDashboardPage() {
       })
       .catch((err: Error) => {
         if (!cancelled) {
-          setError(err.message.includes("403") || err.message.includes("404")
-            ? t["performance.denied"]
-            : err.message);
+          setError(
+            err.message.includes("403") || err.message.includes("404")
+              ? t["performance.denied"]
+              : err.message,
+          );
         }
       })
       .finally(() => {
