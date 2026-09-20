@@ -141,21 +141,38 @@ def teacher_t2_context(context_factory):
 #: The module whose suite may be collected in this run.
 _ACTIVE_MODULE_ID = os.environ.get("MODULE_ID", "M00").upper()
 
+#: Shared integration tests that exercise the M00 PLACEHOLDER app specifically.
+#: They import ``modules.demo`` models or drive its endpoints, so under any other
+#: profile they fail at collection -- the demo app is deliberately not installed.
+#:
+#: Found when M03 became the first module whose standalone suite was actually run
+#: against a real stack: `dev.py check <ID> --suite standalone` runs the whole
+#: tests/ tree, so every module but M00 would have errored during collection. They
+#: still run in full under the M00 profile, which is the one that installs them.
+_M00_ONLY_INTEGRATION_TESTS = (
+    "integration/test_demo_api.py",
+    "integration/test_transaction_trail.py",
+)
+
 
 def collect_ignore_glob() -> list[str]:
-    """Return module-suite directories to skip for the active profile.
+    """Return paths to skip for the active profile.
 
-    Implemented as a function rather than a module-level list purely for
-    readability; pytest accepts either.
+    Two groups: another module's own suite, and the shared integration tests that
+    belong to the M00 placeholder. Implemented as a function rather than a
+    module-level list purely for readability; pytest accepts either.
     """
+    skipped: list[str] = []
     modules_root = pathlib.Path(__file__).parent / "modules"
-    if not modules_root.is_dir():
-        return []
-    return [
-        f"modules/{entry.name}/*"
-        for entry in sorted(modules_root.iterdir())
-        if entry.is_dir() and entry.name.upper() != _ACTIVE_MODULE_ID
-    ]
+    if modules_root.is_dir():
+        skipped.extend(
+            f"modules/{entry.name}/*"
+            for entry in sorted(modules_root.iterdir())
+            if entry.is_dir() and entry.name.upper() != _ACTIVE_MODULE_ID
+        )
+    if _ACTIVE_MODULE_ID != "M00":
+        skipped.extend(_M00_ONLY_INTEGRATION_TESTS)
+    return skipped
 
 
 collect_ignore_glob = collect_ignore_glob()  # type: ignore[assignment]
