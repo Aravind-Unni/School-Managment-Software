@@ -1,9 +1,32 @@
-# M03 review decisions — nothing is approved by this file existing
+# M03 review decisions
 
-Writing a proposal is not approving it. Every row below needs a named reviewer and
-a date before `contracts/M03` is added to `contracts/revision.json` and hashed into
-the manifest. Until then M03's status stays `not_started` and no module code is
-written.
+## Review outcome — APPROVED
+
+**Reviewed by Abhinav M on 2026-09-20. All fourteen items approved as proposed,
+with no revisions.** Recorded in `contracts/revision.json`, which is the data the
+manifest generator reads, and frozen under revision `school-contracts-v4`.
+
+Three items were raised as genuinely unresolvable without the reviewer. Each was
+put with its alternatives and answered:
+
+| Item | Alternatives offered | Decision |
+|---|---|---|
+| 1 — event names | Conform to the frozen envelope, **or** revise the shared envelope regex to accept `TimetablePublished.v1` | **Conform.** Emit `timetable.published` and `timetable.substitution_assigned`; the shared schema is not touched, and M02's identical open item is unaffected |
+| 7 — how long a substitution lasts | End of the school day, **or** end of the period, **or** ask the school and require the instant explicitly | **End of the school day**, Asia/Kolkata, as an exclusive instant. Earlier is allowed; later is 422 |
+| 9 — working-day override | No override, **or** add a fourth `working_day` calendar kind | **No override.** A school day is a weekday the effective version defines periods for, with no holiday in force |
+
+The remaining eleven items stand exactly as written below. Anything that now
+changes in `contracts/M03` moves a frozen hash and fails
+`contract_manifest.py --check`; that is a new reviewed revision, not an edit.
+
+---
+
+## The proposal, as reviewed
+
+Writing a proposal is not approving it. Every row below needed a named reviewer and
+a date before `contracts/M03` was added to `contracts/revision.json` and hashed into
+the manifest. That review is recorded above; the text below is unchanged from what
+was reviewed.
 
 Source identity this proposal was produced against, read from the checkout rather
 than supplied:
@@ -258,10 +281,12 @@ Anything further is the school's to define.
   substitutions are **withdrawn**, because a published schedule or a past register
   may already cite them.
 
-## Approving this
+## Approving this — done
 
-Approval means: name the reviewer and the date, add `M03` to
+Approval meant: name the reviewer and the date, add `M03` to
 `contracts/revision.json` under `frozen_modules`, regenerate
 `contracts/manifest.json` with `scripts/contract_manifest.py --update`, and commit
-that as the freeze. Only then are M03's tests written — from the frozen contract,
-without reading an implementation, because there will not be one yet.
+that as the freeze. All four happened on 2026-09-20.
+
+M03's tests are therefore written next — from the frozen contract, without reading
+an implementation, because there is not one yet.

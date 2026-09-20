@@ -2,17 +2,17 @@
 
 ## Read first
 
-The contract gate is **open**. `contracts/M03` holds a complete proposal; nothing in
-it is frozen, and **no module code exists**. `STANDALONE_VERIFIED` is false and
-cannot be otherwise until the whole module is built and a second developer verifies
-it from a fresh checkout.
+The contract gate is **closed**: the packet was approved as proposed and frozen
+under revision `school-contracts-v4` on 2026-09-20 by Abhinav M. **No module code
+exists yet** — tests come next, written from the frozen contract.
+`STANDALONE_VERIFIED` is false and cannot be otherwise until the whole module is
+built and a second developer verifies it from a fresh checkout.
 
 Read, in order:
 
 1. [progress.md](progress.md) — where things stand and the exact next step.
 2. [`contracts/M03/review-decisions.md`](../../../contracts/M03/review-decisions.md)
-   — the fourteen decisions. Three of them cannot be answered without the school or
-   the contract owner.
+   — the review outcome, and the four validations this module cannot perform.
 3. [`contracts/M03/PACKET.md`](../../../contracts/M03/PACKET.md) and
    [`ports.md`](../../../contracts/M03/ports.md).
 
@@ -25,13 +25,13 @@ A reviewable contract, and nothing else:
 
 | Artefact | State |
 |---|---|
-| `contracts/M03/openapi.json` | 21 operations, 16 paths — proposed |
-| `contracts/M03/schemas/dtos.schema.json` | 35 closed definitions — proposed |
-| `contracts/M03/schemas/events.schema.json` | 2 payloads — proposed |
-| `contracts/M03/error-codes.json` | 33 rows, 7 conflict codes — proposed |
-| `contracts/M03/ports.md` | provided and consumed ports — proposed |
-| `contracts/M03/fixtures/*` | baseline scenario, 12 validated examples, 22 acceptance cases — proposed |
-| `contracts/manifest.json` | all seven files hashed, **none frozen**; 20 frozen entries, unchanged |
+| `contracts/M03/openapi.json` | 21 operations, 16 paths — frozen |
+| `contracts/M03/schemas/dtos.schema.json` | 35 closed definitions — frozen |
+| `contracts/M03/schemas/events.schema.json` | 2 payloads — frozen |
+| `contracts/M03/error-codes.json` | 33 rows, 7 conflict codes — frozen |
+| `contracts/M03/ports.md` | provided and consumed ports — reviewed |
+| `contracts/M03/fixtures/*` | baseline scenario, 12 validated examples, 22 acceptance cases — frozen |
+| `contracts/manifest.json` | all seven files frozen; **27 frozen entries** where 20 were before |
 
 Not available: any Django app, migration, endpoint, React route, seed, or test.
 `backend/modules/timetable/` has no `registration.py`, so `dev.py up M03` refuses to
@@ -101,8 +101,8 @@ of them. Replace the fakes and run them in Section C.
 
 ## Blockers for whoever picks this up
 
-1. The review gate. Fourteen items; items 1, 7 and 9 need the contract owner or the
-   school, not a developer's judgement.
-2. No container engine here → standalone and browser suites cannot run.
-3. Node v20 here → frontend typecheck, unit tests and production build cannot run.
-4. B00's acceptance gate is still open, and is not closeable from this module.
+1. No container engine here → standalone and browser suites cannot run.
+2. Node v20 here → frontend typecheck, unit tests and production build cannot run.
+3. B00's acceptance gate is still open, and is not closeable from this module.
+4. Four Registry lookups do not exist, so four validations are not performed. See
+   `contracts/M03/ports.md`, gaps 1-4.

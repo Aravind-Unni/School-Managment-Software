@@ -253,7 +253,7 @@
     "M03": {
       "artefacts": [
         {
-          "frozen": false,
+          "frozen": true,
           "id": "M03/error-codes.json",
           "kind": "json-schema",
           "owner": "M03 timetable",
@@ -261,7 +261,7 @@
           "sha256": "fe562584475ac2eaee803824c6857decc3da68d4f5ca4239d2ab17b7fbb40019"
         },
         {
-          "frozen": false,
+          "frozen": true,
           "id": "M03/openapi.json",
           "kind": "openapi",
           "owner": "M03 timetable",
@@ -269,7 +269,7 @@
           "sha256": "bd1ecd444948fe3ded3ef6048f7255d45e460f7606003f40b46a7146f78c0bb2"
         },
         {
-          "frozen": false,
+          "frozen": true,
           "id": "M03/schemas/dtos.schema.json",
           "kind": "json-schema",
           "owner": "M03 timetable",
@@ -277,7 +277,7 @@
           "sha256": "e92ff66e78d2b8ea6b4d9310c64f8de57c7f94875c99c1de967ba71e8f04cc57"
         },
         {
-          "frozen": false,
+          "frozen": true,
           "id": "M03/schemas/events.schema.json",
           "kind": "json-schema",
           "owner": "M03 timetable",
@@ -287,7 +287,7 @@
       ],
       "fixtures": [
         {
-          "frozen": false,
+          "frozen": true,
           "id": "M03/fixtures/expected-results.json",
           "kind": "consumer-fixture",
           "owner": "M03 timetable",
@@ -295,7 +295,7 @@
           "sha256": "8965413dba828babdc8c8e1ab0e30fa2e6876e876e86fa961a295b12a4f4851a"
         },
         {
-          "frozen": false,
+          "frozen": true,
           "id": "M03/fixtures/responses.json",
           "kind": "consumer-fixture",
           "owner": "M03 timetable",
@@ -303,7 +303,7 @@
           "sha256": "b43420a0670888bf9aea499e3da33689efa57c4ef60b2324c8736ad7731bded0"
         },
         {
-          "frozen": false,
+          "frozen": true,
           "id": "M03/fixtures/scenario.json",
           "kind": "consumer-fixture",
           "owner": "M03 timetable",
@@ -312,8 +312,13 @@
         }
       ],
       "packet": "contracts/M03/PACKET.md",
+      "review": {
+        "note": "Central timetable and calendar packet, OpenAPI, DTO/event schemas, error rows, port signatures and consumer fixtures reviewed and approved as proposed. The three decisions that needed the reviewer -- event naming against the frozen envelope, how long a substitution's authority lasts, and what makes a date a school day -- are recorded with their alternatives in contracts/M03/review-decisions.md.",
+        "reviewed_on": "2026-09-20",
+        "reviewer": "Abhinav M"
+      },
       "slug": "timetable",
-      "status": "not_started"
+      "status": "frozen"
     },
     "M04": {
       "artefacts": [],

@@ -1,10 +1,14 @@
 # Contract packet — M03 central timetable and calendar
 
-Status: **PROPOSED, NOT FROZEN.** `contracts/manifest.json` still records M03 as
-`not_started`, and nothing in this directory is hashed. Read
-[`review-decisions.md`](review-decisions.md) first: it lists fourteen decisions a
-reviewer must make, and four things this module cannot validate because the frozen
-Registry port does not expose them.
+Status: **APPROVED AND FROZEN** under revision `school-contracts-v4` on 2026-09-20
+by Abhinav M. All fourteen review items were approved as proposed; the outcome is
+recorded in [`review-decisions.md`](review-decisions.md). Changing any artefact in
+this directory now moves a frozen hash and will fail
+`contract_manifest.py --check`; that is a new reviewed revision, not an edit.
+
+Read [`review-decisions.md`](review-decisions.md) first anyway: it records four
+things this module **cannot** validate, because the frozen Registry port does not
+expose them.
 
 Owner: Developer A. Produced on branch `m03/timetable-calendar`, from `main`
 `aab4b6d79cc4c8ca9e10fb63b7b9d39c5cd8c81a`, manifest revision `school-contracts-v4`
