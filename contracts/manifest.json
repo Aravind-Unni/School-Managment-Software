@@ -741,11 +741,74 @@
       "status": "frozen"
     },
     "M10": {
-      "artefacts": [],
-      "fixtures": [],
+      "artefacts": [
+        {
+          "frozen": true,
+          "id": "M10/error-codes.json",
+          "kind": "json-schema",
+          "owner": "M10 alumni",
+          "path": "contracts/M10/error-codes.json",
+          "sha256": "da0d1c2785c92ac0343f7602c776c2630f88a989edb6177a37e62917d630a005"
+        },
+        {
+          "frozen": true,
+          "id": "M10/openapi.json",
+          "kind": "openapi",
+          "owner": "M10 alumni",
+          "path": "contracts/M10/openapi.json",
+          "sha256": "0a791bb2de0777946e5519c3e43992c4dbb03d3b8fb22e18d1e86175a538c41f"
+        },
+        {
+          "frozen": true,
+          "id": "M10/schemas/dtos.schema.json",
+          "kind": "json-schema",
+          "owner": "M10 alumni",
+          "path": "contracts/M10/schemas/dtos.schema.json",
+          "sha256": "6ba62e64627811cdc095ec32229709d6a2bc1568cc33df5dbfba83c95d47dcee"
+        },
+        {
+          "frozen": true,
+          "id": "M10/schemas/events.schema.json",
+          "kind": "json-schema",
+          "owner": "M10 alumni",
+          "path": "contracts/M10/schemas/events.schema.json",
+          "sha256": "e0081c27bd60a4259ad61d918d1c18c2d3a850fcb7fe68627716a4b010a3c0dd"
+        }
+      ],
+      "fixtures": [
+        {
+          "frozen": true,
+          "id": "M10/fixtures/expected-results.json",
+          "kind": "consumer-fixture",
+          "owner": "M10 alumni",
+          "path": "contracts/M10/fixtures/expected-results.json",
+          "sha256": "93e48b2fc335379a185fd7a26229de7b57772fea809aa0b3396289aad8f09805"
+        },
+        {
+          "frozen": true,
+          "id": "M10/fixtures/responses.json",
+          "kind": "consumer-fixture",
+          "owner": "M10 alumni",
+          "path": "contracts/M10/fixtures/responses.json",
+          "sha256": "358b6ae1580b272d258e5baf63ce2b3421b4cdba20aff2aa5328c8d4a7eccaa2"
+        },
+        {
+          "frozen": true,
+          "id": "M10/fixtures/scenario.json",
+          "kind": "consumer-fixture",
+          "owner": "M10 alumni",
+          "path": "contracts/M10/fixtures/scenario.json",
+          "sha256": "8f872f80340c1be052aadc16ce3afad4a992b4aa772b7a4ab14d4fecdc8da44f"
+        }
+      ],
       "packet": "contracts/M10/PACKET.md",
+      "review": {
+        "note": "Alumni packet, OpenAPI, DTO/event schemas, error rows, AlumniPort signatures and consumer fixtures approved as proposed (items 1\u201314). Transfer stays pending without policy; no grade history; export field restrictions; alumni login off in baseline.",
+        "reviewed_on": "2026-09-21",
+        "reviewer": "Abhinav M"
+      },
       "slug": "alumni",
-      "status": "not_started"
+      "status": "frozen"
     },
     "M11": {
       "artefacts": [],
@@ -777,6 +840,6 @@
     }
   },
   "note": "Revision data, not code. The generator reads this file; it decides nothing itself. A module is listed under 'frozen_modules' only after its contract packet passed a human review gate, and the reviewer is named alongside the date. Adding a module here is the freeze; removing one un-freezes it and the drift guard will report every hash that moves.",
-  "revision": "school-contracts-v10",
+  "revision": "school-contracts-v11",
   "status": "reviewed"
 }

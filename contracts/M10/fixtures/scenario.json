@@ -1,0 +1,59 @@
+{
+  "status": "frozen",
+  "note": "Synthetic baseline for M10. Shared fixture UUIDs. transfer_include_as_alumni is null = pending policy. alumni_login_enabled false.",
+  "policy_fixture": {
+    "transfer_include_as_alumni": null,
+    "alumni_login_enabled": false,
+    "exportable_fields": [
+      "display_name",
+      "admission_no",
+      "leaving_year",
+      "outcome",
+      "email"
+    ],
+    "granted_contact_purposes": [
+      "alumni_notice"
+    ]
+  },
+  "school_a": {
+    "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "reviewer_actor_id": "5e101a6a-eca4-5a5f-b5ef-c2d776c939fe",
+    "manager_actor_id": "6a201b7b-fdb5-5b6f-c6f0-d3e887d0400f",
+    "unrelated_actor_id": "7b302c8c-0ec6-5c7f-d701-e4f998e15110",
+    "graduate": {
+      "student_id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c",
+      "leaving_event_id": "aa11bb22-cc33-5d44-8e55-ff6677889900",
+      "admission_no": "A-1001",
+      "display_name": "Graduate S1",
+      "last_standard": 12,
+      "leaving_year": 2026,
+      "outcome": "graduate"
+    },
+    "transfer": {
+      "student_id": "eceaa8ed-e2db-50cf-a649-557816565032",
+      "leaving_event_id": "bb22cc33-dd44-5e55-9f66-00778899aa11",
+      "admission_no": "A-1002",
+      "display_name": "Transfer S2",
+      "last_standard": 10,
+      "leaving_year": 2026,
+      "outcome": "transfer"
+    },
+    "duplicate_leaving_event_id": "aa11bb22-cc33-5d44-8e55-ff6677889900"
+  },
+  "school_b": {
+    "school_id": "8e1e985f-ba74-5baa-82c6-b884525e416c",
+    "student_foreign": {
+      "id": "131631b7-b975-56ae-80b3-4294fd4071ed",
+      "admission_no": "B-9",
+      "display_name": "S1_B"
+    }
+  },
+  "expected": {
+    "duplicate_leaving_one_candidate": true,
+    "transfer_remains_pending_without_policy": true,
+    "no_academic_history_in_alumni": true,
+    "unrelated_profile_denied": true,
+    "preference_withdrawal_excludes_selection": true,
+    "export_field_restrictions_enforced": true
+  }
+}

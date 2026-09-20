@@ -9,6 +9,7 @@
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { ACCESS_MESSAGES } from "@features/access/locales/messages";
+import { ALUMNI_MESSAGES } from "@features/alumni/locales/messages";
 import { ASSESSMENT_MESSAGES } from "@features/assessment/locales/messages";
 import { ATTENDANCE_MESSAGES } from "@features/attendance/locales/messages";
 import { feesMessages as FEES_MESSAGES } from "@features/fees/locales/messages";
@@ -72,6 +73,7 @@ export function LanguageProvider({ children }: { readonly children: ReactNode })
             ...FEES_MESSAGES.en,
             ...TRANSPORT_MESSAGES.en,
             ...LIBRARY_MESSAGES.en,
+            ...ALUMNI_MESSAGES.en,
           },
           ml: {
             ...SHARED_MESSAGES.ml,
@@ -83,6 +85,7 @@ export function LanguageProvider({ children }: { readonly children: ReactNode })
             ...FEES_MESSAGES.ml,
             ...TRANSPORT_MESSAGES.ml,
             ...LIBRARY_MESSAGES.ml,
+            ...ALUMNI_MESSAGES.ml,
           },
         }),
     }),

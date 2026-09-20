@@ -54,9 +54,9 @@ def test_implemented_modules_are_exactly_those_with_a_registration():
 
     M00 (placeholder), M01 (access), M02 (registry), M03 (timetable), M04
     (attendance), M05 (assessment), M06 (performance), M07 (fees), M08
-    (transport) and M09 (library) are implemented. Everything else must report
-    not-implemented so `dev.py up` fails honestly rather than booting an empty
-    app.
+    (transport), M09 (library) and M10 (alumni) are implemented. Everything
+    else must report not-implemented so `dev.py up` fails honestly rather than
+    booting an empty app.
     """
     from harness.modules import KNOWN_MODULE_IDS, load
 
@@ -74,6 +74,7 @@ def test_implemented_modules_are_exactly_those_with_a_registration():
         "M07",
         "M08",
         "M09",
+        "M10",
     ]
 
 
@@ -130,10 +131,10 @@ def test_no_secret_value_survives_doctor_output(monkeypatch):
 
 
 def test_an_unimplemented_module_is_refused_with_its_own_exit_code():
-    result = run_dev("up", "M10")
+    result = run_dev("up", "M11")
     assert result.returncode == 3
     assert "not implemented" in result.stderr
-    assert "contracts/M10/PACKET.md" in result.stderr
+    assert "contracts/M11/PACKET.md" in result.stderr
 
 
 def test_an_unknown_module_id_is_refused():

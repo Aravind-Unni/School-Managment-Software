@@ -1,0 +1,26 @@
+{
+  "module_id": "M10",
+  "slug": "alumni",
+  "status": "implemented_awaiting_standalone_evidence",
+  "standalone_verified": false,
+  "branch": "m10/alumni-records-contact-permissions",
+  "head_commit": "abbc5623c918f7fbae5b955cb350e72b8fb9f4a9",
+  "implementation_commit": "76700d9883eddba0aebe0f773feba1d543bbfd07",
+  "draft_pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/11",
+  "started_from": "3ae3f8cbc25e09d04cb9a409411072cd6fd9a1bc",
+  "manifest_revision": "school-contracts-v11",
+  "checks": {
+    "contracts": "pass",
+    "module_sqlite": "19 passed",
+    "frontend_vitest": "11 passed (moduleRegistry)",
+    "standalone": "not-run",
+    "browser": "not-run"
+  },
+  "pending_integration": [
+    "real_student_left_ingestion",
+    "real_account_lifecycle",
+    "exchange_export_delivery",
+    "real_m01_auth_2fa"
+  ],
+  "note": "Do not set standalone_verified true until whole-module gate + peer verify from fresh checkout."
+}

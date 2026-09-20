@@ -10,6 +10,12 @@ RULES enforced by ``scripts/arch_check.py``:
   * No module under ``backend/modules/`` may import another module.
 """
 
+from .alumni import (
+    AlumniPort,
+    AlumniProfileView,
+    ContactPreferenceView,
+    CreateCandidateResult,
+)
 from .decisions import (
     NOT_FOUND_REASONS,
     UNAUTHENTICATED_REASONS,
@@ -132,6 +138,8 @@ __all__ = [
     "UNAUTHENTICATED_REASONS",
     "AccessPort",
     "ActionDenied",
+    "AlumniPort",
+    "AlumniProfileView",
     "ArtifactRef",
     "AssessmentPort",
     "AttendancePort",
@@ -143,7 +151,9 @@ __all__ = [
     "CalendarDayDTO",
     "ChargeDTO",
     "ClockPort",
+    "ContactPreferenceView",
     "ContractError",
+    "CreateCandidateResult",
     "CreditDTO",
     "DashboardDTO",
     "Decision",

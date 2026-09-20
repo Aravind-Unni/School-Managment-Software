@@ -1,8 +1,8 @@
 {
   "module_id": "M10",
   "slug": "alumni",
-  "_comment": "Minimum declaration. If this module turns out to own asynchronous work or files, its contract packet must say so and this file must be updated before implementation.",
-  "_status": "module not implemented; this declaration describes the stack `dev.py up` would start once it is",
+  "_comment": "Standalone stack for alumni candidates, directory, contact preferences and exports. No broker/worker in baseline; export accepts jobs without claiming crash/retry coverage.",
+  "_status": "implemented; contracts frozen under school-contracts-v11; awaiting standalone PostgreSQL + browser evidence",
   "resources": {
     "postgres": true,
     "frontend": true,

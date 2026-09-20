@@ -1,9 +1,4 @@
-# frontend/src/features/alumni -- M10
+# M10 alumni — frontend feature
 
-Not implemented. Feature code, routes, permissions and navigation metadata live
-here, beside the feature, so deleting the directory cannot leave a dangling menu
-entry.
-
-The TypeScript API client for this feature is **generated** from the module's
-approved OpenAPI document once it is frozen in `contracts/manifest.json`. Do not
-hand-write request types.
+Candidates review, directory search, contact editor and export filters.
+Locales: en / ml. Register via `alumniModule` in `registeredModules.ts`.

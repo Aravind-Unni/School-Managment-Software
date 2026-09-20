@@ -1,0 +1,28 @@
+{
+  "status": "frozen",
+  "examples": {
+    "candidate_pending_graduate": {
+      "state": "pending",
+      "outcome": "graduate",
+      "last_standard": 12,
+      "leaving_year": 2026
+    },
+    "profile_after_approve": {
+      "outcome": "graduate",
+      "snapshot_version": 1,
+      "contact_fields": {
+        "email": "grad.s1@example.test",
+        "phone": null,
+        "postal_address": null
+      }
+    },
+    "preference_withdrawn": {
+      "purpose": "alumni_notice",
+      "channel": "email",
+      "allowed": false
+    },
+    "export_job_accepted": {
+      "state": "queued"
+    }
+  }
+}

@@ -19,6 +19,7 @@ describe("module registry", () => {
       "M07",
       "M08",
       "M09",
+      "M10",
     ]);
   });
 
@@ -55,6 +56,10 @@ describe("module registry", () => {
       "nav.library",
       "nav.library_desk",
       "nav.library_overdues",
+      "nav.alumni_candidates",
+      "nav.alumni_directory",
+      "nav.alumni_profile",
+      "nav.alumni_export",
     ]);
   });
 
