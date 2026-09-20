@@ -53,16 +53,16 @@ def test_implemented_modules_are_exactly_those_with_a_registration():
     """Implementation status is derived from registration.py, never declared.
 
     M00 (placeholder), M01 (access), M02 (registry), M03 (timetable), M04
-    (attendance), M05 (assessment) and M06 (performance) are implemented.
-    Everything else must report not-implemented so `dev.py up` fails honestly
-    rather than booting an empty app.
+    (attendance), M05 (assessment), M06 (performance) and M07 (fees) are
+    implemented. Everything else must report not-implemented so `dev.py up`
+    fails honestly rather than booting an empty app.
     """
     from harness.modules import KNOWN_MODULE_IDS, load
 
     implemented = [
         module_id for module_id in KNOWN_MODULE_IDS if load(REPO_ROOT, module_id).implemented
     ]
-    assert implemented == ["M00", "M01", "M02", "M03", "M04", "M05", "M06"]
+    assert implemented == ["M00", "M01", "M02", "M03", "M04", "M05", "M06", "M07"]
 
 
 @pytest.mark.parametrize(
@@ -118,10 +118,10 @@ def test_no_secret_value_survives_doctor_output(monkeypatch):
 
 
 def test_an_unimplemented_module_is_refused_with_its_own_exit_code():
-    result = run_dev("up", "M07")
+    result = run_dev("up", "M08")
     assert result.returncode == 3
     assert "not implemented" in result.stderr
-    assert "contracts/M07/PACKET.md" in result.stderr
+    assert "contracts/M08/PACKET.md" in result.stderr
 
 
 def test_an_unknown_module_id_is_refused():

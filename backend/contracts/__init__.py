@@ -37,6 +37,12 @@ from .events import (
     EventEnvelope,
 )
 from .evidence import EvidenceRef, ResourceGrant
+from .fees import (
+    BalanceDTO,
+    ChargeDTO,
+    CreditDTO,
+    FeesPort,
+)
 from .files import (
     ArtifactRef,
     FileDTO,
@@ -122,15 +128,19 @@ __all__ = [
     "AttendanceSummaryDTO",
     "AuditRecord",
     "AuthLevel",
+    "BalanceDTO",
     "CalendarDayDTO",
+    "ChargeDTO",
     "ClockPort",
     "ContractError",
+    "CreditDTO",
     "DashboardDTO",
     "Decision",
     "ErrorCode",
     "ErrorEnvelope",
     "EventEnvelope",
     "EvidenceRef",
+    "FeesPort",
     "FieldError",
     "FileDTO",
     "FileEvidenceRef",

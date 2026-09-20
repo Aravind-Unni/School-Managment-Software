@@ -10,6 +10,7 @@ import { accessModule } from "@features/access/module";
 import { assessmentModule } from "@features/assessment/module";
 import { attendanceModule } from "@features/attendance/module";
 import { demoModule } from "@features/demo/module";
+import { feesModule } from "@features/fees/module";
 import { performanceModule } from "@features/performance/module";
 import { timetableModule } from "@features/timetable/module";
 import { validateModule, type FeatureModule } from "./moduleRegistry";
@@ -21,6 +22,7 @@ const ALL: readonly FeatureModule[] = [
   attendanceModule,
   assessmentModule,
   performanceModule,
+  feesModule,
 ].map(validateModule);
 
 const selected = (import.meta.env as Record<string, string | undefined>)[

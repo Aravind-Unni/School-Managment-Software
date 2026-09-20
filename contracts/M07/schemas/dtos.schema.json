@@ -1,0 +1,441 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M07/dtos",
+  "title": "M07 fees DTOs",
+  "$defs": {
+    "PaymentMethod": {
+      "type": "string",
+      "enum": ["cash", "bank", "upi"]
+    },
+    "ChargeStatus": {
+      "type": "string",
+      "enum": ["open", "partial", "paid", "credited", "reversed"]
+    },
+    "FeeHeadDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "school_id", "code", "label_key", "version"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "code": { "type": "string", "minLength": 1 },
+        "label_key": { "type": "string", "minLength": 1 },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "FeePlanApplicability": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "standards": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1, "maximum": 12 }
+        },
+        "section_ids": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" }
+        },
+        "student_ids": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" }
+        }
+      }
+    },
+    "FeePlanScheduleItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fee_head_id", "amount_paise", "due_date"],
+      "properties": {
+        "fee_head_id": { "type": "string", "format": "uuid" },
+        "amount_paise": { "type": "integer", "minimum": 1 },
+        "due_date": { "type": "string", "format": "date" }
+      }
+    },
+    "CreateFeePlanRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fee_heads", "applicability", "schedule", "version"],
+      "properties": {
+        "fee_heads": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["code", "label_key"],
+            "properties": {
+              "code": { "type": "string", "minLength": 1 },
+              "label_key": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "applicability": { "$ref": "#/$defs/FeePlanApplicability" },
+        "schedule": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["fee_head_code", "amount_paise", "due_date"],
+            "properties": {
+              "fee_head_code": { "type": "string", "minLength": 1 },
+              "amount_paise": { "type": "integer", "minimum": 1 },
+              "due_date": { "type": "string", "format": "date" }
+            }
+          }
+        },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "FeePlanDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "version",
+        "applicability",
+        "schedule",
+        "fee_heads"
+      ],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "version": { "type": "integer", "minimum": 1 },
+        "applicability": { "$ref": "#/$defs/FeePlanApplicability" },
+        "schedule": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/FeePlanScheduleItem" }
+        },
+        "fee_heads": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/FeeHeadDTO" }
+        }
+      }
+    },
+    "CreateChargeRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "student_id",
+        "fee_head_id",
+        "amount_paise",
+        "due_date",
+        "source_key"
+      ],
+      "properties": {
+        "student_id": { "type": "string", "format": "uuid" },
+        "fee_head_id": { "type": "string", "format": "uuid" },
+        "amount_paise": { "type": "integer", "minimum": 1 },
+        "due_date": { "type": "string", "format": "date" },
+        "source_key": { "type": "string", "minLength": 1 },
+        "description_key": { "type": "string" }
+      }
+    },
+    "ChargeDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "student_id",
+        "fee_head_id",
+        "source_key",
+        "amount_paise",
+        "balance_paise",
+        "due_date",
+        "status",
+        "version"
+      ],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "student_id": { "type": "string", "format": "uuid" },
+        "fee_head_id": { "type": "string", "format": "uuid" },
+        "source_key": { "type": "string" },
+        "amount_paise": { "type": "integer", "minimum": 1 },
+        "balance_paise": { "type": "integer", "minimum": 0 },
+        "due_date": { "type": "string", "format": "date" },
+        "status": { "$ref": "#/$defs/ChargeStatus" },
+        "description_key": { "type": ["string", "null"] },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "AllocationInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["charge_id", "amount_paise"],
+      "properties": {
+        "charge_id": { "type": "string", "format": "uuid" },
+        "amount_paise": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "CreatePaymentRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["student_id", "amount_paise", "method", "allocations"],
+      "properties": {
+        "student_id": { "type": "string", "format": "uuid" },
+        "amount_paise": { "type": "integer", "minimum": 1 },
+        "method": { "$ref": "#/$defs/PaymentMethod" },
+        "reference": { "type": ["string", "null"] },
+        "allocations": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/AllocationInput" }
+        }
+      }
+    },
+    "AllocationDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "payment_id", "charge_id", "amount_paise"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "payment_id": { "type": "string", "format": "uuid" },
+        "charge_id": { "type": "string", "format": "uuid" },
+        "amount_paise": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "PaymentDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "student_id",
+        "number",
+        "amount_paise",
+        "method",
+        "posted_at",
+        "allocations",
+        "version"
+      ],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "school_id": { "type": "string", "format": "uuid" },
+        "student_id": { "type": "string", "format": "uuid" },
+        "number": { "type": "string", "minLength": 1 },
+        "amount_paise": { "type": "integer", "minimum": 1 },
+        "method": { "$ref": "#/$defs/PaymentMethod" },
+        "reference": { "type": ["string", "null"] },
+        "posted_at": { "type": "string", "format": "date-time" },
+        "allocations": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/AllocationDTO" }
+        },
+        "reversed": { "type": "boolean", "default": false },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "PaymentReceiptDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["payment", "balance"],
+      "properties": {
+        "payment": { "$ref": "#/$defs/PaymentDTO" },
+        "balance": { "$ref": "#/$defs/BalanceDTO" }
+      }
+    },
+    "CreateReversalRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reason", "expected_version"],
+      "properties": {
+        "reason": { "type": "string", "minLength": 1 },
+        "expected_version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "ReversalDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "original_payment_id",
+        "reason",
+        "posted_at",
+        "balance"
+      ],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "original_payment_id": { "type": "string", "format": "uuid" },
+        "reason": { "type": "string" },
+        "posted_at": { "type": "string", "format": "date-time" },
+        "balance": { "$ref": "#/$defs/BalanceDTO" }
+      }
+    },
+    "CreditDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "charge_id", "amount_paise", "reason", "source_key"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "charge_id": { "type": ["string", "null"], "format": "uuid" },
+        "student_id": { "type": "string", "format": "uuid" },
+        "amount_paise": { "type": "integer", "minimum": 1 },
+        "reason": { "type": "string" },
+        "source_key": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": ["concession", "overpayment", "adjustment"]
+        }
+      }
+    },
+    "CreateConcessionRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["charge_id", "amount_paise", "reason", "source_key"],
+      "properties": {
+        "charge_id": { "type": "string", "format": "uuid" },
+        "amount_paise": { "type": "integer", "minimum": 1 },
+        "reason": { "type": "string", "minLength": 1 },
+        "source_key": { "type": "string", "minLength": 1 },
+        "major": { "type": "boolean", "default": false }
+      }
+    },
+    "CreateRefundRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["student_id", "amount_paise", "reason"],
+      "properties": {
+        "student_id": { "type": "string", "format": "uuid" },
+        "amount_paise": { "type": "integer", "minimum": 1 },
+        "reason": { "type": "string", "minLength": 1 },
+        "credit_id": { "type": ["string", "null"], "format": "uuid" }
+      }
+    },
+    "RefundRecordDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "student_id",
+        "amount_paise",
+        "reason",
+        "posted_at"
+      ],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "student_id": { "type": "string", "format": "uuid" },
+        "amount_paise": { "type": "integer", "minimum": 1 },
+        "reason": { "type": "string" },
+        "credit_id": { "type": ["string", "null"], "format": "uuid" },
+        "posted_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "BalanceDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "student_id",
+        "charged_paise",
+        "credited_paise",
+        "paid_paise",
+        "outstanding_paise",
+        "overdue_paise",
+        "as_of"
+      ],
+      "properties": {
+        "student_id": { "type": "string", "format": "uuid" },
+        "charged_paise": { "type": "integer", "minimum": 0 },
+        "credited_paise": { "type": "integer", "minimum": 0 },
+        "paid_paise": { "type": "integer", "minimum": 0 },
+        "outstanding_paise": { "type": "integer", "minimum": 0 },
+        "overdue_paise": { "type": "integer", "minimum": 0 },
+        "credit_available_paise": { "type": "integer", "minimum": 0 },
+        "as_of": { "type": "string", "format": "date" }
+      }
+    },
+    "LedgerEntryDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entry_type",
+        "id",
+        "amount_paise",
+        "posted_at",
+        "description_key"
+      ],
+      "properties": {
+        "entry_type": {
+          "type": "string",
+          "enum": [
+            "charge",
+            "payment",
+            "allocation",
+            "credit",
+            "refund",
+            "reversal"
+          ]
+        },
+        "id": { "type": "string", "format": "uuid" },
+        "amount_paise": { "type": "integer" },
+        "posted_at": { "type": "string", "format": "date-time" },
+        "description_key": { "type": "string" },
+        "related_id": { "type": ["string", "null"], "format": "uuid" }
+      }
+    },
+    "FeeStatementDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["student_id", "as_of", "entries", "totals", "balance"],
+      "properties": {
+        "student_id": { "type": "string", "format": "uuid" },
+        "as_of": { "type": "string", "format": "date" },
+        "entries": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/LedgerEntryDTO" }
+        },
+        "totals": { "$ref": "#/$defs/BalanceDTO" },
+        "balance": { "$ref": "#/$defs/BalanceDTO" },
+        "student_display_name": { "type": ["string", "null"] },
+        "admission_no": { "type": ["string", "null"] }
+      }
+    },
+    "OverdueItemDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "student_id",
+        "charge_id",
+        "amount_paise",
+        "balance_paise",
+        "due_date"
+      ],
+      "properties": {
+        "student_id": { "type": "string", "format": "uuid" },
+        "charge_id": { "type": "string", "format": "uuid" },
+        "amount_paise": { "type": "integer", "minimum": 1 },
+        "balance_paise": { "type": "integer", "minimum": 1 },
+        "due_date": { "type": "string", "format": "date" },
+        "display_name": { "type": ["string", "null"] }
+      }
+    },
+    "OverduePage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["items", "next_cursor"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/OverdueItemDTO" }
+        },
+        "next_cursor": { "type": ["string", "null"] }
+      }
+    },
+    "DailyCollectionDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["collection_date", "total_paise", "payment_count", "by_method"],
+      "properties": {
+        "collection_date": { "type": "string", "format": "date" },
+        "total_paise": { "type": "integer", "minimum": 0 },
+        "payment_count": { "type": "integer", "minimum": 0 },
+        "by_method": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  }
+}

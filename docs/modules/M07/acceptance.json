@@ -1,0 +1,24 @@
+{
+  "module_id": "M07",
+  "slug": "fees",
+  "status": "implemented_awaiting_standalone_evidence",
+  "standalone_verified": false,
+  "branch": "m07/fees-payments-balances-receipts",
+  "started_from": "da0570c2efdd3e17ef852164d0a62a9265416fbf",
+  "manifest_revision": "school-contracts-v8",
+  "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/8",
+  "checks": {
+    "contracts": "pass",
+    "module_sqlite": "21 passed",
+    "frontend_vitest": "65 passed",
+    "standalone": "not-run",
+    "browser": "not-run"
+  },
+  "pending_integration": [
+    "real_m01_auth_2fa",
+    "real_m08_transport_charges",
+    "integrated_statements_reports",
+    "withdrawal_preserves_debt"
+  ],
+  "note": "Do not set standalone_verified true until whole-module gate + peer verify from fresh checkout."
+}

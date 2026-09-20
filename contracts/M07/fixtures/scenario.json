@@ -1,0 +1,63 @@
+{
+  "status": "frozen",
+  "note": "Synthetic baseline for M07 standalone. Uses shared fixture UUIDs.",
+  "school_a": {
+    "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "finance_actor_id": "5e101a6a-eca4-5a5f-b5ef-c2d776c939fe",
+    "student_s1": {
+      "id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c",
+      "admission_no": "A-1001",
+      "display_name": "S1"
+    },
+    "student_s2": {
+      "id": "eceaa8ed-e2db-50cf-a649-557816565032",
+      "admission_no": "A-1002",
+      "display_name": "S2"
+    },
+    "guardian_g1": {
+      "id": "a98bf46f-c03f-59a9-96e4-5eb94f0cf4a7",
+      "linked_student_id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c"
+    },
+    "guardian_g2": {
+      "id": "7731fd5f-a464-53df-9429-a515f8a06301",
+      "linked_student_id": "ed637961-b9dc-5669-be2d-8abe74934aa8"
+    },
+    "fee_heads": [
+      { "code": "tuition", "label_key": "fees.head.tuition" },
+      { "code": "bus", "label_key": "fees.head.bus" },
+      { "code": "opening_balance", "label_key": "fees.head.opening_balance" }
+    ],
+    "charges": [
+      {
+        "student": "s1",
+        "fee_head_code": "tuition",
+        "amount_paise": 100000,
+        "due_date": "2026-06-01",
+        "source_key": "plan:v1:tuition:s1"
+      },
+      {
+        "student": "s1",
+        "fee_head_code": "opening_balance",
+        "amount_paise": 25000,
+        "due_date": "2026-04-01",
+        "source_key": "opening:1e06f5ad-b530-51fa-a3be-e1bd65fd230c"
+      },
+      {
+        "student": "s1",
+        "fee_head_code": "bus",
+        "amount_paise": 30000,
+        "due_date": "2026-06-15",
+        "source_key": "bus:route-a:2026-06:s1"
+      }
+    ],
+    "as_of": "2026-06-20"
+  },
+  "school_b": {
+    "school_id": "8e1e985f-ba74-5baa-82c6-b884525e416c",
+    "student_foreign": {
+      "id": "131631b7-b975-56ae-80b3-4294fd4071ed",
+      "admission_no": "B-9",
+      "display_name": "S1_B"
+    }
+  }
+}

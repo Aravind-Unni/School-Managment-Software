@@ -531,11 +531,74 @@
       "status": "frozen"
     },
     "M07": {
-      "artefacts": [],
-      "fixtures": [],
+      "artefacts": [
+        {
+          "frozen": true,
+          "id": "M07/error-codes.json",
+          "kind": "json-schema",
+          "owner": "M07 fees",
+          "path": "contracts/M07/error-codes.json",
+          "sha256": "c6269052e6ea54ff3f4a5b34fd9fb72d3a5d6ead36e7c3fcc729752b5b1c0df8"
+        },
+        {
+          "frozen": true,
+          "id": "M07/openapi.json",
+          "kind": "openapi",
+          "owner": "M07 fees",
+          "path": "contracts/M07/openapi.json",
+          "sha256": "9adb91826ea036a548a1dc74fce84af6dc17c28abec644d1225f233078c470c3"
+        },
+        {
+          "frozen": true,
+          "id": "M07/schemas/dtos.schema.json",
+          "kind": "json-schema",
+          "owner": "M07 fees",
+          "path": "contracts/M07/schemas/dtos.schema.json",
+          "sha256": "4c0f30b360619e0f0e1592aacb3dc015eac77273fb83665aba6aed79c50331a3"
+        },
+        {
+          "frozen": true,
+          "id": "M07/schemas/events.schema.json",
+          "kind": "json-schema",
+          "owner": "M07 fees",
+          "path": "contracts/M07/schemas/events.schema.json",
+          "sha256": "bc4afd682667c2a5078f0ddc7ffcc23cb135a40b2a46e476709a06c36da40b80"
+        }
+      ],
+      "fixtures": [
+        {
+          "frozen": true,
+          "id": "M07/fixtures/expected-results.json",
+          "kind": "consumer-fixture",
+          "owner": "M07 fees",
+          "path": "contracts/M07/fixtures/expected-results.json",
+          "sha256": "d5bb2e17ce561c17e9e55d00427c7af7b0d8bb706d2597d2921e06205114b13b"
+        },
+        {
+          "frozen": true,
+          "id": "M07/fixtures/responses.json",
+          "kind": "consumer-fixture",
+          "owner": "M07 fees",
+          "path": "contracts/M07/fixtures/responses.json",
+          "sha256": "5cd8b9a0fdb263fdf361f2441265a7e05b257b9db0bf216ca232ccf696248824"
+        },
+        {
+          "frozen": true,
+          "id": "M07/fixtures/scenario.json",
+          "kind": "consumer-fixture",
+          "owner": "M07 fees",
+          "path": "contracts/M07/fixtures/scenario.json",
+          "sha256": "1164c30baeeeec6054fc54ed7dcfe087fcfeb0a791735f6bde5e0e3d1544a9e9"
+        }
+      ],
       "packet": "contracts/M07/PACKET.md",
+      "review": {
+        "note": "Fees packet, OpenAPI, DTO/event schemas, error rows, FeesPort signatures and consumer fixtures approved as proposed (items 1\u201312). Integer paise only; no gateway; no invented late-fee/bus-proration/concession policy. Opening balances are ledger charges.",
+        "reviewed_on": "2026-09-20",
+        "reviewer": "Abhinav M"
+      },
       "slug": "fees",
-      "status": "not_started"
+      "status": "frozen"
     },
     "M08": {
       "artefacts": [],
@@ -588,6 +651,6 @@
     }
   },
   "note": "Revision data, not code. The generator reads this file; it decides nothing itself. A module is listed under 'frozen_modules' only after its contract packet passed a human review gate, and the reviewer is named alongside the date. Adding a module here is the freeze; removing one un-freezes it and the drift guard will report every hash that moves.",
-  "revision": "school-contracts-v7",
+  "revision": "school-contracts-v8",
   "status": "reviewed"
 }
