@@ -39,7 +39,11 @@ export function FeeCollectionPage() {
   return (
     <main>
       <h1>{t["fees.collect_title"]}</h1>
-      <form onSubmit={onSubmit}>
+      <form
+        onSubmit={(event) => {
+          void onSubmit(event);
+        }}
+      >
         <label>
           Charge id
           <input

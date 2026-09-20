@@ -57,7 +57,7 @@ def test_importing_an_unimplemented_module_is_rejected():
     offender = REPO_ROOT / "backend" / "shared" / "_tmp_violation.py"
     offender.write_text(
         '"""Temporary file introducing a deliberate violation."""\n'
-        "import modules.fees  # noqa: F401\n"
+        "import modules.transport  # noqa: F401\n"
     )
     try:
         result = run(ARCH_CHECK)

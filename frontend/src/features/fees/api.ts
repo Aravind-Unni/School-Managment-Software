@@ -79,12 +79,14 @@ export async function postPayment(body: {
   return (await res.json()) as PaymentReceiptDTO;
 }
 
-export async function fetchPayment(paymentId: string) {
+export async function fetchPayment(paymentId: string): Promise<Record<string, unknown>> {
   const res = await fetch(`/api/v1/payments/${paymentId}`, {
     credentials: "include",
   });
-  if (!res.ok) throw new Error(`payment_get_failed_${res.status}`);
-  return res.json();
+  if (!res.ok) {
+    throw new Error(`payment_get_failed_${res.status}`);
+  }
+  return (await res.json()) as Record<string, unknown>;
 }
 
 export { S1 as DEFAULT_STUDENT };

@@ -1,28 +1,37 @@
 # Contract packet -- M07 fees
 
-Status: **FROZEN** under `school-contracts-v8`.
+Status: **APPROVED AND FROZEN** under revision `school-contracts-v8` on 2026-09-20
+by Abhinav M. Artefacts live under `contracts/M07/`.
+
+Manifest revision: `school-contracts-v8`.
 
 Review: [`review-decisions.md`](review-decisions.md) — items 1–12 approved
 2026-09-20 by Abhinav M.
 
 ---
 
-## Artefacts
+## Artefacts (frozen)
 
-1. OpenAPI — [`openapi.json`](openapi.json)
-2. JSON Schema — [`schemas/dtos.schema.json`](schemas/dtos.schema.json),
-   [`schemas/events.schema.json`](schemas/events.schema.json)
-3. Protocol signatures — [`ports.md`](ports.md) (`FeesPort`)
-4. Error enums — [`error-codes.json`](error-codes.json)
-5. Example fixtures — [`fixtures/`](fixtures/)
+| Artefact | Path |
+|---|---|
+| Review decisions (12 items) | `review-decisions.md` |
+| OpenAPI | `openapi.json` |
+| DTO schemas | `schemas/dtos.schema.json` |
+| Event schemas | `schemas/events.schema.json` |
+| Error rows | `error-codes.json` |
+| Port signatures | `ports.md` |
+| Consumer fixtures | `fixtures/*.json` |
 
-## Module registration
+---
+
+## ModuleRegistration
 
 | field | value |
 |---|---|
 | `id` | `M07` |
 | `slug` | `fees` |
 | `api_prefix` | `/api/v1/` |
+| `api_path_roots` | `fee-plans/`, `charges/`, `payments/`, `concessions/`, `refunds/`, `students/`, `fees/` |
 | `permission_codes` | `fees.configure`, `fees.read`, `fees.record_payment`, `fees.concede`, `fees.reverse_payment`, `fees.refund` |
 | `consumers` | `access`, `registry`, `platform`, `clock` |
 

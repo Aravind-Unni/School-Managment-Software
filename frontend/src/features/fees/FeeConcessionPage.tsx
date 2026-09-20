@@ -42,7 +42,11 @@ export function FeeConcessionPage() {
   return (
     <main>
       <h1>{t["fees.concession_title"]}</h1>
-      <form onSubmit={onSubmit}>
+      <form
+        onSubmit={(event) => {
+          void onSubmit(event);
+        }}
+      >
         <label>
           Charge id
           <input value={chargeId} onChange={(e) => setChargeId(e.target.value)} required />
