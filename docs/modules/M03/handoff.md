@@ -4,11 +4,9 @@
 
 The contract gate is **closed**: the packet was approved as proposed and frozen
 under revision `school-contracts-v4` on 2026-09-20 by Abhinav M. **All four
-implementation steps are complete.** Standalone is green in CI (422 on
-PostgreSQL). The browser suite was green at 8 tests on `b5d91d7`, then went red
-on `08d841a` after the denial and pupil journeys were added — Playwright
-`getByLabel` collided with page headings. That locator fix is on this branch;
-confirm the next `m03-browser` CI run before quoting the suite as green again.
+implementation steps are complete. Both container-backed suites pass in CI on
+`6d7e53e` against a real stack: 422 standalone tests on PostgreSQL and 9
+Playwright tests on the running UI (including denial and pupil journeys).**
 
 `STANDALONE_VERIFIED` is still **false**, for one reason: no second developer has
 verified the module from a fresh checkout. That is the remaining condition.
@@ -147,10 +145,9 @@ pattern, because CI is the only place the container-backed suites can run:
   seeds, and runs **both** the standalone and the browser suites against the
   allocated URLs, uploading the evidence bundle.
 
-`m03-backend` has stayed green. `m03-browser` passed on `b5d91d7` (8 tests), then
-failed on `08d841a` (7 pass / 2 fail) for the label collisions above. Read the
-latest result on PR #4 rather than trusting this paragraph: CI evidence belongs
-to the commit CI tested.
+Both passed on `6d7e53e` (after a locator fix for heading/label collisions that
+had red-failed `08d841a`). Read the latest result on PR #4 rather than trusting
+this paragraph: CI evidence belongs to the commit CI tested.
 
 **Running them for the first time found two real defects**, both latent since B00
 and both fixed on this branch — see "Shared changes" below. That is the argument

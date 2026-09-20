@@ -13,12 +13,10 @@ not merge or deploy. Propose contracts for review first.
 
 ## Current phase / source identity
 
-**Phase: all four implementation steps complete. Standalone is green in CI;
-m03-browser was red on the tip of this branch because two new Playwright
-assertions used `getByLabel` substrings that also matched page headings — fixed
-this session, awaiting the next CI run. STANDALONE_VERIFIED is still false, for
-one remaining reason: no second developer has verified the module from a fresh
-checkout.**
+**Phase: all four implementation steps complete, and BOTH container-backed suites
+pass in CI against a real stack on commit `6d7e53e` (including the denial and
+pupil journeys). STANDALONE_VERIFIED is still false, for one remaining reason:
+no second developer has verified the module from a fresh checkout.**
 
 | Item | Observed value |
 |---|---|
@@ -28,6 +26,7 @@ checkout.**
 | Manifest revision | `school-contracts-v4`, status `reviewed` |
 | M03 manifest status | **`frozen`**, reviewed by Abhinav M on 2026-09-20; 27 frozen entries where 20 were before |
 | PR | **Draft #4** — https://github.com/Aravind-Unni/School-Managment-Software/pull/4 |
+| Head | `6d7e53e` |
 | Recorded | 2026-09-20 |
 
 ## Complete
@@ -117,7 +116,9 @@ because a SQLite result is not a PostgreSQL result.
 | `dev.py check M03 --suite standalone` (**CI**, commit `b5d91d7` and later) | **422 passed** against `postgres-container` |
 | `dev.py check M03 --suite browser` (**CI**, commit `b5d91d7`) | **8 passed** — before the denial and pupil journeys were added |
 | `m03-browser` (**CI**, commit `08d841a`) | **FAIL** — 7 passed, 2 failed. Cause below |
+| `m03-browser` (**CI**, commit `6d7e53e`) | **PASS** — 9 Playwright tests against the real stack |
 | `m03-backend` (CI) | migrations on an EMPTY then a POPULATED PostgreSQL 17.11, the suite, and the served surface matching the frozen OpenAPI |
+| full CI on `6d7e53e` | **all jobs green** (run [35522082353](https://github.com/Aravind-Unni/School-Managment-Software/actions/runs/35522082353)) |
 | `npx vitest run` / lint / typecheck (this session, Node 22.22.2) | **65 passed**, lint and typecheck clean |
 | `dev.py check M03 --suite contracts` (this session) | **PASS** — manifest, arch, 105 shared + 24 M03 |
 
@@ -159,12 +160,9 @@ touched, no guard was weakened, and no frozen hash was moved.
 
 ## Exact next step
 
-1. **Confirm `m03-browser` is green on the push that fixes the Playwright
-   label collisions** (this session). Do not claim the browser suite green until
-   that CI run is observed.
-2. **A second developer verifies the module from a fresh checkout.** Only then
-   is `STANDALONE_VERIFIED` true. The draft PR (#4) is open and must not be
-   merged before that happens.
+**A second developer verifies the module from a fresh checkout.** Only then is
+`STANDALONE_VERIFIED` true. The draft PR (#4) is open and must not be merged
+before that happens. CI on `6d7e53e` is fully green, including `m03-browser`.
 
 ## What this session fixed (CI red on `m03-browser`)
 
@@ -181,6 +179,7 @@ Fixed by targeting the controls by role (`combobox` / `textbox`) so they cannot
 collide with the page region. Also kept a small UI fix already in the working
 tree: the class and substitution pages no longer write the resolved default
 section back into state on first load (that re-ran the effect and double-fetched).
+Observed green on `6d7e53e` (run 35522082353).
 
 ## What running the container path for the first time exposed
 
