@@ -96,7 +96,7 @@ because a SQLite result is not a PostgreSQL result.
 |---|---|
 | `dev.py doctor` | **exit 2** — no container engine (dangling Docker Desktop symlinks only) |
 | `dev.py check M03 --suite contracts` | **PASS** — manifest current (27 frozen), 7 architecture checks, 105 shared + 24 M03 contract tests |
-| `pytest tests/modules/M03` (MODULE_ID=M03, SQLite) | **146 passed** |
+| `pytest tests/modules/M03` (MODULE_ID=M03, SQLite) | **147 passed** |
 | `pytest` (foundation suite, M00 profile, SQLite) | **295 passed** |
 | `ruff check .` / `ruff format --check .` | clean |
 | `arch_check.py` | 7 checks passed |
@@ -136,6 +136,7 @@ silently; each is listed here and in the handoff.
 | `frontend/playwright.config.ts` | `MODULE_ID` selects the spec | A one-module stack serves one module's routes. Generalised from the existing M01 special case rather than adding a third `if` |
 | `scripts/dev.py` | passes `MODULE_ID` into the browser suite | Without it the runner collected every spec and drove them at routes the running stack does not serve |
 | `frontend/package.json`, `frontend/src/app/registeredModules.ts`, `frontend/tests/unit/moduleRegistry.test.ts` | M03 registered | The module's own registration entry |
+| `.github/workflows/ci.yml` | two M03 jobs added | `m03-backend` runs the suite and both migration paths against real PostgreSQL; `m03-browser` brings the stack up and runs the standalone AND browser suites. Copied from the `m01-backend`/`m01-browser` pattern. This is the only place those two suites CAN run, since no machine here has a container engine |
 
 No file under `backend/contracts`, `backend/shared` or `contracts/common` was
 touched, no guard was weakened, and no frozen hash was moved.
@@ -153,6 +154,12 @@ python3 scripts/dev.py check M03 --suite standalone
 python3 scripts/dev.py check M03 --suite browser
 python3 scripts/dev.py evidence M03
 ```
+
+CI now does exactly this: the `m03-backend` and `m03-browser` jobs added on this
+branch run both migration paths, the suite against real PostgreSQL, and the
+standalone and browser suites against a real stack. **Read their result on PR #4
+before believing anything about the container path** — at the time this was
+written they had never run for M03 anywhere.
 
 Then have a second developer verify the module from a fresh checkout. Only after
 both is `STANDALONE_VERIFIED` true. The draft PR (#4) is open and must not be

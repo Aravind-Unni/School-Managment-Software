@@ -93,7 +93,7 @@
     },
     {
       "command": "MODULE_ID=M03 pytest tests/modules/M03",
-      "result": "146 passed",
+      "result": "147 passed",
       "detail": "SQLite test profile. Contract, draft, conflict, publication, calendar, session, substitution, scoping, isolation and seed tests."
     },
     {
@@ -199,5 +199,13 @@
     "No container engine (doctor exits 2): standalone and browser suites cannot run here, so nothing about PostgreSQL behaviour is verified for this module.",
     "B00's own acceptance gate remains open - merged without peer review, four criteria unverified, container path never executed. Inherited; not closeable from M03.",
     "The six contract revision items listed above."
-  ]
+  ],
+  "ci": {
+    "jobs_added_on_this_branch": [
+      "m03-backend",
+      "m03-browser"
+    ],
+    "why": "CI is the only place the container-backed suites can run: no machine in this session has a container engine. m03-backend applies migrations to an empty database, seeds, re-applies them to a populated one and runs the suite against real PostgreSQL 17.11. m03-browser brings the real stack up and runs BOTH the standalone and browser suites.",
+    "status": "never executed for M03 at the time this was written; read the result on PR #4"
+  }
 }

@@ -208,3 +208,18 @@ def _substitution(school_id: uuid.UUID, *, label: str, on: date, slot: Slot) -> 
         },
     )
     return 1 if created else 0
+
+
+def empty(school_id: uuid.UUID | None = None) -> dict[str, int]:
+    """Install nothing, for a developer who wants to build a grid by hand.
+
+    A school that has published no timetable is a normal state, not a broken one:
+    the calendar answers "not a teaching day" for every date and no schedule read
+    invents one. Seeding nothing is how that state gets exercised.
+    """
+    return {"timetables": 0, "periods": 0, "slots": 0, "exceptions": 0, "substitutions": 0}
+
+
+#: The scenarios ``dev.py seed M03 --scenario <name>`` can load. The harness
+#: reads this mapping; a name absent from it is refused rather than guessed at.
+SCENARIOS = {"baseline": baseline, "empty": empty}

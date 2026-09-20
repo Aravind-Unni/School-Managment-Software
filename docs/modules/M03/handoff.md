@@ -111,7 +111,7 @@ to PostgreSQL, empty and seeded, is outstanding.
 | `dev.py doctor` | exit 2 — no container engine; Node on PATH is v20.19.5 |
 | `dev.py check M00 --suite contracts` (session start) | passed — the foundation was green before any change |
 | `dev.py check M03 --suite contracts` | **passed** — 27 frozen entries, 7 architecture checks, 105 shared + 24 M03 contract tests |
-| `pytest tests/modules/M03` (SQLite) | **146 passed** |
+| `pytest tests/modules/M03` (SQLite) | **147 passed** |
 | `pytest` (foundation, SQLite) | **295 passed** |
 | `ruff check` / `ruff format --check` / `arch_check.py` | clean |
 | `makemigrations --check --dry-run` | no changes |
@@ -125,6 +125,22 @@ to PostgreSQL, empty and seeded, is outstanding.
 Node on PATH is v20.19.5, on which `vitest` cannot start a worker at all
 (`webidl.util.markAsUncloneable is not a function`, from jsdom's undici). The
 suite was run on the nvm-installed **22.22.2**, the exact version CI pins.
+
+## CI
+
+Two jobs were added on this branch, following the `m01-backend` / `m01-browser`
+pattern, because CI is the only place the container-backed suites can run:
+
+* **`m03-backend`** — migrations applied to an EMPTY database, then the seed, then
+  migrations re-applied to a POPULATED one, then the M03 suite against real
+  PostgreSQL 17.11, then a check that the served surface still matches the frozen
+  OpenAPI.
+* **`m03-browser`** — brings the real stack up with `dev.py up M03`, migrates,
+  seeds, and runs **both** the standalone and the browser suites against the
+  allocated URLs, uploading the evidence bundle.
+
+Their result on PR #4 is the only evidence that the container path works. Do not
+assume it from this document.
 
 ## Contract revision items found by implementing
 

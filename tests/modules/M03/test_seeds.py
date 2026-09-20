@@ -147,3 +147,27 @@ def test_the_seed_describes_no_real_person_school_or_holiday(db, clock):
     assert described["namespaces"]["m03_seed_rows"]["uuid5_namespace"] == str(
         uuid.uuid5(uuid.NAMESPACE_URL, "https://school.example/contracts/M03/seed")
     )
+
+
+def test_the_runner_can_name_every_scenario_this_module_offers(db, clock):
+    """`dev.py seed M03 --scenario <name>` reads SCENARIOS; a missing one is refused."""
+    from modules.timetable.seeds import SCENARIOS
+
+    declared = json.loads(
+        (
+            pathlib.Path(__file__).resolve().parents[3]
+            / "dev"
+            / "modules"
+            / "M03"
+            / "module.json"
+        ).read_text()
+    )["seed_scenarios"]
+    for name in declared:
+        assert name in SCENARIOS, name
+    assert SCENARIOS["empty"]() == {
+        "timetables": 0,
+        "periods": 0,
+        "slots": 0,
+        "exceptions": 0,
+        "substitutions": 0,
+    }
