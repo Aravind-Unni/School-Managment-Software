@@ -15,7 +15,7 @@ from .registry import AdapterKind, PortRegistry
 #: Every port the harness can fake. A module declaring a consumer absent from
 #: this map is a configuration error, not a silent no-op.
 FAKEABLE_PORTS: frozenset[str] = frozenset(
-    {"access", "registry", "platform", "notifications", "object_storage", "clock"}
+    {"access", "registry", "timetable", "platform", "notifications", "object_storage", "clock"}
 )
 
 
@@ -43,8 +43,10 @@ def build_fake_registry(
         FakeNotifications,
         FakeObjectStorage,
         FakeRegistry,
+        FakeTimetable,
         TestPlatformAdapter,
     )
+    from shared.fakes.registry import m04_baseline_registry_kwargs
 
     consumers = tuple(registration.consumers) if registration else ()
     unknown = sorted(set(consumers) - FAKEABLE_PORTS)
@@ -67,9 +69,16 @@ def build_fake_registry(
         adapter._now = clock.now
         return adapter
 
+    def registry_factory():
+        """Bind FakeRegistry, applying M04 baseline overlays when that module runs."""
+        if registration is not None and registration.id == "M04":
+            return FakeRegistry(**m04_baseline_registry_kwargs())
+        return FakeRegistry()
+
     factories = {
         "access": access_factory,
-        "registry": FakeRegistry,
+        "registry": registry_factory,
+        "timetable": FakeTimetable,
         "platform": lambda: TestPlatformAdapter(worker_available=worker_available),
         "notifications": FakeNotifications,
         "object_storage": FakeObjectStorage,

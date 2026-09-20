@@ -34,11 +34,23 @@ class FakeRegistry:
     Relationship resolution is pure table lookup over
     ``shared.fixtures``: G1 guards S1/S2, G2 guards only S3, T1 is class teacher
     of C1, T2 is unassigned. Anything else resolves to Relationship.NONE.
+
+    ``enrolment_overlay`` and ``section_membership_overlay`` let M04 (and later
+    modules) supply a scenario-specific cast without rewriting the default table
+    M03 tests rely on.
     """
 
-    def __init__(self, *, failures: FailureInjector | None = None) -> None:
-        """Build the adapter with optional failure injection."""
+    def __init__(
+        self,
+        *,
+        failures: FailureInjector | None = None,
+        enrolment_overlay: dict[UUID, tuple[UUID, ...]] | None = None,
+        section_membership_overlay: tuple[tuple[UUID, UUID], ...] | None = None,
+    ) -> None:
+        """Build the adapter with optional failure injection and scenario overlays."""
         self._failures = failures or FailureInjector()
+        self._enrolment_overlay = enrolment_overlay
+        self._section_membership_overlay = section_membership_overlay
 
     def get_student(
         self,
@@ -82,14 +94,16 @@ class FakeRegistry:
         if section_id not in (fixtures.CLASS_C1, fixtures.CLASS_C2):
             raise ObjectInaccessible("error.object_inaccessible")
 
-        members = [
-            student for student, section in fixtures.SECTION_MEMBERSHIP if section == section_id
-        ]
+        membership = self._section_membership_overlay or fixtures.SECTION_MEMBERSHIP
+        members = [student for student, section in membership if section == section_id]
+        enrolments = (
+            self._enrolment_overlay
+            if self._enrolment_overlay is not None
+            else SUBJECT_ENROLMENTS
+        )
         if subject_id is not None:
             members = [
-                student
-                for student in members
-                if subject_id in SUBJECT_ENROLMENTS.get(student, ())
+                student for student in members if subject_id in enrolments.get(student, ())
             ]
         return RosterDTO(
             section_id=section_id,
@@ -127,7 +141,13 @@ class FakeRegistry:
             facts,
             school_id=_school_of(student_id),
             effective_date=effective_date,
-            subject_ids=tuple(SUBJECT_ENROLMENTS.get(student_id, ())),
+            subject_ids=tuple(
+                (
+                    self._enrolment_overlay
+                    if self._enrolment_overlay is not None
+                    else SUBJECT_ENROLMENTS
+                ).get(student_id, ())
+            ),
             valid_until=RELATIONSHIP_EXPIRY.get((actor_id, student_id)),
         )
 
@@ -166,7 +186,14 @@ class FakeRegistry:
         self._failures.maybe_fail("registry.relationship_facts")
 
         actor = context.actor_id
-        section_id = fixtures.section_of(subject_person_id)
+        membership = self._section_membership_overlay or fixtures.SECTION_MEMBERSHIP
+        section_id = None
+        for candidate_student, candidate_section in membership:
+            if candidate_student == subject_person_id:
+                section_id = candidate_section
+                break
+        if section_id is None:
+            section_id = fixtures.section_of(subject_person_id)
 
         if actor == subject_person_id:
             relationship = Relationship.SELF
@@ -200,6 +227,27 @@ SUBJECT_ENROLMENTS: dict[UUID, tuple[UUID, ...]] = {
     fixtures.STUDENT_S2: (fixtures.SUBJECT_MALAYALAM,),
     fixtures.STUDENT_S3: (fixtures.SUBJECT_MATHS,),
 }
+
+
+def m04_baseline_registry_kwargs() -> dict[str, object]:
+    """Return FakeRegistry kwargs for the M04 baseline scenario.
+
+    S1 and S2 take maths + english; S3 is on C1 maths only (elective outsider for
+    English P2). Does not mutate the default SUBJECT_ENROLMENTS table.
+    """
+    return {
+        "enrolment_overlay": {
+            fixtures.STUDENT_S1: (fixtures.SUBJECT_MATHS, fixtures.SUBJECT_ENGLISH),
+            fixtures.STUDENT_S2: (fixtures.SUBJECT_MATHS, fixtures.SUBJECT_ENGLISH),
+            fixtures.STUDENT_S3: (fixtures.SUBJECT_MATHS,),
+        },
+        "section_membership_overlay": (
+            (fixtures.STUDENT_S1, fixtures.CLASS_C1),
+            (fixtures.STUDENT_S2, fixtures.CLASS_C1),
+            (fixtures.STUDENT_S3, fixtures.CLASS_C1),
+        ),
+    }
+
 
 #: Dated teaching assignments. T1 teaches C1; T2 appears nowhere.
 TEACHING_ASSIGNMENTS: dict[UUID, tuple[TeachingAssignment, ...]] = {
@@ -235,6 +283,7 @@ def _school_of(person_id: UUID) -> UUID | None:
         fixtures.GUARDIAN_G2,
         fixtures.TEACHER_T1,
         fixtures.TEACHER_T2,
+        fixtures.TEACHER_T3,
         fixtures.PRINCIPAL_P1,
     }
     if person_id in school_a:

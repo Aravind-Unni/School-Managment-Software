@@ -1,10 +1,7 @@
 # Contract packet -- M04 attendance
 
-Status: **NOT STARTED**. No executable contract exists for this module yet.
-
-Manifest revision this packet targets: `school-contracts-v3-draft`
-(the current draft in `contracts/manifest.json`; replace with the approved
-revision once review completes).
+Status: **APPROVED AND FROZEN** under revision `school-contracts-v5` on 2026-09-20
+by Abhinav M. Artefacts live under `contracts/M04/`.
 
 ---
 

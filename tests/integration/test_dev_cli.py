@@ -52,16 +52,16 @@ def test_every_declaration_slug_matches_the_backend_catalogue():
 def test_implemented_modules_are_exactly_those_with_a_registration():
     """Implementation status is derived from registration.py, never declared.
 
-    M00 (placeholder), M01 (access), M02 (registry) and M03 (timetable) are
-    implemented. Everything else must report not-implemented so `dev.py up` fails
-    honestly rather than booting an empty app.
+    M00 (placeholder), M01 (access), M02 (registry), M03 (timetable) and M04
+    (attendance) are implemented. Everything else must report not-implemented so
+    `dev.py up` fails honestly rather than booting an empty app.
     """
     from harness.modules import KNOWN_MODULE_IDS, load
 
     implemented = [
         module_id for module_id in KNOWN_MODULE_IDS if load(REPO_ROOT, module_id).implemented
     ]
-    assert implemented == ["M00", "M01", "M02", "M03"]
+    assert implemented == ["M00", "M01", "M02", "M03", "M04"]
 
 
 @pytest.mark.parametrize(
@@ -117,10 +117,10 @@ def test_no_secret_value_survives_doctor_output(monkeypatch):
 
 
 def test_an_unimplemented_module_is_refused_with_its_own_exit_code():
-    result = run_dev("up", "M04")
+    result = run_dev("up", "M05")
     assert result.returncode == 3
     assert "not implemented" in result.stderr
-    assert "contracts/M04/PACKET.md" in result.stderr
+    assert "contracts/M05/PACKET.md" in result.stderr
 
 
 def test_an_unknown_module_id_is_refused():

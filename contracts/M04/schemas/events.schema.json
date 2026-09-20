@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M04/events-proposed",
+  "title": "M04 attendance event payloads \u2014 PROPOSED, NOT FROZEN",
+  "description": "Payloads only. Envelope is frozen common. Packet names AttendanceSubmitted.v1 / AttendanceCorrected.v1 map to attendance.submitted / attendance.corrected (review item 1).",
+  "$defs": {
+    "attendance.submitted": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session_id",
+        "date",
+        "section_id",
+        "version"
+      ],
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "section_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "attendance.corrected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session_id",
+        "student_id",
+        "version"
+      ],
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  }
+}

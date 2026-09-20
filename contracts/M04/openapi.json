@@ -1,0 +1,1148 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "M04 Teacher Attendance and Corrections \u2014 PROPOSED, NOT FROZEN",
+    "version": "0.1.0-proposed",
+    "description": "Paths relative to /api/v1. Period/roster/permission validation is server-side. Idempotency-Key required on submit."
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "security": [
+    {
+      "session": []
+    }
+  ],
+  "paths": {
+    "/attendance/periods": {
+      "get": {
+        "operationId": "list_authorized_periods",
+        "summary": "Current actor's authorized dated timetable periods",
+        "x-permission": "attendance.read",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PeriodPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "422",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance/sessions": {
+      "post": {
+        "operationId": "create_or_get_session",
+        "summary": "Create draft session (or return existing) for a timetable period",
+        "x-permission": "attendance.mark",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Existing or new draft",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "422",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance/sessions/{id}": {
+      "put": {
+        "operationId": "save_session_entries",
+        "summary": "Save draft entries",
+        "x-permission": "attendance.mark",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved draft",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "422",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance/sessions/{id}/submit": {
+      "post": {
+        "operationId": "submit_session",
+        "summary": "Submit a draft session",
+        "x-permission": "attendance.submit",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Submitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "422",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance/entries/{id}/corrections": {
+      "post": {
+        "operationId": "correct_entry",
+        "summary": "Audited correction of a submitted entry",
+        "x-permission": "attendance.correct",
+        "x-recent-2fa": true,
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CorrectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Corrected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorrectionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "409",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "422",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/attendance/summary": {
+      "get": {
+        "operationId": "get_attendance_summary",
+        "summary": "Period-based counts for a student",
+        "x-permission": "attendance.read",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "subject_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttendanceSummaryDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "403",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "404",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "422",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session"
+      }
+    },
+    "schemas": {
+      "ErrorEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message_key",
+          "request_id",
+          "field_errors"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "unauthenticated",
+              "stale_auth",
+              "action_denied",
+              "object_inaccessible",
+              "version_conflict",
+              "state_conflict",
+              "validation_failed",
+              "rate_limited"
+            ]
+          },
+          "message_key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "request_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "field_errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "field",
+                "message_key"
+              ],
+              "properties": {
+                "field": {
+                  "type": "string"
+                },
+                "message_key": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "AttendanceStatus": {
+        "type": "string",
+        "enum": [
+          "unmarked",
+          "present",
+          "absent",
+          "late",
+          "excused"
+        ],
+        "description": "unmarked means no mark yet; never silently treated as present."
+      },
+      "WritableStatus": {
+        "type": "string",
+        "enum": [
+          "present",
+          "absent",
+          "late",
+          "excused"
+        ]
+      },
+      "SessionState": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "submitted"
+        ]
+      },
+      "RosterSnapshotEntry": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "student_id",
+          "enrolment_id",
+          "display_name"
+        ],
+        "properties": {
+          "student_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "enrolment_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "display_name": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "EntryDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "session_id",
+          "enrolment_id",
+          "student_id",
+          "status",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "session_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "enrolment_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "student_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AttendanceStatus"
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "AmendmentDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "entry_id",
+          "old_status",
+          "new_status",
+          "reason",
+          "actor_id",
+          "occurred_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "entry_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "old_status": {
+            "$ref": "#/components/schemas/WritableStatus"
+          },
+          "new_status": {
+            "$ref": "#/components/schemas/WritableStatus"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SessionDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Attendance session for one dated timetable period. Timetable and subject fields are server-verified.",
+        "required": [
+          "id",
+          "school_id",
+          "timetable_session_id",
+          "date",
+          "section_id",
+          "slot_id",
+          "subject_id",
+          "timetable_version",
+          "roster_version",
+          "roster_snapshot",
+          "state",
+          "version",
+          "entries"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "timetable_session_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "section_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subject_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "timetable_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "roster_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "roster_snapshot": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RosterSnapshotEntry"
+            }
+          },
+          "state": {
+            "$ref": "#/components/schemas/SessionState"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntryDTO"
+            }
+          },
+          "submitted_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "AuthorizedPeriodDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "One dated period the current actor may mark, with submission state.",
+        "required": [
+          "timetable_session_id",
+          "date",
+          "section_id",
+          "slot_id",
+          "slot_code",
+          "subject_id",
+          "assigned_teacher_id",
+          "starts_at",
+          "ends_at",
+          "cancelled",
+          "timetable_version",
+          "submission_state",
+          "missing_count"
+        ],
+        "properties": {
+          "timetable_session_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "section_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slot_code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "subject_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assigned_teacher_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "substitute_teacher_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "cancelled": {
+            "type": "boolean"
+          },
+          "timetable_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "session_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "submission_state": {
+            "type": "string",
+            "enum": [
+              "unopened",
+              "draft",
+              "submitted"
+            ]
+          },
+          "missing_count": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Roster pupils still unmarked; for unopened equals roster size."
+          }
+        }
+      },
+      "PeriodPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AuthorizedPeriodDTO"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "CreateSessionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "timetable_session_id"
+        ],
+        "properties": {
+          "timetable_session_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "SaveEntryInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "enrolment_id",
+          "status"
+        ],
+        "properties": {
+          "enrolment_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "$ref": "#/components/schemas/WritableStatus"
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 500
+          }
+        }
+      },
+      "SaveSessionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expected_version",
+          "entries"
+        ],
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SaveEntryInput"
+            }
+          }
+        }
+      },
+      "SubmitSessionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expected_version"
+        ],
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "CorrectionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "reason",
+          "expected_version"
+        ],
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/WritableStatus"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "CorrectionResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "entry",
+          "amendment",
+          "session_version"
+        ],
+        "properties": {
+          "entry": {
+            "$ref": "#/components/schemas/EntryDTO"
+          },
+          "amendment": {
+            "$ref": "#/components/schemas/AmendmentDTO"
+          },
+          "session_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "AttendanceSummaryDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Period-based counts. percentage and policy_version are null until a calculation version is configured.",
+        "required": [
+          "unit",
+          "student_id",
+          "from_date",
+          "to_date",
+          "eligible",
+          "marked",
+          "present",
+          "absent",
+          "late",
+          "excused",
+          "unmarked",
+          "updated_at"
+        ],
+        "properties": {
+          "unit": {
+            "type": "string",
+            "const": "period"
+          },
+          "student_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "from_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "to_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "subject_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "eligible": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "marked": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "present": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "absent": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "late": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "excused": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "unmarked": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "percentage": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\d+(\\.\\d{1,2})?$",
+            "description": "Decimal string when a calculation version is configured; otherwise null. Never inferred."
+          },
+          "policy_version": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

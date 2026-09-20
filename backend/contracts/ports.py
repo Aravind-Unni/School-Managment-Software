@@ -22,6 +22,12 @@ from .evidence import EvidenceRef, ResourceGrant
 from .identity import RequestContext
 from .people import RosterDTO, StudentDTO, TeachingAssignment
 from .scope import RelationshipFacts, ScopeFacts
+from .timetable import (
+    AttendanceSummaryDTO,
+    CalendarDayDTO,
+    PeriodSessionDTO,
+    TeachingAuthorityDTO,
+)
 
 
 @runtime_checkable
@@ -274,4 +280,92 @@ class NotificationPort(Protocol):
         variables: dict[str, object],
     ) -> str:
         """Queue a templated message and return its dispatch id."""
+        ...
+
+
+@runtime_checkable
+class TimetablePort(Protocol):
+    """Central timetable facts. Owned by M03 timetable.
+
+    Every method is read-only. Callers must not import the timetable ORM.
+    """
+
+    def get_sessions(
+        self,
+        context: RequestContext,
+        section_id: UUID,
+        effective_date: date,
+    ) -> tuple[PeriodSessionDTO, ...]:
+        """Return every eligible teaching period for a section on a date.
+
+        Published effective periods only. A holiday returns an empty tuple. A
+        cancelled period is returned with ``cancelled`` true.
+        """
+        ...
+
+    def get_session(
+        self,
+        context: RequestContext,
+        timetable_session_id: UUID,
+    ) -> PeriodSessionDTO:
+        """Return one dated period by its stable school-scoped identity.
+
+        Raises ObjectInaccessible for an unknown id AND for one in another
+        school, conflating the two.
+        """
+        ...
+
+    def get_calendar(
+        self,
+        context: RequestContext,
+        from_date: date,
+        to_date: date,
+    ) -> tuple[CalendarDayDTO, ...]:
+        """Return whether each date in an inclusive range is a teaching day."""
+        ...
+
+    def get_teaching_authority(
+        self,
+        context: RequestContext,
+        timetable_session_id: UUID,
+    ) -> TeachingAuthorityDTO:
+        """Return who may teach one dated period, and until when.
+
+        Reports a live substitute only while the substitution is still valid.
+        ``eligible_for_attendance`` is false for holidays and cancelled periods.
+        """
+        ...
+
+    def get_sessions_for_staff(
+        self,
+        context: RequestContext,
+        staff_id: UUID,
+        effective_date: date,
+    ) -> tuple[PeriodSessionDTO, ...]:
+        """Return dated periods where ``staff_id`` is assigned or live substitute.
+
+        Attendance uses this to build the teacher's day list. Cancelled and
+        holiday-empty days return accordingly. Does not authorise the caller;
+        the consumer asks Access and matches the actor to ``staff_id``.
+        """
+        ...
+
+
+@runtime_checkable
+class AttendancePort(Protocol):
+    """Period attendance facts. Owned by M04 attendance."""
+
+    def get_summary(
+        self,
+        context: RequestContext,
+        student_id: UUID,
+        from_date: date,
+        to_date: date,
+        subject_id: UUID | None = None,
+    ) -> AttendanceSummaryDTO:
+        """Return period-based counts for one pupil in an inclusive date range.
+
+        ``eligible`` includes non-cancelled scheduled periods with no attendance
+        row yet. ``percentage`` is None until a calculation version is configured.
+        """
         ...

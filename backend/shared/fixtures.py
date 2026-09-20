@@ -51,6 +51,7 @@ GUARDIAN_G1 = fixture_uuid("school_a.guardian.g1")
 GUARDIAN_G2 = fixture_uuid("school_a.guardian.g2")
 TEACHER_T1 = fixture_uuid("school_a.teacher.t1")
 TEACHER_T2 = fixture_uuid("school_a.teacher.t2")
+TEACHER_T3 = fixture_uuid("school_a.teacher.t3")
 PRINCIPAL_P1 = fixture_uuid("school_a.principal.p1")
 
 # --- School A structure ----------------------------------------------------
@@ -58,6 +59,7 @@ CLASS_C1 = fixture_uuid("school_a.section.c1")
 CLASS_C2 = fixture_uuid("school_a.section.c2")
 SUBJECT_MATHS = fixture_uuid("school_a.subject.maths")
 SUBJECT_MALAYALAM = fixture_uuid("school_a.subject.malayalam")
+SUBJECT_ENGLISH = fixture_uuid("school_a.subject.english")
 
 # --- School B (isolation counterparty) -------------------------------------
 STUDENT_S1_SCHOOL_B = fixture_uuid("school_b.student.s1")
@@ -120,9 +122,13 @@ FIXTURE_LABELS: dict[uuid.UUID, str] = {
     GUARDIAN_G2: "G2 (guardian of S3; unrelated to S1)",
     TEACHER_T1: "T1 (class teacher of C1)",
     TEACHER_T2: "T2 (unassigned)",
+    TEACHER_T3: "T3 (dated substitute)",
     PRINCIPAL_P1: "P1 (principal)",
     CLASS_C1: "C1",
     CLASS_C2: "C2",
+    SUBJECT_MATHS: "Mathematics",
+    SUBJECT_MALAYALAM: "Malayalam",
+    SUBJECT_ENGLISH: "English",
     STUDENT_S1_SCHOOL_B: "S1@SchoolB",
 }
 

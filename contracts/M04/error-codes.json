@@ -1,0 +1,144 @@
+{
+  "status": "proposed",
+  "note": "PROPOSED, NOT FROZEN. Reuses frozen ErrorCode values; message_key values are module-owned.",
+  "rows": [
+    {
+      "status": 400,
+      "code": "validation_failed",
+      "message_key": "error.client_asserted_identity",
+      "when": "Identity header present; rejected by shared transport."
+    },
+    {
+      "status": 401,
+      "code": "unauthenticated",
+      "message_key": "error.unauthenticated",
+      "when": "No server-derived session."
+    },
+    {
+      "status": 401,
+      "code": "stale_auth",
+      "message_key": "error.two_factor_required",
+      "when": "Correction without ever asserting 2FA (proposed; see review-decisions item 5)."
+    },
+    {
+      "status": 401,
+      "code": "stale_auth",
+      "message_key": "error.two_factor_stale",
+      "when": "Correction with 2FA older than 300s (proposed)."
+    },
+    {
+      "status": 403,
+      "code": "action_denied",
+      "message_key": "error.action_denied",
+      "when": "Actor lacks permission or is not the assigned/substitute teacher for that dated period."
+    },
+    {
+      "status": 404,
+      "code": "object_inaccessible",
+      "message_key": "error.object_inaccessible",
+      "when": "Absent or other-school session/entry/student. Never 403 for cross-school."
+    },
+    {
+      "status": 409,
+      "code": "version_conflict",
+      "message_key": "error.version_conflict",
+      "when": "expected_version mismatch."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "attendance.error.not_draft",
+      "when": "Saving entries on a submitted session; corrections use the corrections path."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "attendance.error.already_submitted",
+      "when": "Submit when session is already submitted (idempotent retry with same key returns existing; without key / different body is conflict)."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "attendance.error.period_not_eligible",
+      "when": "Create/save/submit against holiday, cancelled period, or ineligible teaching authority."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "attendance.error.roster_stale",
+      "when": "Trusted roster/timetable version diverged from session snapshot; reconciliation required."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "attendance.error.assignment_stale",
+      "when": "Effective teacher assignment/substitution no longer authorises this actor at submit time."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "attendance.error.correction_not_submitted",
+      "when": "Correction against an entry whose session is still draft."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.validation_failed",
+      "when": "Malformed body or unknown field (closed schemas)."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.server_internal_field_rejected",
+      "when": "Body carried school_id/actor_id/auth_level/grant."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "attendance.error.enrolment_not_on_roster",
+      "when": "Entry names an enrolment absent from the period's subject-filtered roster snapshot."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "attendance.error.status_unmarked_on_save",
+      "when": "Save/submit includes status unmarked; unmarked is the absence of a mark, not a writable status on save."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "attendance.error.incomplete_roster",
+      "when": "Submit while any roster pupil lacks a non-unmarked status."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "attendance.error.reason_required",
+      "when": "Correction missing a non-empty reason."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "attendance.error.invalid_status",
+      "when": "Status not in present|absent|late|excused (corrections) or save entries."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "attendance.error.idempotency_key_required",
+      "when": "Submit without Idempotency-Key header."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "attendance.error.date_range_invalid",
+      "when": "Summary from>to or unbounded range."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "attendance.error.unknown_timetable_session",
+      "when": "timetable_session_id not returned by Timetable for this school (also surfaces as 404 when indistinguishable)."
+    }
+  ]
+}

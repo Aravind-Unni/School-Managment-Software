@@ -1,0 +1,129 @@
+{
+  "status": "proposed",
+  "note": "PROPOSED ACCEPTANCE CASES, NOT TEST EVIDENCE.",
+  "scenario": "fixtures/scenario.json (baseline)",
+  "cases": [
+    {
+      "id": "A1",
+      "name": "baseline summary counts",
+      "given": "P1 submitted S1 present S2 absent S3 present; P2 unopened",
+      "expect": "S1/S2 eligible=2 marked=1 unmarked=1; S1 present=1; S2 absent=1; S3 eligible=1"
+    },
+    {
+      "id": "A2",
+      "name": "T1 cannot mark P2",
+      "given": "T1 creates session for P2",
+      "expect": "403 action_denied"
+    },
+    {
+      "id": "A3",
+      "name": "T3 can mark substituted P2 only",
+      "given": "Live substitution T3 on P2",
+      "expect": "T3 create/save/submit P2 succeeds; T3 on P1 is 403"
+    },
+    {
+      "id": "A4",
+      "name": "unknown timetable session",
+      "given": "Random uuid as timetable_session_id",
+      "expect": "404 object_inaccessible"
+    },
+    {
+      "id": "A5",
+      "name": "foreign school",
+      "given": "School B session id while actor is School A",
+      "expect": "404 never 403"
+    },
+    {
+      "id": "A6",
+      "name": "nonenrolled pupil rejected",
+      "given": "Save P2 with S3 enrolment",
+      "expect": "422 attendance.error.enrolment_not_on_roster"
+    },
+    {
+      "id": "A7",
+      "name": "unopened counts as unmarked",
+      "given": "No session row for P2",
+      "expect": "Summary unmarked includes P2; eligible still counts P2"
+    },
+    {
+      "id": "A8",
+      "name": "holiday/cancelled add no eligibility",
+      "given": "Holiday date and cancelled slot",
+      "expect": "eligible unchanged"
+    },
+    {
+      "id": "A9",
+      "name": "repeated submit one event",
+      "given": "Same Idempotency-Key twice",
+      "expect": "One attendance.submitted outbox row; second returns same session"
+    },
+    {
+      "id": "A10",
+      "name": "stale version 409",
+      "given": "expected_version behind",
+      "expect": "409 version_conflict"
+    },
+    {
+      "id": "A11",
+      "name": "schedule change draft to submit",
+      "given": "Timetable version bumps after draft",
+      "expect": "409 attendance.error.roster_stale or period_not_eligible; history preserved"
+    },
+    {
+      "id": "A12",
+      "name": "cancellation after submission",
+      "given": "Period cancelled after submit",
+      "expect": "Submitted records preserved; reconciliation updates derived eligibility without deleting history"
+    },
+    {
+      "id": "A13",
+      "name": "elective enrolment",
+      "given": "S3 on maths only",
+      "expect": "Absent from P2 English roster"
+    },
+    {
+      "id": "A14",
+      "name": "transfer history",
+      "given": "Pupil leaves section after D",
+      "expect": "D eligibility unchanged; later dates exclude"
+    },
+    {
+      "id": "A15",
+      "name": "concurrent duplicate submit",
+      "given": "Two submits same version different keys",
+      "expect": "One 200 one 409; one event"
+    },
+    {
+      "id": "A16",
+      "name": "no untouched present",
+      "given": "Create session without save",
+      "expect": "All entries unmarked; submit 422 incomplete_roster"
+    },
+    {
+      "id": "A17",
+      "name": "idempotent create",
+      "given": "POST sessions twice same period",
+      "expect": "Same session id returned"
+    },
+    {
+      "id": "P1",
+      "name": "PENDING real roster transfers",
+      "pending_integration": true
+    },
+    {
+      "id": "P2",
+      "name": "PENDING real substitutions",
+      "pending_integration": true
+    },
+    {
+      "id": "P3",
+      "name": "PENDING notifications",
+      "pending_integration": true
+    },
+    {
+      "id": "P4",
+      "name": "PENDING performance denominators",
+      "pending_integration": true
+    }
+  ]
+}

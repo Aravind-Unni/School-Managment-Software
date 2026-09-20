@@ -1,0 +1,157 @@
+{
+  "status": "proposed",
+  "name": "baseline",
+  "note": "PROPOSED. Wholly synthetic. Reuses B00/M03 fixture people and C1 where possible. SUBJECT_ENGLISH and TEACHER_T3 are proposed additive labels (review item 3). Enrolment overlay for M04: S1 and S2 take maths+english; S3 is the elective pupil on maths only (excluded from P2 English). Shared FakeRegistry SUBJECT_ENROLMENTS used by M03 is NOT changed.",
+  "namespaces": {
+    "people_and_structure": {
+      "uuid5_namespace": "6f1a9c2e-0b3d-4f5a-8c7b-1d2e3f4a5b6c"
+    },
+    "timetable_session_identity": {
+      "uuid5_namespace": "65fcadea-36c5-5d1a-a7ff-24c96473c1da",
+      "key": "{school_id}:{section_id}:{iso_date}:{slot_code}"
+    },
+    "m04_seed_rows": {
+      "uuid5_namespace": "fdba228f-cf0c-5eab-99e2-10fe69cde08d",
+      "derivation": "uuid5(NAMESPACE_URL, 'https://school.example/contracts/M04/seed')"
+    }
+  },
+  "clock": {
+    "frozen_at": "2026-07-15T04:30:00+00:00",
+    "school_local": "2026-07-15 10:00 Asia/Kolkata",
+    "weekday": "Wednesday"
+  },
+  "school": {
+    "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "isolation_counterparty": {
+      "school_id": "8e1e985f-ba74-5baa-82c6-b884525e416c"
+    }
+  },
+  "people": {
+    "T1": {
+      "staff_id": "eda913d7-a893-5ecc-af4e-766d1332b2ee",
+      "note": "Assigned teacher for P1 Mathematics"
+    },
+    "T2": {
+      "staff_id": "428b0e24-5a46-5ad0-8bc3-0c805633ad48",
+      "note": "Assigned teacher for P2 English; not authorised for P1"
+    },
+    "T3": {
+      "staff_id": "6dd5d579-d72c-5988-abb2-553e72f67b81",
+      "note": "PROPOSED additive. Dated substitute for P2 only on D."
+    },
+    "S1": {
+      "student_id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c",
+      "section": "C1",
+      "subjects": [
+        "maths",
+        "english"
+      ]
+    },
+    "S2": {
+      "student_id": "eceaa8ed-e2db-50cf-a649-557816565032",
+      "section": "C1",
+      "subjects": [
+        "maths",
+        "english"
+      ]
+    },
+    "S3": {
+      "student_id": "ed637961-b9dc-5669-be2d-8abe74934aa8",
+      "section": "C1",
+      "subjects": [
+        "maths"
+      ],
+      "note": "Elective pupil: on maths roster, outside English P2 roster"
+    }
+  },
+  "structure": {
+    "C1": {
+      "section_id": "86847c87-bedd-505d-9e2f-3bb35275320c"
+    },
+    "maths": {
+      "subject_id": "a0ba60ad-0b03-5fbc-8a07-11bb5c400ae4",
+      "label": "Mathematics"
+    },
+    "english": {
+      "subject_id": "0ccf091e-4787-5e16-85ec-a8d7bd2eedc0",
+      "label": "English",
+      "proposed_additive": true
+    },
+    "malayalam": {
+      "subject_id": "fbe5644b-2bda-5073-9cd3-d10640a0f568",
+      "note": "Present in shared fixtures; not used as P2 in this baseline"
+    }
+  },
+  "date_D": "2026-07-15",
+  "periods": {
+    "P1": {
+      "timetable_session_id": "97c3fae2-e694-53d6-aa64-b496ca2fef50",
+      "slot_code": "P1",
+      "subject": "maths",
+      "assigned_teacher": "T1",
+      "substitute_teacher": null,
+      "cancelled": false,
+      "roster": [
+        "S1",
+        "S2",
+        "S3"
+      ]
+    },
+    "P2": {
+      "timetable_session_id": "54db473a-8d8c-599a-81b3-55678d37d3a8",
+      "slot_code": "P2",
+      "subject": "english",
+      "assigned_teacher": "T2",
+      "substitute_teacher": "T3",
+      "cancelled": false,
+      "roster": [
+        "S1",
+        "S2"
+      ]
+    }
+  },
+  "also_includes": {
+    "holiday": {
+      "date": "2026-07-16",
+      "eligible_periods": 0
+    },
+    "cancelled_period": {
+      "note": "A third slot on D marked cancelled adds no eligibility"
+    },
+    "other_school_session": {
+      "note": "School B timetable_session_id -> 404"
+    }
+  },
+  "seeded_actions": {
+    "submit_P1": {
+      "S1": "present",
+      "S2": "absent",
+      "S3": "present"
+    },
+    "leave_P2": "unopened"
+  },
+  "expected_summaries_after_seed": {
+    "S1": {
+      "eligible": 2,
+      "marked": 1,
+      "present": 1,
+      "absent": 0,
+      "unmarked": 1
+    },
+    "S2": {
+      "eligible": 2,
+      "marked": 1,
+      "present": 0,
+      "absent": 1,
+      "unmarked": 1
+    },
+    "S3": {
+      "eligible": 1,
+      "marked": 1,
+      "present": 1,
+      "absent": 0,
+      "unmarked": 0,
+      "note": "Only maths P1; English P2 not eligible"
+    }
+  }
+}

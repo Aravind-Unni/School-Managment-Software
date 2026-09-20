@@ -1,0 +1,69 @@
+{
+  "status": "proposed",
+  "note": "Machine-checkable response shapes for the consumer suite. Values match scenario.json.",
+  "examples": [
+    {
+      "id": "R1",
+      "operation": "get_attendance_summary",
+      "for": "S1 after seed",
+      "body": {
+        "unit": "period",
+        "student_id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c",
+        "from_date": "2026-07-15",
+        "to_date": "2026-07-15",
+        "subject_id": null,
+        "eligible": 2,
+        "marked": 1,
+        "present": 1,
+        "absent": 0,
+        "late": 0,
+        "excused": 0,
+        "unmarked": 1,
+        "percentage": null,
+        "policy_version": null,
+        "updated_at": "2026-07-15T04:30:00+00:00"
+      }
+    },
+    {
+      "id": "R2",
+      "operation": "get_attendance_summary",
+      "for": "S2 after seed",
+      "body": {
+        "unit": "period",
+        "student_id": "eceaa8ed-e2db-50cf-a649-557816565032",
+        "from_date": "2026-07-15",
+        "to_date": "2026-07-15",
+        "subject_id": null,
+        "eligible": 2,
+        "marked": 1,
+        "present": 0,
+        "absent": 1,
+        "late": 0,
+        "excused": 0,
+        "unmarked": 1,
+        "percentage": null,
+        "policy_version": null,
+        "updated_at": "2026-07-15T04:30:00+00:00"
+      }
+    },
+    {
+      "id": "R3",
+      "operation": "attendance.submitted payload",
+      "body": {
+        "session_id": "00000000-0000-4000-8000-000000000001",
+        "date": "2026-07-15",
+        "section_id": "86847c87-bedd-505d-9e2f-3bb35275320c",
+        "version": 2
+      }
+    },
+    {
+      "id": "R4",
+      "operation": "attendance.corrected payload",
+      "body": {
+        "session_id": "00000000-0000-4000-8000-000000000001",
+        "student_id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c",
+        "version": 3
+      }
+    }
+  ]
+}
