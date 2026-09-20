@@ -13,8 +13,8 @@ browser suites not run.
 |---|---|
 | Branched from | `b046ad6e567e3a1e6d165d17ffd101c3821300be` |
 | Manifest | `school-contracts-v10` |
-| Draft PR | (set after open) |
-| Head commit | (see git log -1) |
+| Draft PR | https://github.com/Aravind-Unni/School-Managment-Software/pull/10 |
+| Head commit | `d09e0dfc78538fdc0a93aa00fab6793c6e58ba26` |
 
 ## Startup
 
