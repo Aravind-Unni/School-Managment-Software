@@ -7,7 +7,8 @@
 | Branch | `m05/assessments-grades` |
 | Started from | `619e933a331c69d5262945dcc297142672e39e2d` (`origin/main`) |
 | Manifest revision | `school-contracts-v6` |
-| PR | (open draft after push) |
+| PR | https://github.com/Aravind-Unni/School-Managment-Software/pull/6 (draft) |
+| Head commit | `c2fb1857e6ae429e52d8970ae8bb465776879957` |
 | Last recorded | 2026-09-20 |
 
 ## Original request

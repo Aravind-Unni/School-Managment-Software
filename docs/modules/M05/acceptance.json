@@ -5,7 +5,8 @@
   "reason_not_verified": "Standalone PostgreSQL suite not-run this session (no container stack). Contracts suite and local SQLite module suite observed green.",
   "contract_revision": "school-contracts-v6",
   "branch": "m05/assessments-grades",
-  "pr": null,
+  "commit": "c2fb1857e6ae429e52d8970ae8bb465776879957",
+  "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/6",
   "suites": {
     "contracts": "passed — manifest OK, arch_check 7, shared 105, M05 contract 6",
     "standalone": "not-run (no running stack)",
