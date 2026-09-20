@@ -1,6 +1,7 @@
 # Contract packet -- M05 assessment
 
-Status: **FROZEN** under revision `school-contracts-v6` (reviewed 2026-09-20 by Abhinav M).
+Status: **APPROVED AND FROZEN** under revision `school-contracts-v6` on 2026-09-20
+by Abhinav M. Artefacts live under `contracts/M05/`.
 
 Manifest revision: `school-contracts-v6`.
 
