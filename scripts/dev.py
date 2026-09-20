@@ -897,6 +897,10 @@ def _check_browser(declaration, names) -> int:
         cwd=frontend,
         env={
             **os.environ,
+            # The Playwright config selects the spec for the module whose stack
+            # is running. Without this the runner collected every spec and drove
+            # them at routes a one-module standalone stack does not serve.
+            "MODULE_ID": declaration.module_id,
             "SCHOOL_API_URL": f"http://127.0.0.1:{allocated['api']}",
             "SCHOOL_FRONTEND_URL": f"http://127.0.0.1:{allocated['frontend']}",
         },
