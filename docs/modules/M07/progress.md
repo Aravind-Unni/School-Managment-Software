@@ -2,47 +2,53 @@
 
 | | |
 |---|---|
-| Phase | Contract proposal — awaiting human freeze |
-| Status | Artefacts proposed under `contracts/M07/`. **Not frozen. No implementation yet.** |
+| Phase | Implementation complete; awaiting PostgreSQL/browser evidence |
+| Status | Contracts frozen + implemented. **STANDALONE_VERIFIED=false** (Docker not run this session). |
 | Branch | `m07/fees-payments-balances-receipts` |
 | Started from | `da0570c2efdd3e17ef852164d0a62a9265416fbf` (`origin/main`) |
-| Manifest revision | `school-contracts-v7` (current); proposed freeze → `school-contracts-v8` |
+| Manifest revision | `school-contracts-v8` |
 | PR | https://github.com/Aravind-Unni/School-Managment-Software/pull/8 (draft) |
-| Head commit | `768542a416a2f9ea1fcdb85fa7698e5bbf9111f9` |
+| Head commit | (see git) |
 | Last recorded | 2026-09-20 |
 
 ## Original request
 
 Build M07 fees, payments, balances and receipts as an independently runnable
-standalone module. Inspect contracts first, propose missing schemas for review,
-then implement. May commit/push/draft PR; no merge/deploy.
+standalone module. Contracts first; then implement. May commit/push/draft PR;
+no merge/deploy.
 
 ## Completed behavior
 
-- Source identity recorded (branch from latest main including M06).
-- Full contract proposal: OpenAPI, DTO/event schemas, error rows, `FeesPort`
-  signatures, consumer fixtures, acceptance cases, review-decisions (12 items).
+- Contracts approved and frozen (`school-contracts-v8`): OpenAPI, DTO/event
+  schemas, error rows, FeesPort, fixtures.
+- Shared `FeesPort` + fee DTOs in `backend/contracts/fees.py`.
+- Backend: fee plans, charges (`source_key`), payments (idempotency + receipts),
+  allocations with locks, concessions, refunds, reversals (2FA), statements,
+  overdue list, daily collections.
+- Frontend: setup, statement, collect, receipt, overdue, concessions (en+ml).
+- Seeds: baseline tuition 100000 + opening 25000 + bus 30000 for S1.
+- Acceptance: 21 tests in `tests/modules/M07/`.
 
-## Incomplete behavior
+## Incomplete / not-run
 
-- Human review / freeze of items 1–12 in `contracts/M07/review-decisions.md`
-- Implementation steps 1–4 (charge ledger → payments → corrections → bus/reconcile UI)
-- Suites, evidence, STANDALONE_VERIFIED
+- Standalone PostgreSQL suite — not run this session (use `dev.py up`).
+- Browser suite — not-run.
+- PENDING integration: real M01 2FA, real M08 transport charges, integrated
+  statements/reports, withdrawal preserves debt.
 
-## Changed interfaces (proposed only)
+## Test numbers observed
 
-- Additive `FeesPort` + fee DTOs in `backend/contracts` (not yet coded)
-- New `contracts/M07/*` artefacts (not yet in manifest freeze)
+```
+check M07 --suite contracts → PASS (manifest, arch 7, shared 105, M07 contract 6)
+MODULE_ID=M07 pytest tests/modules/M07 (test_sqlite) → 21 passed
+frontend vitest → 65 passed
+check M07 --suite standalone → not-run
+check M07 --suite browser → not-run
+```
 
 ## Exact next step
 
-1. Reviewer answers yes/no on the 12 items in `review-decisions.md`
-2. On approval: freeze under `school-contracts-v8`, run
-   `python3 scripts/contract_manifest.py --update`, then implement step 1
-   (charge ledger)
-
-## Blockers
-
-- **Human gate:** contract packet must be reviewed before coding (AGENTS.md).
-- Deferred policy (not freeze blockers): late fees, bus proration, concession
-  authority matrix — need signed school examples; baseline omits automation.
+1. `python3 scripts/dev.py up M07 --profile standalone`
+2. migrate + seed baseline; `check M07 --suite standalone`
+3. `check M07 --suite browser` if Playwright available
+4. `evidence M07`; set STANDALONE_VERIFIED only after peer verify from fresh checkout

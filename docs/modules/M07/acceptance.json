@@ -1,19 +1,16 @@
 {
   "module_id": "M07",
   "slug": "fees",
-  "status": "contracts_proposed",
+  "status": "implemented_awaiting_standalone_evidence",
   "standalone_verified": false,
   "branch": "m07/fees-payments-balances-receipts",
   "started_from": "da0570c2efdd3e17ef852164d0a62a9265416fbf",
-  "manifest_revision_at_start": "school-contracts-v7",
-  "proposed_freeze_revision": "school-contracts-v8",
-  "contract_review": {
-    "state": "awaiting_human",
-    "document": "contracts/M07/review-decisions.md",
-    "items": 12
-  },
+  "manifest_revision": "school-contracts-v8",
+  "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/8",
   "checks": {
-    "contracts": "not-run",
+    "contracts": "pass",
+    "module_sqlite": "21 passed",
+    "frontend_vitest": "65 passed",
     "standalone": "not-run",
     "browser": "not-run"
   },

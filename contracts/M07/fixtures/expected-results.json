@@ -1,5 +1,5 @@
 {
-  "status": "proposed",
+  "status": "frozen",
   "note": "ACCEPTANCE CASES, NOT TEST EVIDENCE. Seeded numbers from the manual.",
   "scenario": "fixtures/scenario.json (baseline)",
   "cases": [

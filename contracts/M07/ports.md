@@ -1,7 +1,6 @@
-# M07 service ports — PROPOSED, NOT FROZEN
+# M07 service ports — FROZEN under school-contracts-v8
 
-What M07 **provides** and what it **consumes**. Nothing here is frozen until the
-manifest says so.
+What M07 **provides** and what it **consumes**.
 
 M07 imports no other module. Dependencies are Protocols from
 `backend/contracts/ports.py`, bound to deterministic fakes in standalone.

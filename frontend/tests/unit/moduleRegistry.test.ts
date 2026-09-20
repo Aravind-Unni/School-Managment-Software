@@ -16,6 +16,7 @@ describe("module registry", () => {
       "M04",
       "M05",
       "M06",
+      "M07",
     ]);
   });
 
@@ -42,6 +43,11 @@ describe("module registry", () => {
       "nav.performance_dashboard",
       "nav.performance_at_risk",
       "nav.performance_interventions",
+      "nav.fees_setup",
+      "nav.fees_statement",
+      "nav.fees_collect",
+      "nav.fees_overdue",
+      "nav.fees_concessions",
     ]);
   });
 

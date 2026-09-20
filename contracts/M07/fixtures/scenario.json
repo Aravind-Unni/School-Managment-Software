@@ -1,26 +1,26 @@
 {
-  "status": "proposed",
-  "note": "Synthetic baseline for M07 standalone. Not real school data.",
+  "status": "frozen",
+  "note": "Synthetic baseline for M07 standalone. Uses shared fixture UUIDs.",
   "school_a": {
-    "school_id": "11111111-1111-1111-1111-111111111111",
-    "finance_actor_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "finance_actor_id": "5e101a6a-eca4-5a5f-b5ef-c2d776c939fe",
     "student_s1": {
-      "id": "b1111111-1111-1111-1111-111111111111",
+      "id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c",
       "admission_no": "A-1001",
-      "display_name": "Student One"
+      "display_name": "S1"
     },
     "student_s2": {
-      "id": "b2222222-2222-2222-2222-222222222222",
+      "id": "eceaa8ed-e2db-50cf-a649-557816565032",
       "admission_no": "A-1002",
-      "display_name": "Student Two"
+      "display_name": "S2"
     },
     "guardian_g1": {
-      "id": "g1111111-1111-1111-1111-111111111111",
-      "linked_student_id": "b1111111-1111-1111-1111-111111111111"
+      "id": "a98bf46f-c03f-59a9-96e4-5eb94f0cf4a7",
+      "linked_student_id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c"
     },
     "guardian_g2": {
-      "id": "g2222222-2222-2222-2222-222222222222",
-      "linked_student_id": "b2222222-2222-2222-2222-222222222222"
+      "id": "7731fd5f-a464-53df-9429-a515f8a06301",
+      "linked_student_id": "ed637961-b9dc-5669-be2d-8abe74934aa8"
     },
     "fee_heads": [
       { "code": "tuition", "label_key": "fees.head.tuition" },
@@ -40,7 +40,7 @@
         "fee_head_code": "opening_balance",
         "amount_paise": 25000,
         "due_date": "2026-04-01",
-        "source_key": "opening:b1111111-1111-1111-1111-111111111111"
+        "source_key": "opening:1e06f5ad-b530-51fa-a3be-e1bd65fd230c"
       },
       {
         "student": "s1",
@@ -53,11 +53,11 @@
     "as_of": "2026-06-20"
   },
   "school_b": {
-    "school_id": "22222222-2222-2222-2222-222222222222",
+    "school_id": "8e1e985f-ba74-5baa-82c6-b884525e416c",
     "student_foreign": {
-      "id": "b9999999-9999-9999-9999-999999999999",
+      "id": "131631b7-b975-56ae-80b3-4294fd4071ed",
       "admission_no": "B-9",
-      "display_name": "Foreign Student"
+      "display_name": "S1_B"
     }
   }
 }
