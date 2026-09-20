@@ -14,7 +14,8 @@ not run.
 |---|---|
 | Branched from | `6b6aef011b5f428b3d45ed0cd6761cfa88df8707` |
 | Manifest | `school-contracts-v9` |
-| Draft PR | not opened |
+| Draft PR | https://github.com/Aravind-Unni/School-Managment-Software/pull/9 |
+| Head commit | `a57b9fbf30e12e6a286451a0fc3660940d4c2334` |
 
 ## Startup
 

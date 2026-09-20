@@ -6,7 +6,8 @@
   "branch": "m08/bus-participation-fee-coordination",
   "started_from": "6b6aef011b5f428b3d45ed0cd6761cfa88df8707",
   "manifest_revision": "school-contracts-v9",
-  "pr": null,
+  "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/9",
+  "head_commit": "a57b9fbf30e12e6a286451a0fc3660940d4c2334",
   "checks": {
     "contracts": "pass",
     "module_sqlite": "18 passed",
