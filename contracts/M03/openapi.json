@@ -1,0 +1,3727 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "M03 Central Timetable and Calendar \u2014 PROPOSED, NOT FROZEN",
+    "version": "0.1.0-proposed",
+    "description": "Paths are relative to /api/v1. Every write body is closed: an unknown field is 422. Collections return items and next_cursor; there is no offset paging. Civil dates are Asia/Kolkata; instants are UTC."
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "security": [
+    {
+      "session": []
+    }
+  ],
+  "paths": {
+    "/timetables": {
+      "get": {
+        "operationId": "list_timetables",
+        "summary": "list timetable versions",
+        "x-permission": "timetable.read",
+        "x-recent-2fa": false,
+        "parameters": [
+          {
+            "name": "year_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "published",
+                "superseded"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimetablePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "description": "Every revision, current and historical. Historical versions stay listable because attendance reconciliation needs the revision it was recorded against."
+      },
+      "post": {
+        "operationId": "create_timetable",
+        "summary": "create a draft timetable version",
+        "x-permission": "timetable.edit",
+        "x-recent-2fa": false,
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Draft created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimetableVersionDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "description": "Always creates a draft. A draft is never served to a schedule reader; publication is a separate, separately authorised transition.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTimetableRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/timetables/current": {
+      "get": {
+        "operationId": "get_current_timetable",
+        "summary": "read the effective schedule for one section on one date",
+        "x-permission": "timetable.read_section",
+        "x-recent-2fa": false,
+        "parameters": [
+          {
+            "name": "section_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "student_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "How a pupil or guardian proves their relationship to the section. Staff with a dated teaching assignment need not send it."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SectionDayDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "description": "Returns published effective periods only, with substitutions and cancellations applied. A holiday returns no sessions, because a holiday has no eligible teaching period to attend."
+      }
+    },
+    "/timetables/{timetable_id}": {
+      "get": {
+        "operationId": "get_timetable",
+        "summary": "read one timetable version with its grid",
+        "x-permission": "timetable.read",
+        "x-recent-2fa": false,
+        "parameters": [
+          {
+            "name": "timetable_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimetableVersionDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "replace_timetable",
+        "summary": "replace a draft's grid",
+        "x-permission": "timetable.edit",
+        "x-recent-2fa": false,
+        "parameters": [
+          {
+            "name": "timetable_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TimetableVersionDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "description": "Draft only. A published version is immutable: correcting it is a new revision, so the schedule a past attendance register was taken against still exists.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplaceTimetableRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/timetables/{timetable_id}/validate": {
+      "post": {
+        "operationId": "validate_timetable",
+        "summary": "list the conflicts in a draft",
+        "x-permission": "timetable.edit",
+        "x-recent-2fa": false,
+        "parameters": [
+          {
+            "name": "timetable_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationReportDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "description": "Read-only. An empty conflict list is an observation, not a reservation: publish re-runs the same check inside its transaction."
+      }
+    },
+    "/timetables/{timetable_id}/publish": {
+      "post": {
+        "operationId": "publish_timetable",
+        "summary": "publish a draft",
+        "x-permission": "timetable.publish",
+        "x-recent-2fa": true,
+        "parameters": [
+          {
+            "name": "timetable_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishResultDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "description": "Refuses while any blocking conflict stands, and refuses a stale expected_version. Closes the previously effective version's range rather than deleting it.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teacher-schedule": {
+      "get": {
+        "operationId": "get_teacher_schedule",
+        "summary": "read one teacher's dated schedule",
+        "x-permission": "timetable.read_teacher",
+        "x-recent-2fa": false,
+        "parameters": [
+          {
+            "name": "staff_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeacherDayDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "description": "Includes periods the teacher is substituting on that date. Reading another staff member's day requires timetable.edit."
+      }
+    },
+    "/student-schedule": {
+      "get": {
+        "operationId": "get_student_schedule",
+        "summary": "read one pupil's dated schedule",
+        "x-permission": "timetable.read_student",
+        "x-recent-2fa": false,
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StudentDayDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "description": "The section's sessions, each marked with whether this pupil is enrolled in that subject offering on that date."
+      }
+    },
+    "/calendar": {
+      "get": {
+        "operationId": "get_calendar",
+        "summary": "read the school calendar over a range",
+        "x-permission": "timetable.read",
+        "x-recent-2fa": false,
+        "parameters": [
+          {
+            "name": "from_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "description": "A date is a school day when the effective version has periods for that weekday and no holiday is in force. The weekly pattern is the school's own period template, never a built-in assumption about which weekdays a school teaches."
+      }
+    },
+    "/calendar-exceptions": {
+      "get": {
+        "operationId": "list_calendar_exceptions",
+        "summary": "list calendar exceptions",
+        "x-permission": "timetable.read",
+        "x-recent-2fa": false,
+        "parameters": [
+          {
+            "name": "from_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "holiday",
+                "exam",
+                "event"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarExceptionPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "create_calendar_exception",
+        "summary": "record a calendar exception",
+        "x-permission": "timetable.edit",
+        "x-recent-2fa": false,
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Exception recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarExceptionDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CalendarExceptionRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/calendar-exceptions/{exception_id}": {
+      "put": {
+        "operationId": "update_calendar_exception",
+        "summary": "amend or withdraw a calendar exception",
+        "x-permission": "timetable.edit",
+        "x-recent-2fa": false,
+        "parameters": [
+          {
+            "name": "exception_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarExceptionDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCalendarExceptionRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teacher-unavailability": {
+      "get": {
+        "operationId": "list_teacher_unavailability",
+        "summary": "list unavailability intervals",
+        "x-permission": "timetable.edit",
+        "x-recent-2fa": false,
+        "parameters": [
+          {
+            "name": "staff_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "from_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeacherUnavailablePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "create_teacher_unavailability",
+        "summary": "record that a teacher cannot teach over an interval",
+        "x-permission": "timetable.edit",
+        "x-recent-2fa": false,
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Interval recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeacherUnavailableDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeacherUnavailableRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teacher-unavailability/{unavailability_id}": {
+      "put": {
+        "operationId": "update_teacher_unavailability",
+        "summary": "amend or withdraw an unavailability interval",
+        "x-permission": "timetable.edit",
+        "x-recent-2fa": false,
+        "parameters": [
+          {
+            "name": "unavailability_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeacherUnavailableDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTeacherUnavailableRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/substitutions": {
+      "get": {
+        "operationId": "list_substitutions",
+        "summary": "list substitutions",
+        "x-permission": "timetable.read",
+        "x-recent-2fa": false,
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "section_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "teacher_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubstitutionPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "create_substitution",
+        "summary": "assign a substitute to one dated period",
+        "x-permission": "timetable.substitute",
+        "x-recent-2fa": false,
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Substitution assigned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubstitutionDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "description": "The date must fall inside the effective version's range, on the weekday the slot is taught, and must not be a holiday or a cancelled session. valid_until expires the authority; it never becomes a standing class permission.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubstitutionRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/substitutions/{substitution_id}": {
+      "put": {
+        "operationId": "update_substitution",
+        "summary": "withdraw a substitution",
+        "x-permission": "timetable.substitute",
+        "x-recent-2fa": false,
+        "parameters": [
+          {
+            "name": "substitution_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubstitutionDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSubstitutionRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{timetable_session_id}": {
+      "get": {
+        "operationId": "get_session",
+        "summary": "read one dated period by its stable identity",
+        "x-permission": "timetable.read_section",
+        "x-recent-2fa": false,
+        "parameters": [
+          {
+            "name": "timetable_session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PeriodSessionDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{timetable_session_id}/cancellation": {
+      "put": {
+        "operationId": "set_session_cancellation",
+        "summary": "cancel or restore one dated period",
+        "x-permission": "timetable.edit",
+        "x-recent-2fa": false,
+        "parameters": [
+          {
+            "name": "timetable_session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PeriodSessionDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        },
+        "description": "A day override. It does not mutate the recurring schedule, and it does not create a new timetable revision.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionCancellationRequest"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "sessionid",
+        "description": "Server-derived. M01 owns real login; the standalone profile derives a fixed synthetic persona on loopback instead, and real authentication integration stays pending."
+      }
+    },
+    "schemas": {
+      "ErrorEnvelope": {
+        "type": "object",
+        "description": "The frozen error body. M03 adds no field to it; only message_key values are module-specific.",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "unauthenticated",
+              "stale_auth",
+              "action_denied",
+              "object_inaccessible",
+              "version_conflict",
+              "state_conflict",
+              "validation_failed",
+              "rate_limited"
+            ]
+          },
+          "message_key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "request_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "field_errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "One field-scoped validation problem.",
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "message_key": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "field",
+                "message_key"
+              ]
+            }
+          }
+        },
+        "required": [
+          "code",
+          "message_key",
+          "request_id",
+          "field_errors"
+        ]
+      },
+      "PeriodTemplateDTO": {
+        "type": "object",
+        "description": "One bell-time slot on one weekday, owned by a timetable version. Bell times can change between revisions, so the template belongs to the version rather than to the school.",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "timetable_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "day_of_week": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7,
+            "description": "ISO-8601 weekday: 1 Monday .. 7 Sunday."
+          },
+          "slot_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16,
+            "description": "The school's own short code for a period, e.g. 'P1'. School-authored; this module supplies no period naming convention."
+          },
+          "starts_at_local": {
+            "type": "string",
+            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+            "description": "Wall-clock time at the school (Asia/Kolkata). Never a UTC instant."
+          },
+          "ends_at_local": {
+            "type": "string",
+            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+            "description": "Wall-clock time at the school (Asia/Kolkata). Never a UTC instant."
+          }
+        },
+        "required": [
+          "id",
+          "school_id",
+          "timetable_id",
+          "day_of_week",
+          "slot_code",
+          "starts_at_local",
+          "ends_at_local"
+        ]
+      },
+      "SlotDTO": {
+        "type": "object",
+        "description": "One recurring teaching assignment: this section takes this subject from this teacher in this period, every week the version is effective.",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "timetable_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "period_template_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "day_of_week": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7,
+            "description": "ISO-8601 weekday: 1 Monday .. 7 Sunday."
+          },
+          "slot_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16,
+            "description": "The school's own short code for a period, e.g. 'P1'. School-authored; this module supplies no period naming convention."
+          },
+          "section_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subject_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teacher_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "room_code": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 32,
+            "description": "PROPOSED. Free text, school-authored. There is no Room aggregate and no room conflict detection: rooms were not among the owned records, so modelling them would widen the module."
+          }
+        },
+        "required": [
+          "id",
+          "school_id",
+          "timetable_id",
+          "period_template_id",
+          "day_of_week",
+          "slot_code",
+          "section_id",
+          "subject_id",
+          "teacher_id",
+          "room_code"
+        ]
+      },
+      "TimetableVersionDTO": {
+        "type": "object",
+        "description": "One dated revision of the central timetable. Periods and slots are its children and are replaced as a whole while it is a draft.",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "year_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "effective_from": {
+            "type": "string",
+            "format": "date"
+          },
+          "effective_to": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "superseded"
+            ]
+          },
+          "published_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "periods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PeriodTemplateDTO"
+            }
+          },
+          "slots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SlotDTO"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "school_id",
+          "version",
+          "year_id",
+          "effective_from",
+          "effective_to",
+          "state",
+          "published_at",
+          "periods",
+          "slots"
+        ]
+      },
+      "TimetableSummaryDTO": {
+        "type": "object",
+        "description": "A timetable version without its grid, for listing.",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "year_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "effective_from": {
+            "type": "string",
+            "format": "date"
+          },
+          "effective_to": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "superseded"
+            ]
+          },
+          "published_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "period_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "slot_count": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "id",
+          "school_id",
+          "version",
+          "year_id",
+          "effective_from",
+          "effective_to",
+          "state",
+          "published_at",
+          "period_count",
+          "slot_count"
+        ]
+      },
+      "ConflictDTO": {
+        "type": "object",
+        "description": "One detected conflict. 'blocking' true means publish refuses while it stands.",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "teacher_double_booked",
+              "section_double_booked",
+              "teacher_unavailable",
+              "teacher_not_assigned",
+              "period_overlap",
+              "slot_references_unknown_period",
+              "section_unknown_to_registry"
+            ]
+          },
+          "message_key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "blocking": {
+            "type": "boolean"
+          },
+          "slot_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "teacher_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "section_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "date": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          }
+        },
+        "required": [
+          "code",
+          "message_key",
+          "blocking",
+          "slot_ids",
+          "teacher_id",
+          "section_id",
+          "date"
+        ]
+      },
+      "ValidationReportDTO": {
+        "type": "object",
+        "description": "The result of validating a draft. An empty list means publish would be accepted at this moment; it is not a reservation.",
+        "additionalProperties": false,
+        "properties": {
+          "timetable_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "conflicts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConflictDTO"
+            }
+          }
+        },
+        "required": [
+          "timetable_id",
+          "version",
+          "conflicts"
+        ]
+      },
+      "PublishResultDTO": {
+        "type": "object",
+        "description": "The outcome of publishing a draft.",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "state": {
+            "type": "string",
+            "const": "published"
+          },
+          "effective_from": {
+            "type": "string",
+            "format": "date"
+          },
+          "effective_to": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "superseded_timetable_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id",
+          "school_id",
+          "version",
+          "state",
+          "effective_from",
+          "effective_to",
+          "superseded_timetable_id"
+        ]
+      },
+      "PeriodSessionDTO": {
+        "type": "object",
+        "description": "One dated teaching period. Its identity is stable across timetable revisions, so attendance written against it reconciles after a republish.",
+        "additionalProperties": false,
+        "properties": {
+          "timetable_session_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "section_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "slot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slot_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16,
+            "description": "The school's own short code for a period, e.g. 'P1'. School-authored; this module supplies no period naming convention."
+          },
+          "subject_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assigned_teacher_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "substitute_teacher_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "starts_at_local": {
+            "type": "string",
+            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+            "description": "Wall-clock time at the school (Asia/Kolkata). Never a UTC instant."
+          },
+          "ends_at_local": {
+            "type": "string",
+            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+            "description": "Wall-clock time at the school (Asia/Kolkata). Never a UTC instant."
+          },
+          "cancelled": {
+            "type": "boolean"
+          },
+          "cancellation_reason_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
+          },
+          "room_code": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 32
+          },
+          "timetable_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "timetable_version": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Aggregate version of the timetable that produced this session. Paired with timetable_id so a consumer can name the exact revision."
+          }
+        },
+        "required": [
+          "timetable_session_id",
+          "school_id",
+          "section_id",
+          "date",
+          "slot_id",
+          "slot_code",
+          "subject_id",
+          "assigned_teacher_id",
+          "substitute_teacher_id",
+          "starts_at",
+          "ends_at",
+          "starts_at_local",
+          "ends_at_local",
+          "cancelled",
+          "cancellation_reason_key",
+          "room_code",
+          "timetable_id",
+          "timetable_version"
+        ]
+      },
+      "SectionDayDTO": {
+        "type": "object",
+        "description": "The effective schedule for one section on one date, with the calendar answer that produced it.",
+        "additionalProperties": false,
+        "properties": {
+          "section_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "is_school_day": {
+            "type": "boolean"
+          },
+          "reason_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
+          },
+          "timetable_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "timetable_version": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          },
+          "sessions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PeriodSessionDTO"
+            }
+          }
+        },
+        "required": [
+          "section_id",
+          "date",
+          "is_school_day",
+          "reason_key",
+          "timetable_id",
+          "timetable_version",
+          "sessions"
+        ]
+      },
+      "TeacherDayDTO": {
+        "type": "object",
+        "description": "One teacher's dated schedule: periods they are assigned to, plus periods they are substituting on that date.",
+        "additionalProperties": false,
+        "properties": {
+          "staff_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "is_school_day": {
+            "type": "boolean"
+          },
+          "reason_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
+          },
+          "sessions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PeriodSessionDTO"
+            }
+          }
+        },
+        "required": [
+          "staff_id",
+          "date",
+          "is_school_day",
+          "reason_key",
+          "sessions"
+        ]
+      },
+      "StudentSessionDTO": {
+        "type": "object",
+        "description": "One session as a pupil sees it. 'enrolled' comes from the subject-filtered roster, so a pupil who does not take the subject sees a free period rather than a lesson they must attend.",
+        "additionalProperties": false,
+        "properties": {
+          "session": {
+            "$ref": "#/components/schemas/PeriodSessionDTO"
+          },
+          "enrolled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "session",
+          "enrolled"
+        ]
+      },
+      "StudentDayDTO": {
+        "type": "object",
+        "description": "One pupil's dated schedule, resolved through their section.",
+        "additionalProperties": false,
+        "properties": {
+          "student_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "section_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "is_school_day": {
+            "type": "boolean"
+          },
+          "reason_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
+          },
+          "sessions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StudentSessionDTO"
+            }
+          }
+        },
+        "required": [
+          "student_id",
+          "section_id",
+          "date",
+          "is_school_day",
+          "reason_key",
+          "sessions"
+        ]
+      },
+      "CalendarDayDTO": {
+        "type": "object",
+        "description": "Whether one date is a teaching day, and why not when it is not.",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "is_school_day": {
+            "type": "boolean"
+          },
+          "reason_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
+          },
+          "kinds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "holiday",
+                "exam",
+                "event"
+              ]
+            },
+            "description": "Every exception in force on the date. An exam day is a teaching day; a holiday is not."
+          }
+        },
+        "required": [
+          "date",
+          "is_school_day",
+          "reason_key",
+          "kinds"
+        ]
+      },
+      "CalendarDTO": {
+        "type": "object",
+        "description": "A dated range of calendar answers.",
+        "additionalProperties": false,
+        "properties": {
+          "from_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "to_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "days": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalendarDayDTO"
+            }
+          }
+        },
+        "required": [
+          "from_date",
+          "to_date",
+          "days"
+        ]
+      },
+      "CalendarExceptionDTO": {
+        "type": "object",
+        "description": "One school-authored exception to the weekly pattern.",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "holiday",
+              "exam",
+              "event"
+            ]
+          },
+          "reason_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
+          },
+          "withdrawn": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "school_id",
+          "version",
+          "date",
+          "kind",
+          "reason_key",
+          "withdrawn"
+        ]
+      },
+      "TeacherUnavailableDTO": {
+        "type": "object",
+        "description": "A half-open UTC interval during which a staff member cannot teach.",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "staff_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
+          },
+          "withdrawn": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "school_id",
+          "version",
+          "staff_id",
+          "starts_at",
+          "ends_at",
+          "reason_key",
+          "withdrawn"
+        ]
+      },
+      "SubstitutionDTO": {
+        "type": "object",
+        "description": "An explicit dated replacement for one period. It authorises the substitute for that session only, until valid_until.",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "slot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "timetable_session_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "section_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subject_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "original_teacher_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "substitute_teacher_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "valid_until": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "withdrawn": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "school_id",
+          "version",
+          "date",
+          "slot_id",
+          "timetable_session_id",
+          "section_id",
+          "subject_id",
+          "original_teacher_id",
+          "substitute_teacher_id",
+          "reason",
+          "valid_until",
+          "withdrawn"
+        ]
+      },
+      "TeachingAuthorityDTO": {
+        "type": "object",
+        "description": "The trusted fact M04 attendance combines with Access policy: who may record attendance for one dated period, and until when.",
+        "additionalProperties": false,
+        "properties": {
+          "timetable_session_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "section_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subject_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "assigned_teacher_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "substitute_teacher_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "substitution_valid_until": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "cancelled": {
+            "type": "boolean"
+          },
+          "eligible_for_attendance": {
+            "type": "boolean",
+            "description": "False on a holiday, for a cancelled session, and for a date outside every published effective range."
+          }
+        },
+        "required": [
+          "timetable_session_id",
+          "school_id",
+          "section_id",
+          "subject_id",
+          "date",
+          "assigned_teacher_id",
+          "substitute_teacher_id",
+          "substitution_valid_until",
+          "cancelled",
+          "eligible_for_attendance"
+        ]
+      },
+      "PeriodTemplateRequest": {
+        "type": "object",
+        "description": "One bell-time row in a draft grid.",
+        "additionalProperties": false,
+        "properties": {
+          "day_of_week": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7,
+            "description": "ISO-8601 weekday: 1 Monday .. 7 Sunday."
+          },
+          "slot_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16,
+            "description": "The school's own short code for a period, e.g. 'P1'. School-authored; this module supplies no period naming convention."
+          },
+          "starts_at_local": {
+            "type": "string",
+            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+            "description": "Wall-clock time at the school (Asia/Kolkata). Never a UTC instant."
+          },
+          "ends_at_local": {
+            "type": "string",
+            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+            "description": "Wall-clock time at the school (Asia/Kolkata). Never a UTC instant."
+          }
+        },
+        "required": [
+          "day_of_week",
+          "slot_code",
+          "starts_at_local",
+          "ends_at_local"
+        ]
+      },
+      "SlotRequest": {
+        "type": "object",
+        "description": "One cell in a draft grid. The period is named by weekday and slot code, not by id, so a grid can be sent before its period rows have ids.",
+        "additionalProperties": false,
+        "properties": {
+          "day_of_week": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7,
+            "description": "ISO-8601 weekday: 1 Monday .. 7 Sunday."
+          },
+          "slot_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16,
+            "description": "The school's own short code for a period, e.g. 'P1'. School-authored; this module supplies no period naming convention."
+          },
+          "section_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subject_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teacher_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "room_code": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 32
+          }
+        },
+        "required": [
+          "day_of_week",
+          "slot_code",
+          "section_id",
+          "subject_id",
+          "teacher_id"
+        ]
+      },
+      "CreateTimetableRequest": {
+        "type": "object",
+        "description": "Create a draft revision. Never creates a published one: publication is a separate, authorised transition.",
+        "additionalProperties": false,
+        "properties": {
+          "year_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "effective_from": {
+            "type": "string",
+            "format": "date"
+          },
+          "effective_to": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "periods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PeriodTemplateRequest"
+            }
+          },
+          "slots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SlotRequest"
+            }
+          }
+        },
+        "required": [
+          "year_id",
+          "effective_from",
+          "periods",
+          "slots"
+        ]
+      },
+      "ReplaceTimetableRequest": {
+        "type": "object",
+        "description": "Replace a draft's whole grid under optimistic locking. The editor saves a week, not a cell, so one transaction either takes the grid or refuses it.",
+        "additionalProperties": false,
+        "properties": {
+          "effective_from": {
+            "type": "string",
+            "format": "date"
+          },
+          "effective_to": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "periods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PeriodTemplateRequest"
+            }
+          },
+          "slots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SlotRequest"
+            }
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "effective_from",
+          "periods",
+          "slots",
+          "expected_version"
+        ]
+      },
+      "PublishRequest": {
+        "type": "object",
+        "description": "Publish the draft the caller last read.",
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "expected_version"
+        ]
+      },
+      "CalendarExceptionRequest": {
+        "type": "object",
+        "description": "Record one exception to the weekly pattern.",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "holiday",
+              "exam",
+              "event"
+            ]
+          },
+          "reason_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
+          }
+        },
+        "required": [
+          "date",
+          "kind"
+        ]
+      },
+      "UpdateCalendarExceptionRequest": {
+        "type": "object",
+        "description": "Amend or withdraw an exception. Withdrawn rather than deleted: a published schedule already referred to it.",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "holiday",
+              "exam",
+              "event"
+            ]
+          },
+          "reason_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
+          },
+          "withdrawn": {
+            "type": "boolean"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "kind",
+          "withdrawn",
+          "expected_version"
+        ]
+      },
+      "TeacherUnavailableRequest": {
+        "type": "object",
+        "description": "Record a staff member's unavailability as a half-open UTC interval.",
+        "additionalProperties": false,
+        "properties": {
+          "staff_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
+          }
+        },
+        "required": [
+          "staff_id",
+          "starts_at",
+          "ends_at"
+        ]
+      },
+      "UpdateTeacherUnavailableRequest": {
+        "type": "object",
+        "description": "Amend or withdraw an unavailability interval.",
+        "additionalProperties": false,
+        "properties": {
+          "starts_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
+          },
+          "withdrawn": {
+            "type": "boolean"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "starts_at",
+          "ends_at",
+          "withdrawn",
+          "expected_version"
+        ]
+      },
+      "SubstitutionRequest": {
+        "type": "object",
+        "description": "Assign a substitute to one dated period.",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "slot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teacher_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "valid_until": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "date",
+          "slot_id",
+          "teacher_id",
+          "reason"
+        ]
+      },
+      "UpdateSubstitutionRequest": {
+        "type": "object",
+        "description": "Withdraw a substitution. Withdrawn rather than deleted: attendance may already cite it.",
+        "additionalProperties": false,
+        "properties": {
+          "withdrawn": {
+            "type": "boolean"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "withdrawn",
+          "expected_version"
+        ]
+      },
+      "SessionCancellationRequest": {
+        "type": "object",
+        "description": "Cancel or restore one dated period without touching the recurring schedule.",
+        "additionalProperties": false,
+        "properties": {
+          "cancelled": {
+            "type": "boolean"
+          },
+          "reason_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
+          },
+          "expected_version": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "description": "The cancellation record's version. Null on the first cancellation of a session, which has no record yet."
+          }
+        },
+        "required": [
+          "cancelled",
+          "expected_version"
+        ]
+      },
+      "TimetablePage": {
+        "type": "object",
+        "description": "A page of timetable versions.",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimetableSummaryDTO"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ]
+      },
+      "CalendarExceptionPage": {
+        "type": "object",
+        "description": "A page of calendar exceptions.",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalendarExceptionDTO"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ]
+      },
+      "TeacherUnavailablePage": {
+        "type": "object",
+        "description": "A page of unavailability intervals.",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeacherUnavailableDTO"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ]
+      },
+      "SubstitutionPage": {
+        "type": "object",
+        "description": "A page of substitutions.",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubstitutionDTO"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ]
+      }
+    }
+  }
+}

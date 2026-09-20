@@ -1,0 +1,112 @@
+{
+  "module": "M03 central timetable and calendar",
+  "recorded_at": "2026-09-20",
+  "phase": "contract_proposal_awaiting_review",
+  "standalone_verified": false,
+  "standalone_verified_note": "False, and it cannot be true yet. STANDALONE_VERIFIED requires all requested module behaviour, passing standalone/contract/browser checks, migrations on fresh and populated data, both language views, and a second developer's verification from a fresh checkout. No module code exists.",
+  "source_identity": {
+    "repository": "https://github.com/Aravind-Unni/School-Managment-Software",
+    "branch": "m03/timetable-calendar",
+    "starting_commit": "aab4b6d79cc4c8ca9e10fb63b7b9d39c5cd8c81a",
+    "head_commit": "recorded at commit time; see git log on this branch",
+    "manifest_revision": "school-contracts-v4",
+    "module_status": "not_started",
+    "frozen": false,
+    "reviewed_by": null,
+    "reviewed_on": null,
+    "pr_url": null,
+    "pr_state": "not opened",
+    "validation_source": "Contract artefacts only. The seven M03 files are hashed in the manifest so drift is detected; none is frozen. No test of any M03 behaviour has been executed, because no M03 behaviour exists."
+  },
+  "startup_commands": [
+    "python3 scripts/dev.py doctor",
+    "python3 scripts/dev.py up M03 --profile standalone",
+    "python3 scripts/dev.py migrate M03 --profile standalone",
+    "python3 scripts/dev.py seed M03 --scenario baseline",
+    "python3 scripts/dev.py check M03 --suite standalone",
+    "python3 scripts/dev.py check M03 --suite contracts",
+    "python3 scripts/dev.py check M03 --suite browser",
+    "python3 scripts/dev.py evidence M03",
+    "python3 scripts/dev.py down M03"
+  ],
+  "startup_commands_note": "Declared, not executed. `dev.py up M03` currently refuses: the module has no registration.py, and refusing beats serving an empty app.",
+  "printed_urls": [],
+  "printed_urls_note": "None. Ports are allocated dynamically by the runner and must never be assumed.",
+  "fictional_login_instructions": {
+    "status": "not implemented",
+    "planned": "Standalone derives a fixed synthetic persona server-side on loopback only, defaulting to T1 (class teacher of C1). The browser cannot select it. Any client-asserted identity header is a hard 400. Real login, sessions and 2FA are M01's and remain explicitly pending."
+  },
+  "migrations": {
+    "status": "none",
+    "irreversible": [],
+    "note": "When they exist, they must apply to an empty database and to a seeded one, and any irreversible migration must be documented with its reason."
+  },
+  "commands_run_this_session": [
+    {
+      "command": "python3 scripts/dev.py doctor",
+      "result": "exit 2",
+      "detail": "No container engine: only dangling Docker Desktop symlinks. Node v20.19.5 is below the frontend's required ^22.22.2 || >=24. Python 3.13.2 and .venv present."
+    },
+    {
+      "command": "python3 scripts/dev.py check M00 --suite contracts",
+      "result": "passed",
+      "detail": "Manifest current at school-contracts-v4 (20 frozen entries); 7 architecture checks; 105 shared contract tests."
+    },
+    {
+      "command": "python3 scripts/contract_manifest.py --check",
+      "result": "failed, then passed",
+      "detail": "Failed on seven new unhashed M03 files, as designed. After --update it passes, with the M03 entries recorded frozen:false and the frozen-entry count unchanged at 20."
+    },
+    {
+      "command": "jsonschema validation of contracts/M03/fixtures/responses.json",
+      "result": "passed",
+      "detail": "12 response examples valid against the proposed DTO schema; 2 events valid against the frozen common event envelope and the proposed payload schemas; 0 failures."
+    }
+  ],
+  "suites": {
+    "contracts": {
+      "status": "not-run-for-M03",
+      "detail": "tests/modules/M03 does not exist. The shared contract suite passed under the M00 profile; that is the foundation's result, not M03's."
+    },
+    "standalone": {
+      "status": "not-run",
+      "reason": "No module code, and no container engine on this machine. This suite asserts real PostgreSQL behaviour and must never be replaced by the local SQLite profile."
+    },
+    "browser": {
+      "status": "not-run",
+      "reason": "No frontend feature, no running stack, and Node v20.19.5 is below the required version."
+    }
+  },
+  "acceptance_cases": {
+    "proposed": "contracts/M03/fixtures/expected-results.json — 22 cases",
+    "executed": 0,
+    "note": "Proposed cases are a specification of what must be proven. They are not evidence, and must never be reported as results."
+  },
+  "pending_integration_tests": [
+    {
+      "id": "P1",
+      "name": "real attendance authorisation for a dated substitution",
+      "status": "PENDING",
+      "run_when": "M04 exists and real Access is bound (Section C)"
+    },
+    {
+      "id": "P2",
+      "name": "real authentication and 2FA",
+      "status": "PENDING",
+      "run_when": "M01 is integrated"
+    },
+    {
+      "id": "P3",
+      "name": "real Registry provider for section, subject, staff and year lookups",
+      "status": "PENDING",
+      "run_when": "the additive Registry signatures in contracts/M03/ports.md are reviewed and M02 provides them"
+    }
+  ],
+  "blockers": [
+    "The contract review gate is open: 14 decisions in contracts/M03/review-decisions.md, three of which need the contract owner or the school.",
+    "No container engine on this machine (doctor exits 2): standalone and browser suites cannot run here.",
+    "Node v20.19.5 below the frontend's required ^22.22.2 || >=24: frontend typecheck, unit tests and production build cannot run here.",
+    "B00's own acceptance gate remains open — merged without peer review, four criteria unverified, container path never executed. Inherited; not closeable from M03.",
+    "The frozen RegistryPort exposes no section, subject, staff or academic-year lookup, so four validations cannot be performed."
+  ]
+}

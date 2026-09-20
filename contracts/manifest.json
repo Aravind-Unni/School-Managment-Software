@@ -251,8 +251,66 @@
       "status": "frozen"
     },
     "M03": {
-      "artefacts": [],
-      "fixtures": [],
+      "artefacts": [
+        {
+          "frozen": false,
+          "id": "M03/error-codes.json",
+          "kind": "json-schema",
+          "owner": "M03 timetable",
+          "path": "contracts/M03/error-codes.json",
+          "sha256": "fe562584475ac2eaee803824c6857decc3da68d4f5ca4239d2ab17b7fbb40019"
+        },
+        {
+          "frozen": false,
+          "id": "M03/openapi.json",
+          "kind": "openapi",
+          "owner": "M03 timetable",
+          "path": "contracts/M03/openapi.json",
+          "sha256": "bd1ecd444948fe3ded3ef6048f7255d45e460f7606003f40b46a7146f78c0bb2"
+        },
+        {
+          "frozen": false,
+          "id": "M03/schemas/dtos.schema.json",
+          "kind": "json-schema",
+          "owner": "M03 timetable",
+          "path": "contracts/M03/schemas/dtos.schema.json",
+          "sha256": "e92ff66e78d2b8ea6b4d9310c64f8de57c7f94875c99c1de967ba71e8f04cc57"
+        },
+        {
+          "frozen": false,
+          "id": "M03/schemas/events.schema.json",
+          "kind": "json-schema",
+          "owner": "M03 timetable",
+          "path": "contracts/M03/schemas/events.schema.json",
+          "sha256": "399802eb399391444aa35c07b7091ac8ee80abff32f25df8f9f77d5dd8448b65"
+        }
+      ],
+      "fixtures": [
+        {
+          "frozen": false,
+          "id": "M03/fixtures/expected-results.json",
+          "kind": "consumer-fixture",
+          "owner": "M03 timetable",
+          "path": "contracts/M03/fixtures/expected-results.json",
+          "sha256": "8965413dba828babdc8c8e1ab0e30fa2e6876e876e86fa961a295b12a4f4851a"
+        },
+        {
+          "frozen": false,
+          "id": "M03/fixtures/responses.json",
+          "kind": "consumer-fixture",
+          "owner": "M03 timetable",
+          "path": "contracts/M03/fixtures/responses.json",
+          "sha256": "b43420a0670888bf9aea499e3da33689efa57c4ef60b2324c8736ad7731bded0"
+        },
+        {
+          "frozen": false,
+          "id": "M03/fixtures/scenario.json",
+          "kind": "consumer-fixture",
+          "owner": "M03 timetable",
+          "path": "contracts/M03/fixtures/scenario.json",
+          "sha256": "7b0893af777672425aade9e66160b9770e04ed8d648d837be6335f40f2ac30e1"
+        }
+      ],
       "packet": "contracts/M03/PACKET.md",
       "slug": "timetable",
       "status": "not_started"

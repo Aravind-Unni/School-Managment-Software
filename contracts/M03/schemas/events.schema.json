@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M03/events-proposed",
+  "title": "M03 timetable event payloads \u2014 PROPOSED, NOT FROZEN",
+  "description": "Payloads only. The envelope is the frozen common one and M03 adds no field to it. The frozen envelope's event_type pattern is lowercase and two segments, which the packet's names (TimetablePublished.v1) do not match; see review-decisions.md, item 1.",
+  "$defs": {
+    "timetable.published": {
+      "type": "object",
+      "description": "Emitted in the publishing transaction. Named to satisfy the frozen event-envelope pattern; the packet calls it TimetablePublished.v1.",
+      "additionalProperties": false,
+      "properties": {
+        "timetable_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "effective_from": {
+          "type": "string",
+          "format": "date"
+        },
+        "effective_to": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "year_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "superseded_timetable_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "timetable_id",
+        "effective_from",
+        "version"
+      ]
+    },
+    "timetable.substitution_assigned": {
+      "type": "object",
+      "description": "Emitted in the substitution transaction. The packet calls it SubstitutionAssigned.v1.",
+      "additionalProperties": false,
+      "properties": {
+        "section_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "slot_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "timetable_session_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "teacher_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "valid_until": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "section_id",
+        "slot_id",
+        "teacher_id",
+        "date",
+        "valid_until"
+      ]
+    }
+  }
+}
