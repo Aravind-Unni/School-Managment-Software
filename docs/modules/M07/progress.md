@@ -8,7 +8,7 @@
 | Started from | `da0570c2efdd3e17ef852164d0a62a9265416fbf` (`origin/main`) |
 | Manifest revision | `school-contracts-v8` |
 | PR | https://github.com/Aravind-Unni/School-Managment-Software/pull/8 (draft) |
-| Head commit | (see git) |
+| Head commit | `253d7f1d6af5c3e8491957b675c9e0b3d1662921` |
 | Last recorded | 2026-09-20 |
 
 ## Original request
