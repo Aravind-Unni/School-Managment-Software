@@ -266,7 +266,7 @@
           "kind": "openapi",
           "owner": "M03 timetable",
           "path": "contracts/M03/openapi.json",
-          "sha256": "bd1ecd444948fe3ded3ef6048f7255d45e460f7606003f40b46a7146f78c0bb2"
+          "sha256": "0a87cf32cc9a9859e003cdfaf11089250fc03f6bd21ee0cfc5157c7ea6d9bef3"
         },
         {
           "frozen": true,
@@ -546,7 +546,7 @@
           "kind": "openapi",
           "owner": "M07 fees",
           "path": "contracts/M07/openapi.json",
-          "sha256": "9adb91826ea036a548a1dc74fce84af6dc17c28abec644d1225f233078c470c3"
+          "sha256": "c766e213668812a51fb759c1073e5e6f8f34ac3024d33c34ce54fcd8c041fdfb"
         },
         {
           "frozen": true,

@@ -123,3 +123,17 @@ export function isErrorEnvelope(value: unknown): value is ErrorEnvelope {
     Array.isArray(candidate["field_errors"])
   );
 }
+
+/** Map a thrown API or transport failure to renderable i18n keys. */
+export function toLoadError(error: unknown): {
+  readonly messageKey: string;
+  readonly requestId: string | null;
+} {
+  if (error instanceof ApiError) {
+    return { messageKey: error.messageKey, requestId: error.requestId };
+  }
+  if (error instanceof TransportError) {
+    return { messageKey: "error.transport", requestId: null };
+  }
+  return { messageKey: "error.transport", requestId: null };
+}

@@ -175,7 +175,7 @@ class RefundCollectionView(APIView):
 
 
 class FeeStatementView(APIView):
-    """GET /students/{id}/fee-statement."""
+    """GET /fees/students/{id}/fee-statement."""
 
     @extend_schema(
         operation_id="get_fee_statement",

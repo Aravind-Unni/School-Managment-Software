@@ -7,10 +7,13 @@
  */
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import * as api from "./api";
 import { Failure } from "./Feedback";
 import { useAccessMessages } from "./useMessages";
 import { toMessage } from "./Feedback";
+import { useSession } from "@app/SessionContext";
+import { TotpQrCode } from "./TotpQrCode";
 
 type Step =
   | { readonly kind: "password" }
@@ -23,6 +26,8 @@ type Step =
 
 export function LoginPage() {
   const t = useAccessMessages();
+  const navigate = useNavigate();
+  const { refresh } = useSession();
   const [step, setStep] = useState<Step>({ kind: "password" });
   const [loginName, setLoginName] = useState("");
   const [password, setPassword] = useState("");
@@ -46,6 +51,12 @@ export function LoginPage() {
     }
   }
 
+  const finishSignedIn = async (authLevel: string) => {
+    setStep({ kind: "done", authLevel });
+    await refresh();
+    navigate("/", { replace: true });
+  };
+
   const submitPassword = () =>
     guard(async () => {
       const challenge = await api.login({ loginName, password });
@@ -58,14 +69,14 @@ export function LoginPage() {
         });
         setStep({ kind: "enrol", challengeId: challenge.challenge_id, start });
       } else {
-        setStep({ kind: "done", authLevel: "password" });
+        await finishSignedIn("password");
       }
     });
 
   const submitCode = (challengeId: string) =>
     guard(async () => {
       const result = await api.verifyTotp({ challengeId, code });
-      setStep({ kind: "done", authLevel: result.auth_level });
+      await finishSignedIn(result.auth_level);
     });
 
   const submitEnrolment = (challengeId: string, factorId: string) =>
@@ -77,7 +88,7 @@ export function LoginPage() {
   const submitRecovery = (challengeId: string) =>
     guard(async () => {
       const result = await api.recover({ challengeId, recoveryCode });
-      setStep({ kind: "done", authLevel: result.auth_level });
+      await finishSignedIn(result.auth_level);
     });
 
   const submitLostDevice = () =>
@@ -99,7 +110,9 @@ export function LoginPage() {
                 ? t("access.challenge.useRecovery")
                 : step.kind === "lostDevice"
                   ? t("access.lostDevice.title")
-                  : t("access.challenge.title")}
+                  : step.kind === "done"
+                    ? t("access.login.title")
+                    : t("access.challenge.title")}
       </h2>
 
       {problem ? <Failure messageKey={problem.messageKey} requestId={problem.requestId} /> : null}
@@ -111,6 +124,7 @@ export function LoginPage() {
             void submitPassword();
           }}
         >
+          <p role="status">{t("access.login.helper")}</p>
           <label htmlFor="login-name">{t("access.login.name")}</label>
           <input
             id="login-name"
@@ -120,7 +134,6 @@ export function LoginPage() {
             onChange={(event) => setLoginName(event.target.value)}
             required
           />
-          <p>{t("access.login.helper")}</p>
           <label htmlFor="login-password">{t("access.login.password")}</label>
           <input
             id="login-password"
@@ -177,12 +190,34 @@ export function LoginPage() {
         <>
           <p>{t("access.enrol.intro")}</p>
           <p data-testid="no-phone-note">{t("access.enrol.noPhoneNote")}</p>
+          <h3>{t("access.enrol.scanQr")}</h3>
+          <p>{t("access.enrol.scanQrHelp")}</p>
+          <TotpQrCode
+            otpauthUri={step.start.otpauth_uri}
+            label={t("access.enrol.scanQr")}
+          />
           <h3>{t("access.enrol.manualSecret")}</h3>
           <p>{t("access.enrol.manualSecretHelp")}</p>
-          {/* The manual key is the accessible path: setup must not require a camera. */}
+          {/* Grouped for reading; clipboard copies the continuous base32 string. */}
           <output data-testid="manual-secret" style={{ fontFamily: "monospace" }}>
-            {step.start.secret_base32}
+            {step.start.secret_base32.replace(/(.{4})/g, "$1 ").trim()}
           </output>
+          <p>
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => {
+                void navigator.clipboard.writeText(step.start.secret_base32);
+              }}
+            >
+              {t("access.enrol.copySecret")}
+            </button>
+          </p>
+          <p role="status">
+            {t("access.enrol.totpProfile")
+              .replace("{digits}", String(step.start.digits))
+              .replace("{period}", String(step.start.period_seconds))}
+          </p>
           <form
             onSubmit={(event) => {
               event.preventDefault();
@@ -194,9 +229,12 @@ export function LoginPage() {
               id="enrol-code"
               name="code"
               inputMode="numeric"
+              autoComplete="one-time-code"
               pattern="[0-9]{6}"
               value={code}
-              onChange={(event) => setCode(event.target.value)}
+              onChange={(event) =>
+                setCode(event.target.value.replace(/\D/g, "").slice(0, 6))
+              }
               required
             />
             <button type="submit" disabled={busy}>

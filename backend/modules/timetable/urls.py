@@ -89,12 +89,12 @@ urlpatterns = [
         name="substitution-detail",
     ),
     path(
-        "sessions/<uuid:timetable_session_id>/cancellation",
+        "timetable-sessions/<uuid:timetable_session_id>/cancellation",
         SessionCancellationView.as_view(),
         name="session-cancellation",
     ),
     path(
-        "sessions/<uuid:timetable_session_id>",
+        "timetable-sessions/<uuid:timetable_session_id>",
         SessionDetailView.as_view(),
         name="session-detail",
     ),

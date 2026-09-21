@@ -27,6 +27,14 @@ export const feesMessages = {
     "fees.submit_payment": "Record payment",
     "fees.submit_concession": "Post concession",
     "fees.reverse": "Reverse payment",
+    "fees.setup_no_list":
+      "The API exposes POST /fee-plans only; existing plans from seed or prior creates are not listed here.",
+    "fees.head_code": "Head code",
+    "fees.head_label_key": "Label key",
+    "fees.due_date": "Due date",
+    "fees.plan_version": "Plan version",
+    "fees.submit_plan": "Create fee plan",
+    "fees.setup_heads": "Fee heads and schedule",
   },
   ml: {
     "nav.fees_setup": "ഫീസ് സജ്ജീകരണം",
@@ -54,5 +62,13 @@ export const feesMessages = {
     "fees.submit_payment": "പേയ്മെന്റ് രേഖപ്പെടുത്തുക",
     "fees.submit_concession": "ഇളവ് രേഖപ്പെടുത്തുക",
     "fees.reverse": "പേയ്മെന്റ് റിവേഴ്സ് ചെയ്യുക",
+    "fees.setup_no_list":
+      "API-യിൽ POST /fee-plans മാത്രമേ ഉള്ളൂ; seed/plan ലിസ്റ്റ് ഇവിടെ കാണിക്കില്ല.",
+    "fees.head_code": "ഹെഡ് കോഡ്",
+    "fees.head_label_key": "ലേബൽ കീ",
+    "fees.due_date": "അവസാന തീയതി",
+    "fees.plan_version": "പ്ലാൻ പതിപ്പ്",
+    "fees.submit_plan": "ഫീസ് പ്ലാൻ സൃഷ്ടിക്കുക",
+    "fees.setup_heads": "ഫീസ് ഹെഡുകളും ഷെഡ്യൂളും",
   },
 } as const;

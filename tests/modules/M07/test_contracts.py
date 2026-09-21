@@ -56,7 +56,7 @@ def test_openapi_lists_contract_operations():
     assert "/charges" in paths
     assert "/payments" in paths
     assert "/payments/{id}/reversals" in paths
-    assert "/students/{id}/fee-statement" in paths
+    assert "/fees/students/{id}/fee-statement" in paths
 
 
 def test_event_names_are_envelope_safe():

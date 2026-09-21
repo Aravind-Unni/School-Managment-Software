@@ -12,6 +12,7 @@ describe("module registry", () => {
     expect(REGISTERED_MODULES.map((module) => module.id)).toEqual([
       "M00",
       "M01",
+      "M02",
       "M03",
       "M04",
       "M05",
@@ -39,6 +40,8 @@ describe("module registry", () => {
       "nav.demo",
       "nav.security",
       "nav.roles",
+      "nav.registry_setup",
+      "nav.students",
       "nav.timetable_editor",
       "nav.timetable_substitutions",
       "nav.timetable_class",

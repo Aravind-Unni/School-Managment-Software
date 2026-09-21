@@ -1992,7 +1992,7 @@
         }
       }
     },
-    "/sessions/{timetable_session_id}": {
+    "/timetable-sessions/{timetable_session_id}": {
       "get": {
         "operationId": "get_session",
         "summary": "read one dated period by its stable identity",
@@ -2083,7 +2083,7 @@
         }
       }
     },
-    "/sessions/{timetable_session_id}/cancellation": {
+    "/timetable-sessions/{timetable_session_id}/cancellation": {
       "put": {
         "operationId": "set_session_cancellation",
         "summary": "cancel or restore one dated period",

@@ -112,7 +112,7 @@ def test_instants_are_utc_and_local_times_are_school_time(api, published):
 def test_one_session_is_readable_by_its_identity(api, published):
     session = session_for(api)
 
-    response = api.get(f"/sessions/{session['timetable_session_id']}")
+    response = api.get(f"/timetable-sessions/{session['timetable_session_id']}")
 
     assert response.status_code == 200
     assert response.json() == session
@@ -121,7 +121,7 @@ def test_one_session_is_readable_by_its_identity(api, published):
 def test_an_unknown_session_identity_is_404(api, published):
     unknown = uuid.uuid5(fixtures.FIXTURE_NAMESPACE, "not-a-session")
 
-    assert api.get(f"/sessions/{unknown}").status_code == 404
+    assert api.get(f"/timetable-sessions/{unknown}").status_code == 404
 
 
 def test_a_weekday_with_no_periods_produces_no_sessions(api, published):
@@ -351,7 +351,7 @@ def test_cancelling_a_session_does_not_touch_the_recurring_schedule(api, publish
     session = session_for(api)
 
     response = api.put(
-        f"/sessions/{session['timetable_session_id']}/cancellation",
+        f"/timetable-sessions/{session['timetable_session_id']}/cancellation",
         {
             "cancelled": True,
             "reason_key": "timetable.reason.cancelled",
@@ -369,7 +369,7 @@ def test_cancelling_a_session_does_not_touch_the_recurring_schedule(api, publish
 def test_a_cancelled_session_is_shown_rather_than_dropped(api, published):
     session = session_for(api)
     api.put(
-        f"/sessions/{session['timetable_session_id']}/cancellation",
+        f"/timetable-sessions/{session['timetable_session_id']}/cancellation",
         {"cancelled": True, "reason_key": None, "expected_version": None},
     )
 
@@ -391,14 +391,14 @@ def test_a_cancellation_can_be_reversed_under_its_own_version(api, published):
     """
     session = session_for(api)
     first = api.put(
-        f"/sessions/{session['timetable_session_id']}/cancellation",
+        f"/timetable-sessions/{session['timetable_session_id']}/cancellation",
         {"cancelled": True, "reason_key": None, "expected_version": None},
     )
     assert first.status_code == 200
     assert "version" not in first.json()
 
     restored = api.put(
-        f"/sessions/{session['timetable_session_id']}/cancellation",
+        f"/timetable-sessions/{session['timetable_session_id']}/cancellation",
         {"cancelled": False, "reason_key": None, "expected_version": 1},
     )
 
@@ -409,12 +409,12 @@ def test_a_cancellation_can_be_reversed_under_its_own_version(api, published):
 def test_a_stale_cancellation_version_is_refused(api, published):
     session = session_for(api)
     api.put(
-        f"/sessions/{session['timetable_session_id']}/cancellation",
+        f"/timetable-sessions/{session['timetable_session_id']}/cancellation",
         {"cancelled": True, "reason_key": None, "expected_version": None},
     )
 
     response = api.put(
-        f"/sessions/{session['timetable_session_id']}/cancellation",
+        f"/timetable-sessions/{session['timetable_session_id']}/cancellation",
         {"cancelled": False, "reason_key": None, "expected_version": None},
     )
 
@@ -425,7 +425,7 @@ def test_a_stale_cancellation_version_is_refused(api, published):
 def test_a_substitute_cannot_be_assigned_to_a_cancelled_session(api, published):
     session = session_for(api)
     api.put(
-        f"/sessions/{session['timetable_session_id']}/cancellation",
+        f"/timetable-sessions/{session['timetable_session_id']}/cancellation",
         {"cancelled": True, "reason_key": None, "expected_version": None},
     )
 
@@ -504,7 +504,7 @@ def test_a_substitution_expires(api, published, context_factory, clock):
 def test_a_cancelled_session_is_not_eligible_for_attendance(api, published, context_factory):
     session = session_for(api)
     api.put(
-        f"/sessions/{session['timetable_session_id']}/cancellation",
+        f"/timetable-sessions/{session['timetable_session_id']}/cancellation",
         {"cancelled": True, "reason_key": None, "expected_version": None},
     )
 
@@ -568,6 +568,6 @@ def test_a_historical_session_still_resolves_after_a_revision(
     assert authority.date == date(2026, 7, 8)
     assert authority.eligible_for_attendance is True
     assert (
-        api.get(f"/sessions/{historical['timetable_session_id']}").json()["timetable_id"]
+        api.get(f"/timetable-sessions/{historical['timetable_session_id']}").json()["timetable_id"]
         == published["id"]
     )

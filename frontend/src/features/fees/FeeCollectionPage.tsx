@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { useLanguage } from "@shared/i18n/LanguageContext";
 import { DEFAULT_STUDENT, postPayment, type PaymentReceiptDTO } from "./api";
+import { feeErrorMessageKey } from "./formatError";
 import { feesMessages } from "./locales/messages";
 
 export function FeeCollectionPage() {
-  const { language } = useLanguage();
+  const { language, t: translate } = useLanguage();
   const t = feesMessages[language];
   const [chargeId, setChargeId] = useState("");
   const [amount, setAmount] = useState("40000");
@@ -30,7 +31,7 @@ export function FeeCollectionPage() {
       });
       setReceipt(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "failed");
+      setError(translate(feeErrorMessageKey(err)));
     } finally {
       setSaving(false);
     }

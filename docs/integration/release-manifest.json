@@ -1,17 +1,17 @@
 {
   "document": "docs/integration/release-manifest.json",
-  "recorded_at": "2026-09-21T17:04:31Z",
-  "integration_branch": "c02/integration",
+  "recorded_at": "2026-09-21T18:31:54Z",
+  "integration_branch": "c02/path-collision-fix",
   "started_from_main": "63bbbca86e1bb771234487ba166631d275bd7ac5",
   "contract_revision": "school-contracts-v15",
   "contract_manifest_status": "reviewed",
   "INTEGRATION_VERIFIED": false,
-  "INTEGRATION_VERIFIED_note": "Not claimed. Suites not yet executed on this branch; hard blockers remain.",
+  "INTEGRATION_VERIFIED_note": "Suites contracts/integration/browser/load/restore observed on ALL integrated stack. INTEGRATION_VERIFIED remains false: M01 unfrozen, independent_approvals_count=0, full C02 journey matrix rows J5\u2013J14 not yet signed off. See journey-matrix.md.",
   "RELEASE_ACCEPTED": false,
-  "RELEASE_ACCEPTED_note": "Requires school and operations approval after INTEGRATION_VERIFIED.",
+  "RELEASE_ACCEPTED_note": "infra/prod pack ready. Needs VPS SSH/DNS/TLS, school+ops signatures on release-checklist.md after INTEGRATION_VERIFIED.",
   "independent_approvals_count": 0,
   "independent_approvals_required": 14,
-  "assembly_status": "host_wired_partial_suites_green",
+  "assembly_status": "host_wired_suites_green_gates_pending_humans",
   "hard_blockers": [
     {
       "id": "M01_contracts_unfrozen",
@@ -24,14 +24,9 @@
       "summary": "0 of 14 STANDALONE_VERIFIED."
     },
     {
-      "id": "no_container_engine",
-      "severity": "high",
-      "summary": "doctor exit 2; browser/load/restore/up all blocked."
-    },
-    {
       "id": "journeys_not_executed",
-      "severity": "critical",
-      "summary": "Required real C02 journeys not run on live integrated stack."
+      "severity": "high",
+      "summary": "Integrated browser smoke (5) passed; full C02 journey matrix J5\u2013J14 and 14/14 peer STANDALONE_VERIFIED still open."
     }
   ],
   "assembly_order": [
@@ -54,9 +49,9 @@
   "suites": {
     "contracts": "passed",
     "integration": "passed",
-    "browser": "not-run",
-    "load": "not-run",
-    "restore": "not-run"
+    "browser": "passed",
+    "load": "passed",
+    "restore": "passed"
   },
   "modules": {
     "M00": {
@@ -478,6 +473,7 @@
   "evidence_notes": [
     "Merge commit prefixes from gh pr view at inventory time; tip of main is 63bbbca (M14 merge).",
     "Inventory verified against backend/modules/*/registration.py presence and contracts/manifest.json, not stale foundation progress.md.",
-    "M02 completeness verified against OpenAPI path count and absence of RegistryPort under modules/registry/."
+    "M02 completeness verified against OpenAPI path count and absence of RegistryPort under modules/registry/.",
+    "2026-09-21: load+restore executors landed; browser ALL=integrated-smoke 5 passed; peer-verification.md opened."
   ]
 }

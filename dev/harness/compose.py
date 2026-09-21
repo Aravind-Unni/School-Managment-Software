@@ -363,9 +363,10 @@ def _frontend(
 ) -> list[str]:
     """Return the Vite dev server block.
 
-    VITE_SCHOOL_API_URL points at the HOST-published API port, not the container
-    hostname: the browser resolves it, and the browser is outside the Compose
-    network.
+    The browser must call the API on the same origin as the page so session and
+    CSRF cookies work. Vite therefore proxies ``/api`` (and health probes) to the
+    API service inside the Compose network via ``SCHOOL_API_PROXY_TARGET``.
+    ``VITE_SCHOOL_API_URL`` stays empty so the client uses relative URLs.
     """
     return [
         "  frontend:",
@@ -375,7 +376,8 @@ def _frontend(
         "      args:",
         f"        NODE_IMAGE: {_quote(images['node'])}",
         "    environment:",
-        "      VITE_SCHOOL_API_URL: " + _quote(f"http://127.0.0.1:{ports['api']}"),
+        '      VITE_SCHOOL_API_URL: ""',
+        '      SCHOOL_API_PROXY_TARGET: "http://api:8000"',
         f"      SCHOOL_FRONTEND_PORT: {_quote(FRONTEND_PORT)}",
         # Tells the bundle which module's feature routes to register. A standalone
         # profile serves ONE module; without this the frontend would mount every
@@ -391,6 +393,7 @@ def _frontend(
         f'      - "127.0.0.1:{ports["frontend"]}:{FRONTEND_PORT}"',
         "    volumes:",
         f"      - {REPO_ROOT_FROM_COMPOSE}/frontend/src:/app/frontend/src:ro",
+        f"      - {REPO_ROOT_FROM_COMPOSE}/frontend/vite.config.ts:/app/frontend/vite.config.ts:ro",
         f"      - {REPO_ROOT_FROM_COMPOSE}/contracts:/app/contracts:ro",
         "    depends_on:",
         "      api:",

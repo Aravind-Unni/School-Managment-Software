@@ -32,10 +32,16 @@ export const ACCESS_MESSAGES: Record<Language, Record<string, string>> = {
       "Your school requires a second step when you sign in.",
     "access.enrol.noPhoneNote":
       "You do not need your own phone. Any authenticator app, on a shared or school device, will work. Ask your teacher if you need help.",
+    "access.enrol.scanQr": "Scan this QR code with your authenticator app",
+    "access.enrol.scanQrHelp":
+      "Open Aegis, Google Authenticator, or any TOTP app and scan the code. Prefer this over typing the key.",
     "access.enrol.manualSecret":
       "Or type this key into your authenticator by hand",
     "access.enrol.manualSecretHelp":
-      "Use this if you cannot scan a code. Type it exactly, ignoring spaces.",
+      "Use this if you cannot scan. Spaces are only for reading — use Copy key, or type the letters ignoring spaces.",
+    "access.enrol.copySecret": "Copy key",
+    "access.enrol.totpProfile":
+      "App settings if asked: {digits} digits, {period}-second period, SHA-1.",
     "access.enrol.confirmCode": "Now enter the code your app shows",
     "access.enrol.confirm": "Activate",
     "access.enrol.password": "Confirm your password",
@@ -94,10 +100,16 @@ export const ACCESS_MESSAGES: Record<Language, Record<string, string>> = {
       "സൈൻ ഇൻ ചെയ്യുമ്പോൾ രണ്ടാമത്തെ ഘട്ടം നിങ്ങളുടെ സ്കൂൾ ആവശ്യപ്പെടുന്നു.",
     "access.enrol.noPhoneNote":
       "നിങ്ങൾക്ക് സ്വന്തം ഫോൺ ആവശ്യമില്ല. പങ്കിട്ട അല്ലെങ്കിൽ സ്കൂൾ ഉപകരണത്തിലെ ഏതെങ്കിലും ഓതന്റിക്കേറ്റർ ആപ്പ് പ്രവർത്തിക്കും. സഹായം വേണമെങ്കിൽ അധ്യാപകനോട് ചോദിക്കുക.",
+    "access.enrol.scanQr": "ഈ QR കോഡ് നിങ്ങളുടെ ഓതന്റിക്കേറ്റർ ആപ്പിൽ സ്കാൻ ചെയ്യുക",
+    "access.enrol.scanQrHelp":
+      "Aegis, Google Authenticator അല്ലെങ്കിൽ ഏതെങ്കിലും TOTP ആപ്പ് തുറന്ന് കോഡ് സ്കാൻ ചെയ്യുക. കീ ടൈപ്പ് ചെയ്യുന്നതിനേക്കാൾ ഇത് നല്ലതാണ്.",
     "access.enrol.manualSecret":
       "അല്ലെങ്കിൽ ഈ കീ നിങ്ങളുടെ ഓതന്റിക്കേറ്ററിൽ കൈകൊണ്ട് ടൈപ്പ് ചെയ്യുക",
     "access.enrol.manualSecretHelp":
-      "കോഡ് സ്കാൻ ചെയ്യാൻ കഴിയുന്നില്ലെങ്കിൽ ഇത് ഉപയോഗിക്കുക. സ്പേസുകൾ അവഗണിച്ച് കൃത്യമായി ടൈപ്പ് ചെയ്യുക.",
+      "സ്കാൻ ചെയ്യാൻ കഴിയുന്നില്ലെങ്കിൽ ഇത് ഉപയോഗിക്കുക. സ്പേസുകൾ വായനയ്ക്ക് മാത്രം — Copy key ഉപയോഗിക്കുക, അല്ലെങ്കിൽ സ്പേസുകൾ അവഗണിച്ച് ടൈപ്പ് ചെയ്യുക.",
+    "access.enrol.copySecret": "കീ പകർത്തുക",
+    "access.enrol.totpProfile":
+      "ചോദിച്ചാൽ ആപ്പ് ക്രമീകരണം: {digits} അക്കങ്ങൾ, {period} സെക്കൻഡ് കാലയളവ്, SHA-1.",
     "access.enrol.confirmCode": "ഇനി നിങ്ങളുടെ ആപ്പ് കാണിക്കുന്ന കോഡ് നൽകുക",
     "access.enrol.confirm": "സജീവമാക്കുക",
     "access.enrol.password": "നിങ്ങളുടെ പാസ്‌വേഡ് സ്ഥിരീകരിക്കുക",

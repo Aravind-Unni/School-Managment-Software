@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@shared/i18n/LanguageContext";
 import { DEFAULT_STUDENT, fetchStatement, type FeeStatementDTO } from "./api";
+import { feeErrorMessageKey } from "./formatError";
 import { feesMessages } from "./locales/messages";
 
 export function FeeStatementPage() {
-  const { language } = useLanguage();
+  const { language, t: translate } = useLanguage();
   const t = feesMessages[language];
   const [data, setData] = useState<FeeStatementDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -21,13 +22,9 @@ export function FeeStatementPage() {
           setError(null);
         }
       })
-      .catch((err: Error) => {
+      .catch((err: unknown) => {
         if (!cancelled) {
-          setError(
-            err.message.includes("403") || err.message.includes("404")
-              ? t["fees.denied"]
-              : err.message,
-          );
+          setError(translate(feeErrorMessageKey(err)));
         }
       })
       .finally(() => {
@@ -36,7 +33,7 @@ export function FeeStatementPage() {
     return () => {
       cancelled = true;
     };
-  }, [t]);
+  }, [t, translate]);
 
   return (
     <main>

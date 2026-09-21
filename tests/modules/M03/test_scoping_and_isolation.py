@@ -231,7 +231,7 @@ def test_another_school_s_session_identity_is_404(api, published):
         slot_code="P1",
     )
 
-    assert api.get(f"/sessions/{theirs}").status_code == 404
+    assert api.get(f"/timetable-sessions/{theirs}").status_code == 404
 
 
 def test_another_school_s_calendar_exception_does_not_affect_this_school(api, published):

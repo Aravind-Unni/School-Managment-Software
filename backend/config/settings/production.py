@@ -1,20 +1,20 @@
-"""Production profile. Refuses fakes, personas and demo fixtures at startup.
+"""Production profile: full school assembly with real adapters only.
 
-The refusal is enforced three ways, deliberately redundant because each catches
-a different mistake:
-  1. PortRegistry.register raises on any FAKE adapter under this profile.
-  2. assert_production_safe re-checks at boot, covering persona and demo flags.
-  3. scripts/arch_check.py fails CI when a production config selects a fake.
-
-The harness app is absent here: its audit/outbox tables are test infrastructure,
-and M14 owns the real ones.
+Assembles every approved business module (C02 order), binds real port
+providers, and refuses personas, fakes and demo fixtures. The development
+harness app is absent: M14 owns real audit/outbox tables.
 """
 
 from __future__ import annotations
 
+import importlib
+
 from config import env
+from config.real_ports import build_real_providers, required_ports_for
 from config.settings.base import *
-from config.settings.base import INSTALLED_APPS
+from config.settings.base import INSTALLED_APPS, MIDDLEWARE
+from shared.clock import SystemClock
+from shared.module_catalog import MODULE_SLUGS
 from shared.ports import PortRegistry, ProductionSafetyError
 
 APP_ENV = "production"
@@ -28,19 +28,64 @@ ALLOWED_HOSTS = [
     host.strip() for host in env.require("ALLOWED_HOSTS").split(",") if host.strip()
 ]
 
-#: Never installed in production: harness tables are test infrastructure.
-INSTALLED_APPS = list(INSTALLED_APPS)
+#: One deployment serves the whole school product, not a single MODULE_ID.
+MODULE_ID = "ALL"
+
+#: Same assembly order as integrated. M00 remains for foundation regression only;
+#: the product UI hides it from school roles.
+APPROVED_MODULE_IDS: tuple[str, ...] = (
+    "M00",
+    "M14",
+    "M01",
+    "M02",
+    "M12",
+    "M03",
+    "M04",
+    "M05",
+    "M07",
+    "M08",
+    "M09",
+    "M10",
+    "M06",
+    "M11",
+    "M13",
+)
+
+#: Never install the development harness in production.
+INSTALLED_APPS = list(INSTALLED_APPS) + [
+    f"modules.{MODULE_SLUGS[module_id]}" for module_id in APPROVED_MODULE_IDS
+]
 
 DEV_PERSONA = None
 DEV_PERSONA_MODE = "off"
+DEV_PERSONA_TRUSTED_NETWORKS: tuple[str, ...] = ()
 DEMO_FIXTURES_ENABLED = False
 
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+TOTP_ENCRYPTION_KEY = env.require("TOTP_ENCRYPTION_KEY")
+BROKER_URL = env.require("BROKER_URL")
+WORKER_AVAILABLE = True
+
+OBJECT_STORAGE_ENDPOINT = env.require("OBJECT_STORAGE_ENDPOINT")
+OBJECT_STORAGE_BUCKET = env.require("OBJECT_STORAGE_BUCKET")
+OBJECT_STORAGE_ACCESS_KEY = env.require("OBJECT_STORAGE_ACCESS_KEY")
+OBJECT_STORAGE_SECRET_KEY = env.require("OBJECT_STORAGE_SECRET_KEY")
+
+#: Wall clock — not the test FixedClock from base.
+SCHOOL_CLOCK = SystemClock()
+
+SECURE_SSL_REDIRECT = env.flag("SECURE_SSL_REDIRECT", default=True)
+SESSION_COOKIE_SECURE = SECURE_SSL_REDIRECT
+CSRF_COOKIE_SECURE = SECURE_SSL_REDIRECT
 SESSION_COOKIE_HTTPONLY = True
-SECURE_HSTS_SECONDS = 31536000
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_SECONDS = 31536000 if SECURE_SSL_REDIRECT else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_SSL_REDIRECT
+#: nginx terminates TLS and forwards the original scheme.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+
+#: Production is same-origin behind nginx; keep CORS empty.
+CORS_ALLOWED_ORIGINS: list[str] = []
+CORS_ALLOW_CREDENTIALS = True
 
 if env.optional("DEV_PERSONA_MODE", "off") not in ("", "off"):
     raise ProductionSafetyError(
@@ -52,16 +97,51 @@ if "shared.harness" in INSTALLED_APPS:
     )
 
 
-def build_port_registry(registration=None) -> PortRegistry:
-    """Return a production registry, which cannot hold a fake adapter.
+def _load_approved_registrations() -> list:
+    """Import every approved ModuleRegistration in assembly order."""
+    registrations = []
+    for module_id in APPROVED_MODULE_IDS:
+        slug = MODULE_SLUGS[module_id]
+        module = importlib.import_module(f"modules.{slug}.registration")
+        registrations.append(module.REGISTRATION)
+    return registrations
 
-    Real adapters are registered by M14's deployment wiring. B00 ships this
-    function returning an empty-but-validated registry so that the refusal path
-    is testable before any module exists.
+
+def build_port_registry(registration=None) -> PortRegistry:
+    """Bind real providers for every approved consumer; refuse fakes.
+
+    ``registration`` is ignored: production always binds the full assembly.
+    Raises when a required real provider is missing.
     """
+    del registration
+    registrations = _load_approved_registrations()
+    required = required_ports_for(registrations)
+    providers = build_real_providers(required)
+
     registry = PortRegistry(app_env=APP_ENV)
+    for port_name, (factory, kind) in providers.items():
+        registry.register(port_name, factory, kind=kind)
     registry.assert_production_safe(
         dev_persona_mode=env.optional("DEV_PERSONA_MODE", "off"),
         demo_fixtures_enabled=DEMO_FIXTURES_ENABLED,
     )
     return registry
+
+
+_APPROVED_REGISTRATIONS = _load_approved_registrations()
+
+_shared_mw = "shared.http.middleware.RequestContextMiddleware"
+_middleware = [m for m in MIDDLEWARE if m != _shared_mw]
+_index = _middleware.index("django.middleware.common.CommonMiddleware") + 1
+_extra_mw: list[str] = []
+_public: list[str] = []
+for _reg in _APPROVED_REGISTRATIONS:
+    _extra_mw.extend(list(_reg.middleware or ()))
+    _public.extend(list(_reg.absolute_public_paths))
+MIDDLEWARE = [
+    *_middleware[:_index],
+    *_extra_mw,
+    _shared_mw,
+    *_middleware[_index:],
+]
+SCHOOL_PUBLIC_PATH_PREFIXES = tuple(_public)

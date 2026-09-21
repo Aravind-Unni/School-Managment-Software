@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useLanguage } from "@shared/i18n/LanguageContext";
+import { postConcession } from "./api";
+import { feeErrorMessageKey } from "./formatError";
 import { feesMessages } from "./locales/messages";
 
 export function FeeConcessionPage() {
-  const { language } = useLanguage();
+  const { language, t: translate } = useLanguage();
   const t = feesMessages[language];
   const [chargeId, setChargeId] = useState("");
   const [amount, setAmount] = useState("10000");
@@ -18,22 +20,16 @@ export function FeeConcessionPage() {
     setSaving(true);
     setStatus(null);
     try {
-      const res = await fetch("/api/v1/concessions", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          charge_id: chargeId,
-          amount_paise: Number(amount),
-          reason,
-          source_key: `concession:ui:${chargeId}:${amount}`,
-          major: Number(amount) >= 50000,
-        }),
+      await postConcession({
+        charge_id: chargeId,
+        amount_paise: Number(amount),
+        reason,
+        source_key: `concession:ui:${chargeId}:${amount}`,
+        major: Number(amount) >= 50000,
       });
-      if (!res.ok) throw new Error(`concession_failed_${res.status}`);
       setStatus(t["fees.saved"]);
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : "failed");
+      setStatus(translate(feeErrorMessageKey(err)));
     } finally {
       setSaving(false);
     }

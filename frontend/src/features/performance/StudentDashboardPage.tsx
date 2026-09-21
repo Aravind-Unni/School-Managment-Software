@@ -3,35 +3,62 @@
  */
 
 import { useEffect, useState } from "react";
+import { fetchAll } from "@shared/api/client";
+import type { StudentRecord } from "@features/registry/api";
+import { useSession } from "@app/SessionContext";
 import { useLanguage } from "@shared/i18n/LanguageContext";
 import { fetchDashboard, type DashboardDTO } from "./api";
+import { performanceErrorMessage } from "./loadError";
 import { performanceMessages } from "./locales/messages";
-
-const DEFAULT_STUDENT = "1e06f5ad-b530-51fa-a3be-e1bd65fd230c";
 
 export function StudentDashboardPage() {
   const { language } = useLanguage();
   const t = performanceMessages[language];
+  const { session } = useSession();
+  const [students, setStudents] = useState<StudentRecord[]>([]);
+  const [studentId, setStudentId] = useState("");
   const [data, setData] = useState<DashboardDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
-    fetchDashboard(DEFAULT_STUDENT)
+    fetchAll<StudentRecord>("/api/v1/students")
+      .then((rows) => {
+        if (cancelled) return;
+        setStudents(rows);
+        const actorDefault =
+          session?.actor_id && rows.some((row) => row.id === session.actor_id)
+            ? session.actor_id
+            : (rows[0]?.id ?? "");
+        setStudentId((current) => current || actorDefault);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) setError(performanceErrorMessage(err, t["performance.denied"]));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [session?.actor_id, t]);
+
+  useEffect(() => {
+    if (!studentId) {
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    fetchDashboard(studentId)
       .then((dto) => {
         if (!cancelled) {
           setData(dto);
           setError(null);
         }
       })
-      .catch((err: Error) => {
+      .catch((err: unknown) => {
         if (!cancelled) {
-          setError(
-            err.message.includes("403") || err.message.includes("404")
-              ? t["performance.denied"]
-              : err.message,
-          );
+          setError(performanceErrorMessage(err, t["performance.denied"]));
+          setData(null);
         }
       })
       .finally(() => {
@@ -40,11 +67,23 @@ export function StudentDashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [t]);
+  }, [studentId, t]);
 
   return (
     <main>
       <h1>{t["performance.title"]}</h1>
+      {students.length > 1 && (
+        <label>
+          {t["performance.student_label"]}
+          <select value={studentId} onChange={(event) => setStudentId(event.target.value)}>
+            {students.map((row) => (
+              <option key={row.id} value={row.id}>
+                {row.display_name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       {loading && <p role="status">{t["performance.loading"]}</p>}
       {error && <p role="alert">{error}</p>}
       {!loading && !error && data && data.metrics.length === 0 && (

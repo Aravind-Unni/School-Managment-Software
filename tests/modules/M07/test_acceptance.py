@@ -189,7 +189,7 @@ def test_overpayment_tracked_as_credit(client, baseline):
 def test_unrelated_guardian_denied(client, baseline, as_persona):
     """A8: G2 cannot read S1 statement."""
     as_persona(fixtures.GUARDIAN_G2)
-    res = client.get(f"/api/v1/students/{fixtures.STUDENT_S1}/fee-statement")
+    res = client.get(f"/api/v1/fees/students/{fixtures.STUDENT_S1}/fee-statement")
     assert res.status_code == 404
 
 
@@ -215,7 +215,7 @@ def test_bus_source_key_conflict(client, baseline):
 
 def test_opening_totals_match_import(client, baseline):
     """A10: opening balance charge appears in statement totals."""
-    res = client.get(f"/api/v1/students/{fixtures.STUDENT_S1}/fee-statement")
+    res = client.get(f"/api/v1/fees/students/{fixtures.STUDENT_S1}/fee-statement")
     assert res.status_code == 200
     assert res.json()["balance"]["charged_paise"] == 155000
 
@@ -243,7 +243,7 @@ def test_no_float_in_amounts(client, baseline):
 
 def test_foreign_school_404(client, baseline):
     """A12: School B student id → 404."""
-    res = client.get(f"/api/v1/students/{fixtures.STUDENT_S1_SCHOOL_B}/fee-statement")
+    res = client.get(f"/api/v1/fees/students/{fixtures.STUDENT_S1_SCHOOL_B}/fee-statement")
     assert res.status_code == 404
 
 
@@ -368,5 +368,5 @@ def test_concurrent_allocations_safe(baseline, clock):
 def test_guardian_can_read_own_child(client, baseline, as_persona):
     """G1 can read S1 statement."""
     as_persona(fixtures.GUARDIAN_G1)
-    res = client.get(f"/api/v1/students/{fixtures.STUDENT_S1}/fee-statement")
+    res = client.get(f"/api/v1/fees/students/{fixtures.STUDENT_S1}/fee-statement")
     assert res.status_code == 200
