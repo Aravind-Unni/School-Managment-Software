@@ -1,0 +1,483 @@
+{
+  "document": "docs/integration/release-manifest.json",
+  "recorded_at": "2026-09-21T16:50:19Z",
+  "integration_branch": "c02/integration",
+  "started_from_main": "63bbbca86e1bb771234487ba166631d275bd7ac5",
+  "contract_revision": "school-contracts-v15",
+  "contract_manifest_status": "reviewed",
+  "INTEGRATION_VERIFIED": false,
+  "INTEGRATION_VERIFIED_note": "Not claimed. Suites not yet executed on this branch; hard blockers remain.",
+  "RELEASE_ACCEPTED": false,
+  "RELEASE_ACCEPTED_note": "Requires school and operations approval after INTEGRATION_VERIFIED.",
+  "independent_approvals_count": 0,
+  "independent_approvals_required": 14,
+  "assembly_status": "inventory_complete_wiring_not_started",
+  "hard_blockers": [
+    {
+      "id": "M01_contracts_unfrozen",
+      "severity": "high",
+      "summary": "M01 implementation is on main but contracts/manifest.json status is not_started."
+    },
+    {
+      "id": "M02_incomplete_no_RegistryPort",
+      "severity": "critical",
+      "summary": "M02 is step 1 of 4; no real RegistryPort; C02 journeys cannot pass."
+    },
+    {
+      "id": "zero_standalone_verified",
+      "severity": "high",
+      "summary": "0 of 14 modules have STANDALONE_VERIFIED true."
+    },
+    {
+      "id": "integrated_profile_scaffold_only",
+      "severity": "high",
+      "summary": "APPROVED_MODULE_IDS is still (M00,) and real_providers is empty at inventory time."
+    }
+  ],
+  "assembly_order": [
+    "M00",
+    "M14",
+    "M01",
+    "M02",
+    "M12",
+    "M03",
+    "M04",
+    "M05",
+    "M07",
+    "M08",
+    "M09",
+    "M10",
+    "M06",
+    "M11",
+    "M13"
+  ],
+  "suites": {
+    "contracts": "not-run",
+    "integration": "not-run",
+    "browser": "not-run",
+    "load": "not-run",
+    "restore": "not-run"
+  },
+  "modules": {
+    "M00": {
+      "slug": "demo",
+      "merge_commit": "1b01e7312e4bf4d0030c0623799863808d112ec2",
+      "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/1",
+      "contract_status": "frozen",
+      "standalone_verified": false,
+      "implementation": "placeholder_complete",
+      "provides_ports": [],
+      "consumes": [
+        "access",
+        "registry",
+        "platform",
+        "clock"
+      ],
+      "remaining_cases": [
+        "Not a business module; retained as foundation regression."
+      ],
+      "independent_approval": false
+    },
+    "M01": {
+      "slug": "access",
+      "merge_commit": "1d17113ea333b1c77743b6cfdfe3b3d2314089f1",
+      "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/2",
+      "contract_status": "not_started",
+      "standalone_verified": false,
+      "implementation": "merged_contracts_unfrozen",
+      "provides_ports": [
+        "access"
+      ],
+      "consumes": [
+        "registry",
+        "platform",
+        "clock"
+      ],
+      "remaining_cases": [
+        "Contract packet never frozen (manifest status not_started).",
+        "Human phase-exit / second-developer fresh checkout open.",
+        "Account-create endpoints incomplete per handoff.",
+        "Real M02 registry still pending for relationship-backed auth."
+      ],
+      "independent_approval": false,
+      "contract_conflict": {
+        "provider": "M01 access",
+        "issue": "Implementation merged to main while contracts/manifest.json lists M01 as not_started / unfrozen.",
+        "approved_schema": null,
+        "proposed_correction": "Human review of contracts/M01 packet; freeze via contracts/revision.json frozen_modules.M01; regenerate manifest. Do not silent-freeze during C02."
+      }
+    },
+    "M02": {
+      "slug": "registry",
+      "merge_commit": "aab4b6d79cc4c8ca9e10fb63b7b9d39c5cd8c81a",
+      "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/3",
+      "contract_status": "frozen",
+      "standalone_verified": false,
+      "implementation": "step_1_of_4",
+      "provides_ports": [],
+      "port_gap": "RegistryPort has no real provider; only FakeRegistry exists.",
+      "consumes": [
+        "access",
+        "platform",
+        "clock"
+      ],
+      "openapi_ops_implemented_approx": "17/81",
+      "remaining_cases": [
+        "Steps 2-4 not implemented: guardian links, teaching assignments, enrolments, subject enrolments, rosters.",
+        "No RegistryPort implementation.",
+        "No frontend.",
+        "Standalone/browser not-run."
+      ],
+      "independent_approval": false,
+      "blocks_integration_journeys": true
+    },
+    "M03": {
+      "slug": "timetable",
+      "merge_commit": "fd7751dbbeddfbcd3a526ad244a6e8fe0638a892",
+      "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/4",
+      "contract_status": "frozen",
+      "standalone_verified": false,
+      "implementation": "implemented_ci_suites_green",
+      "provides_ports": [
+        "timetable"
+      ],
+      "consumes": [
+        "access",
+        "registry",
+        "platform",
+        "clock"
+      ],
+      "remaining_cases": [
+        "STANDALONE_VERIFIED false: second-developer fresh checkout only remaining gate per handoff.",
+        "Pending real M01/M02 wiring for integrated journeys."
+      ],
+      "independent_approval": false
+    },
+    "M04": {
+      "slug": "attendance",
+      "merge_commit": "619e933a331c69d5262945dcc297142672e39e2d",
+      "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/5",
+      "contract_status": "frozen",
+      "standalone_verified": false,
+      "implementation": "implemented",
+      "provides_ports": [
+        "attendance"
+      ],
+      "consumes": [
+        "access",
+        "registry",
+        "timetable",
+        "platform",
+        "clock"
+      ],
+      "remaining_cases": [
+        "Second-developer verify; browser evidence; real roster/substitutions via M02/M03."
+      ],
+      "independent_approval": false
+    },
+    "M05": {
+      "slug": "assessment",
+      "merge_commit": "abe35b7c4621df8b6ebf111293401e80b4b255a1",
+      "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/6",
+      "contract_status": "frozen",
+      "standalone_verified": false,
+      "implementation": "implemented",
+      "provides_ports": [
+        "assessment"
+      ],
+      "consumes": [
+        "access",
+        "registry",
+        "files",
+        "platform",
+        "clock"
+      ],
+      "remaining_cases": [
+        "Standalone/browser not-run; real M12/M01; guardian revoke journey."
+      ],
+      "independent_approval": false
+    },
+    "M06": {
+      "slug": "performance",
+      "merge_commit": "da0570c2efdd3e17ef852164d0a62a9265416fbf",
+      "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/7",
+      "contract_status": "frozen",
+      "standalone_verified": false,
+      "implementation": "implemented",
+      "provides_ports": [
+        "performance"
+      ],
+      "consumes": [
+        "access",
+        "registry",
+        "assessment",
+        "attendance",
+        "platform",
+        "clock"
+      ],
+      "remaining_cases": [
+        "Standalone/browser not-run; real M04/M05 rebuild projections."
+      ],
+      "independent_approval": false
+    },
+    "M07": {
+      "slug": "fees",
+      "merge_commit": "6b6aef011b5f428b3d45ed0cd6761cfa88df8707",
+      "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/8",
+      "contract_status": "frozen",
+      "standalone_verified": false,
+      "implementation": "implemented",
+      "provides_ports": [
+        "fees"
+      ],
+      "consumes": [
+        "access",
+        "registry",
+        "platform",
+        "clock"
+      ],
+      "remaining_cases": [
+        "Docker/standalone evidence; M08 charges; withdrawal debt with real registry."
+      ],
+      "independent_approval": false
+    },
+    "M08": {
+      "slug": "transport",
+      "merge_commit": "b046ad6e567e3a1e6d165d17ffd101c3821300be",
+      "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/9",
+      "contract_status": "frozen",
+      "standalone_verified": false,
+      "implementation": "implemented",
+      "provides_ports": [],
+      "consumes": [
+        "access",
+        "registry",
+        "fees",
+        "platform",
+        "clock"
+      ],
+      "remaining_cases": [
+        "Standalone/browser not-run; real FeesPort lost-response journey."
+      ],
+      "independent_approval": false
+    },
+    "M09": {
+      "slug": "library",
+      "merge_commit": "3ae3f8cbc25e09d04cb9a409411072cd6fd9a1bc",
+      "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/10",
+      "contract_status": "frozen",
+      "standalone_verified": false,
+      "implementation": "implemented",
+      "provides_ports": [],
+      "consumes": [
+        "access",
+        "registry",
+        "platform",
+        "clock"
+      ],
+      "remaining_cases": [
+        "Standalone/browser not-run; real borrower contacts via M02."
+      ],
+      "independent_approval": false
+    },
+    "M10": {
+      "slug": "alumni",
+      "merge_commit": "8d84c00da9f3378514b91adc8b98c211dc77dfc9",
+      "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/11",
+      "contract_status": "frozen",
+      "standalone_verified": false,
+      "implementation": "implemented",
+      "provides_ports": [],
+      "consumes": [
+        "access",
+        "registry",
+        "platform",
+        "clock"
+      ],
+      "remaining_cases": [
+        "Standalone/browser not-run; student-left ingestion from registry."
+      ],
+      "independent_approval": false
+    },
+    "M11": {
+      "slug": "communications",
+      "merge_commit": "c3ece552164f4d7b99c8f688903f3892ecfeaeac",
+      "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/12",
+      "contract_status": "frozen",
+      "standalone_verified": false,
+      "implementation": "implemented",
+      "provides_ports": [
+        "notifications"
+      ],
+      "consumes": [
+        "access",
+        "registry",
+        "platform",
+        "clock"
+      ],
+      "remaining_cases": [
+        "Standalone/browser not-run; controlled SMS sandbox; real registry audiences."
+      ],
+      "independent_approval": false
+    },
+    "M12": {
+      "slug": "files",
+      "merge_commit": "3d0b03bbae4d7509ec5c27ef8e4a029d4eebdf13",
+      "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/13",
+      "contract_status": "frozen",
+      "standalone_verified": false,
+      "implementation": "implemented",
+      "provides_ports": [
+        "files"
+      ],
+      "consumes": [
+        "access",
+        "platform",
+        "clock"
+      ],
+      "remaining_cases": [
+        "Standalone/browser not-run; M01 2FA; assessment gates; backup lifecycle."
+      ],
+      "independent_approval": false
+    },
+    "M13": {
+      "slug": "exchange",
+      "merge_commit": "a2f16c24dc6a7c7004e5358a094f0bd0fc5760dd",
+      "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/14",
+      "contract_status": "frozen",
+      "standalone_verified": false,
+      "implementation": "implemented",
+      "provides_ports": [],
+      "consumes": [
+        "access",
+        "registry",
+        "files",
+        "fees",
+        "platform",
+        "clock"
+      ],
+      "remaining_cases": [
+        "Standalone/browser/worker not-run; real domain adapters; revoked guardian downloads."
+      ],
+      "independent_approval": false
+    },
+    "M14": {
+      "slug": "platform",
+      "merge_commit": "63bbbca86e1bb771234487ba166631d275bd7ac5",
+      "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/15",
+      "contract_status": "frozen",
+      "standalone_verified": false,
+      "implementation": "implemented_container_pending",
+      "provides_ports": [
+        "platform"
+      ],
+      "consumes": [
+        "access",
+        "clock",
+        "object_storage",
+        "platform"
+      ],
+      "remaining_cases": [
+        "Container path pending; RPO/RTO measurement; real domain jobs."
+      ],
+      "independent_approval": false
+    }
+  },
+  "accepted_merge_commits": {
+    "B00": {
+      "pr": 1,
+      "merge_commit": "1b01e7312e4bf4d0030c0623799863808d112ec2",
+      "merged_at": "2026-09-19T03:48:23Z",
+      "url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/1"
+    },
+    "M01": {
+      "pr": 2,
+      "merge_commit": "1d17113ea333b1c77743b6cfdfe3b3d2314089f1",
+      "merged_at": "2026-09-19T16:17:08Z",
+      "url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/2"
+    },
+    "M02": {
+      "pr": 3,
+      "merge_commit": "aab4b6d79cc4c8ca9e10fb63b7b9d39c5cd8c81a",
+      "merged_at": "2026-09-19T19:57:29Z",
+      "url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/3"
+    },
+    "M03": {
+      "pr": 4,
+      "merge_commit": "fd7751dbbeddfbcd3a526ad244a6e8fe0638a892",
+      "merged_at": "2026-09-20T16:22:55Z",
+      "url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/4"
+    },
+    "M04": {
+      "pr": 5,
+      "merge_commit": "619e933a331c69d5262945dcc297142672e39e2d",
+      "merged_at": "2026-09-20T17:06:09Z",
+      "url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/5"
+    },
+    "M05": {
+      "pr": 6,
+      "merge_commit": "abe35b7c4621df8b6ebf111293401e80b4b255a1",
+      "merged_at": "2026-09-20T17:46:41Z",
+      "url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/6"
+    },
+    "M06": {
+      "pr": 7,
+      "merge_commit": "da0570c2efdd3e17ef852164d0a62a9265416fbf",
+      "merged_at": "2026-09-20T18:21:51Z",
+      "url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/7"
+    },
+    "M07": {
+      "pr": 8,
+      "merge_commit": "6b6aef011b5f428b3d45ed0cd6761cfa88df8707",
+      "merged_at": "2026-09-20T19:00:42Z",
+      "url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/8"
+    },
+    "M08": {
+      "pr": 9,
+      "merge_commit": "b046ad6e567e3a1e6d165d17ffd101c3821300be",
+      "merged_at": "2026-09-20T20:00:31Z",
+      "url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/9"
+    },
+    "M09": {
+      "pr": 10,
+      "merge_commit": "3ae3f8cbc25e09d04cb9a409411072cd6fd9a1bc",
+      "merged_at": "2026-09-20T20:27:39Z",
+      "url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/10"
+    },
+    "M10": {
+      "pr": 11,
+      "merge_commit": "8d84c00da9f3378514b91adc8b98c211dc77dfc9",
+      "merged_at": "2026-09-20T20:50:59Z",
+      "url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/11"
+    },
+    "M11": {
+      "pr": 12,
+      "merge_commit": "c3ece552164f4d7b99c8f688903f3892ecfeaeac",
+      "merged_at": "2026-09-21T13:38:25Z",
+      "url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/12"
+    },
+    "M12": {
+      "pr": 13,
+      "merge_commit": "3d0b03bbae4d7509ec5c27ef8e4a029d4eebdf13",
+      "merged_at": "2026-09-21T14:55:59Z",
+      "url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/13"
+    },
+    "M13": {
+      "pr": 14,
+      "merge_commit": "a2f16c24dc6a7c7004e5358a094f0bd0fc5760dd",
+      "merged_at": "2026-09-21T15:50:01Z",
+      "url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/14"
+    },
+    "M14": {
+      "pr": 15,
+      "merge_commit": "63bbbca86e1bb771234487ba166631d275bd7ac5",
+      "merged_at": "2026-09-21T16:38:52Z",
+      "url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/15"
+    }
+  },
+  "evidence_notes": [
+    "Merge commit prefixes from gh pr view at inventory time; tip of main is 63bbbca (M14 merge).",
+    "Inventory verified against backend/modules/*/registration.py presence and contracts/manifest.json, not stale foundation progress.md.",
+    "M02 completeness verified against OpenAPI path count and absence of RegistryPort under modules/registry/."
+  ]
+}
