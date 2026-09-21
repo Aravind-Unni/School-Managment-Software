@@ -34,10 +34,9 @@ class FilesPort(Protocol):
 
     def issue_read(self, context, grant: ResourceGrant) -> ReadUrlDTO: ...
 
-    def store_artifact(
-        self, context, purpose, content_ref, mime, sha256
-    ) -> ArtifactRef: ...
+    def store_artifact(self, context, purpose, content_ref, mime, sha256) -> ArtifactRef: ...
 ```
+
 
 DTO shapes match `schemas/dtos.schema.json` and `backend/contracts/files.py`.
 
