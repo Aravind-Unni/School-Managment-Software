@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M11/events",
+  "title": "M11 communications event payloads",
+  "description": "Payloads only. Envelope is frozen common. event_type uses dotted snake; schema_version on envelope is 1. No full phone numbers.",
+  "$defs": {
+    "communications.notice_published": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["notice_id", "audience_snapshot_id"],
+      "properties": {
+        "notice_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "audience_snapshot_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "communications.delivery_status_changed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["delivery_id", "state"],
+      "properties": {
+        "delivery_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "queued",
+            "sending",
+            "accepted",
+            "delivered",
+            "failed",
+            "unknown"
+          ]
+        }
+      }
+    }
+  }
+}
