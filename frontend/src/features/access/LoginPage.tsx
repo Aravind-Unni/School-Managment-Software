@@ -13,6 +13,7 @@ import { Failure } from "./Feedback";
 import { useAccessMessages } from "./useMessages";
 import { toMessage } from "./Feedback";
 import { useSession } from "@app/SessionContext";
+import { TotpQrCode } from "./TotpQrCode";
 
 type Step =
   | { readonly kind: "password" }
@@ -189,12 +190,34 @@ export function LoginPage() {
         <>
           <p>{t("access.enrol.intro")}</p>
           <p data-testid="no-phone-note">{t("access.enrol.noPhoneNote")}</p>
+          <h3>{t("access.enrol.scanQr")}</h3>
+          <p>{t("access.enrol.scanQrHelp")}</p>
+          <TotpQrCode
+            otpauthUri={step.start.otpauth_uri}
+            label={t("access.enrol.scanQr")}
+          />
           <h3>{t("access.enrol.manualSecret")}</h3>
           <p>{t("access.enrol.manualSecretHelp")}</p>
-          {/* The manual key is the accessible path: setup must not require a camera. */}
+          {/* Grouped for reading; clipboard copies the continuous base32 string. */}
           <output data-testid="manual-secret" style={{ fontFamily: "monospace" }}>
-            {step.start.secret_base32}
+            {step.start.secret_base32.replace(/(.{4})/g, "$1 ").trim()}
           </output>
+          <p>
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => {
+                void navigator.clipboard.writeText(step.start.secret_base32);
+              }}
+            >
+              {t("access.enrol.copySecret")}
+            </button>
+          </p>
+          <p role="status">
+            {t("access.enrol.totpProfile")
+              .replace("{digits}", String(step.start.digits))
+              .replace("{period}", String(step.start.period_seconds))}
+          </p>
           <form
             onSubmit={(event) => {
               event.preventDefault();
@@ -206,9 +229,12 @@ export function LoginPage() {
               id="enrol-code"
               name="code"
               inputMode="numeric"
+              autoComplete="one-time-code"
               pattern="[0-9]{6}"
               value={code}
-              onChange={(event) => setCode(event.target.value)}
+              onChange={(event) =>
+                setCode(event.target.value.replace(/\D/g, "").slice(0, 6))
+              }
               required
             />
             <button type="submit" disabled={busy}>

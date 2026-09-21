@@ -20,10 +20,11 @@ from config.settings.base import (
     HARNESS_APPS,
     INSTALLED_APPS,
     MODULE_ID,
-    SCHOOL_CLOCK,
+    SCHOOL_CLOCK as BASE_SCHOOL_CLOCK,
 )
 from contracts.registration import ModuleRegistration
 from shared import fixtures
+from shared.clock import SystemClock
 from shared.http.context import DevPersona
 from shared.module_catalog import address_for
 from shared.ports import PortRegistry, build_fake_registry
@@ -38,6 +39,11 @@ INSTALLED_APPS = INSTALLED_APPS + HARNESS_APPS + [MODULE_ADDRESS.django_app]
 DATABASES = {"default": env.parse_database_url(env.require("DATABASE_URL")).as_django()}
 
 SCHOOL_ID = env.optional("SCHOOL_ID") or str(fixtures.SCHOOL_A)
+
+#: M01 enrolment is tested with real authenticator apps on this profile; a
+#: FixedClock would make every Aegis/Google Authenticator code fail. Other
+#: modules keep the base FixedClock so date-sensitive seeds stay stable.
+SCHOOL_CLOCK = SystemClock() if MODULE_ID == "M01" else BASE_SCHOOL_CLOCK
 
 #: Development persona: chosen here, server-side. The browser cannot select it.
 #: Defaults to T1, class teacher of C1, so a developer opening the demo page

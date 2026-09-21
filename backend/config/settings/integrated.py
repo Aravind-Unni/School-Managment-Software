@@ -18,12 +18,17 @@ import importlib
 from config import env
 from config.real_ports import build_real_providers, required_ports_for
 from config.settings.base import *
-from config.settings.base import HARNESS_APPS, INSTALLED_APPS, MIDDLEWARE, SCHOOL_CLOCK
+from config.settings.base import HARNESS_APPS, INSTALLED_APPS, MIDDLEWARE
 from shared import fixtures
+from shared.clock import SystemClock
 from shared.module_catalog import MODULE_SLUGS
 from shared.ports import PortRegistry
 
 APP_ENV = "integrated"
+
+#: Wall clock for live browser / authenticator use. FixedClock stays in tests
+#: only — a frozen July 2026 instant makes real TOTP apps (Aegis, etc.) fail.
+SCHOOL_CLOCK = SystemClock()
 
 #: One-school deployment identity for this integrated verification stack.
 #: Same synthetic School A used by module seeds; never invent a real campus id.
@@ -70,9 +75,6 @@ WORKER_AVAILABLE = env.flag("WORKER_AVAILABLE", default=False)
 
 CORS_ALLOWED_ORIGIN_REGEXES = [r"^http://(localhost|127\.0\.0\.1):\d+$"]
 CORS_ALLOW_CREDENTIALS = True
-
-#: Re-export for adapters that read settings.SCHOOL_CLOCK.
-SCHOOL_CLOCK = SCHOOL_CLOCK
 
 
 def _load_approved_registrations() -> list:
