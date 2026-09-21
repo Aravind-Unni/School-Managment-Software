@@ -6,7 +6,7 @@
 | Branch | `m13/reports-imports-exports` |
 | Started from | `3d0b03bbae4d7509ec5c27ef8e4a029d4eebdf13` (`origin/main`) |
 | Manifest revision | `school-contracts-v14` (M13 **frozen**) |
-| PR | pending push |
+| PR | https://github.com/Aravind-Unni/School-Managment-Software/pull/14 |
 | Last recorded | 2026-09-21 |
 
 ## Original request
