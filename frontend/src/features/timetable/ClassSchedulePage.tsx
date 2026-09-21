@@ -11,9 +11,10 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
+import { useLabels } from "@features/registry/useLabels";
 import { listTimetables, readSectionDay, readTimetable, type SectionDay } from "./api";
 import { SessionList } from "./SessionList";
-import { shortId, todayIso, toErrorState, type LoadState } from "./state";
+import { todayIso, toErrorState, type LoadState } from "./state";
 import { useTimetableMessages } from "./useMessages";
 
 interface ClassValue {
@@ -23,6 +24,7 @@ interface ClassValue {
 
 export function ClassSchedulePage() {
   const t = useTimetableMessages();
+  const labels = useLabels();
   const [date, setDate] = useState(todayIso());
   const [sectionId, setSectionId] = useState<string>("");
   const [state, setState] = useState<LoadState<ClassValue>>({ status: "loading" });
@@ -98,7 +100,7 @@ export function ClassSchedulePage() {
         >
           {sections.map((section) => (
             <option key={section} value={section}>
-              {shortId(section)}
+              {labels.section(section)}
             </option>
           ))}
         </select>

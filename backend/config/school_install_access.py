@@ -288,6 +288,8 @@ SYSTEM_ACCOUNT_GRANTS = (
     "evidence.view",
     "performance.read",
     "attendance.read",
+    "timetable.read",
+    "timetable.read_section",
     "warnings.manage",
 )
 

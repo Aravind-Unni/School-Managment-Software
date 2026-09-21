@@ -31,10 +31,10 @@ export function StudentProfilePage() {
 
   useEffect(() => {
     if (studentId === undefined || studentId.length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- loads this screen's data
       setState({ status: "error", messageKey: "error.validation_failed" });
       return;
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load(studentId);
   }, [load, studentId]);
 

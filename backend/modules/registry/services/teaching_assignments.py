@@ -12,7 +12,7 @@ from uuid import UUID
 
 from django.db import transaction
 
-from contracts.errors import StateConflict, ValidationFailed
+from contracts.errors import ActionDenied, StateConflict, ValidationFailed
 from contracts.identity import RequestContext
 from contracts.scope import ScopeFacts
 from contracts.values import school_date
@@ -126,9 +126,16 @@ class TeachingAssignmentService:
         after_id: UUID | None,
         page_size: int,
     ) -> tuple[tuple[TeachingAssignment, ...], bool]:
-        """Return one cursor page of assignments."""
-        self._authorise(context, "staff.assign")
+        """Return one cursor page of assignments.
+
+        Whoever assigns staff sees every assignment; anyone else sees only
+        their own (a teacher needs to know what they teach).
+        """
         queryset = TeachingAssignment.objects.filter(school_id=context.school_id).order_by("id")
+        try:
+            self._authorise(context, "staff.assign")
+        except ActionDenied:
+            queryset = queryset.filter(staff_id=context.actor_id)
         if after_id is not None:
             queryset = queryset.filter(id__gt=after_id)
         rows = tuple(queryset[: page_size + 1])

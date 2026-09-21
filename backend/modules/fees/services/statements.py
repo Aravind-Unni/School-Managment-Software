@@ -48,6 +48,10 @@ class StatementService:
                     "posted_at": charge.posted_at.isoformat(),
                     "description_key": charge.description_key or "fees.charge",
                     "related_id": None,
+                    # What a cashier needs to take a payment against this charge.
+                    "balance_paise": charge.balance_paise,
+                    "due_date": charge.due_date.isoformat(),
+                    "status": charge.status,
                 }
             )
         for payment in Payment.objects.filter(

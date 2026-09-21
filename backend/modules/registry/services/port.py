@@ -175,7 +175,7 @@ class RegistryService:
             .select_related("standard")
             .first()
         )
-        return f"Std {row.standard.number} - {row.name}" if row is not None else None
+        return f"Std {row.standard.number} – {row.name}" if row is not None else None  # noqa: RUF001 -- en dash is the label's typography
 
     def get_roster(
         self,

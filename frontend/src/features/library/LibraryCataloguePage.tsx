@@ -43,7 +43,9 @@ export function LibraryCataloguePage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loads this screen's data
     void load(query);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once for the initial load
   }, [load]);
 
   async function onSelectTitle(titleId: string) {

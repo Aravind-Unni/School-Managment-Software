@@ -1100,3 +1100,392 @@ main table {
   justify-content: space-between;
   font-weight: 400;
 }
+
+/* --- attendance ------------------------------------------------------------ */
+
+.day-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.day-nav strong {
+  font-size: 1.1rem;
+  min-width: 10rem;
+  text-align: center;
+}
+
+a.button-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.6rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-small);
+  background: var(--navy);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+a.button-link.secondary {
+  background: var(--surface);
+  color: var(--navy);
+  border: 1px solid var(--line-strong);
+}
+
+.period-cards {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.period-cards li {
+  display: grid;
+  grid-template-columns: 6rem 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--subject, var(--navy));
+  border-radius: var(--radius);
+}
+
+.period-cards li.done {
+  opacity: 0.75;
+}
+
+.period-when,
+.period-what {
+  display: flex;
+  flex-direction: column;
+}
+
+.period-when span {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 34rem) {
+  .period-cards li {
+    grid-template-columns: 4.5rem 1fr;
+  }
+
+  .period-cards li a.button-link {
+    grid-column: 1 / -1;
+  }
+}
+
+.register-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.register-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.register-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.register-list li:last-child {
+  border-bottom: none;
+}
+
+.register-list li.mark-absent {
+  background: var(--danger-tint);
+}
+
+.register-list li.mark-late {
+  background: var(--marigold-tint);
+}
+
+.register-name {
+  font-weight: 700;
+}
+
+.segmented {
+  display: inline-flex;
+  flex-shrink: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-small);
+  overflow: hidden;
+}
+
+.segmented .seg {
+  min-width: 2.75rem;
+  min-height: 2.6rem;
+  border: none;
+  border-radius: 0;
+  border-left: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-soft);
+}
+
+.segmented .seg:first-child {
+  border-left: none;
+}
+
+.segmented .seg[aria-pressed="true"].seg-present {
+  background: var(--success);
+  color: #fff;
+}
+
+.segmented .seg[aria-pressed="true"].seg-absent {
+  background: var(--danger);
+  color: #fff;
+}
+
+.segmented .seg[aria-pressed="true"].seg-late {
+  background: var(--marigold);
+  color: var(--ink);
+}
+
+.segmented .seg[aria-pressed="true"].seg-excused {
+  background: var(--ink-soft);
+  color: #fff;
+}
+
+.sticky-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 0.75rem 0;
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--paper) 75%, transparent);
+}
+
+@media (max-width: 34rem) {
+  .sticky-actions > * {
+    flex: 1;
+  }
+}
+
+/* --- fees ---------------------------------------------------------------- */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.picked-person {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 1.15rem;
+}
+
+.charge-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.charge-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.charge-list li:last-child {
+  border-bottom: none;
+}
+
+.charge-list li > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.amount-field {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  max-width: 11rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.amount-field input {
+  width: 9rem;
+  text-align: right;
+  font-weight: 700;
+}
+
+.segmented.wide {
+  margin-bottom: 0.9rem;
+}
+
+.segmented.wide .seg {
+  min-width: 6rem;
+  font-weight: 700;
+}
+
+.segmented.wide .seg[aria-pressed="true"] {
+  background: var(--navy);
+  color: #fff;
+}
+
+.receipt {
+  max-width: 30rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.receipt dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.4rem 1rem;
+}
+
+.receipt dt {
+  color: var(--ink-soft);
+}
+
+.receipt dd {
+  margin: 0;
+}
+
+@media print {
+  .receipt {
+    border: 1px solid #000;
+  }
+}
+
+/* --- notices --------------------------------------------------------------- */
+
+.class-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  gap: 0.2rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.chips {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0 0 0 0.6rem;
+  border-radius: 999px;
+  background: var(--navy-tint);
+}
+
+.chips li button {
+  min-height: 2rem;
+  padding: 0 0.6rem;
+}
+
+.notice-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notice-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.notice-list li p {
+  margin: 0.2rem 0 0.4rem;
+}
+
+.notice-list li button {
+  align-self: flex-start;
+}
+
+/* --- marks ----------------------------------------------------------------- */
+
+.marks-list li {
+  flex-wrap: wrap;
+}
+
+.mark-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mark-inputs input[inputmode="decimal"] {
+  width: 5rem;
+  text-align: right;
+  font-weight: 700;
+}
+
+.mark-inputs input.invalid {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 2px var(--danger-tint);
+}
+
+.mark-inputs label.inline {
+  margin: 0;
+}
+
+.save-state {
+  width: 1rem;
+  color: var(--success);
+  font-weight: 700;
+}
+
+@media (max-width: 34rem) {
+  .day-nav {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .day-nav strong {
+    min-width: 0;
+    font-size: 1rem;
+  }
+
+  .day-nav .quiet {
+    grid-column: 1 / -1;
+  }
+}

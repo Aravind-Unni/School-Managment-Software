@@ -59,3 +59,24 @@ class NoticeInboxView(APIView):
                 "next_cursor": None,
             }
         )
+
+
+class NoticeListView(APIView):
+    """GET /notices/recent -- the school's recent notices, drafts included.
+
+    For staff who write or approve notices: drafts awaiting publication are
+    listed first. Requires notices.create.
+    """
+
+    def get(self, request: Request) -> Response:
+        """Return up to 100 recent notices, drafts first, newest first."""
+        from ..services.notices import _notice_dto
+
+        context = request.school_context
+        deps.gate().require_action(context, "notices.create")
+        rows = Notice.objects.filter(school_id=context.school_id).order_by("-updated_at")[:100]
+        items = sorted(
+            (_notice_dto(row) for row in rows),
+            key=lambda row: 0 if row["state"] == NoticeState.DRAFT else 1,
+        )
+        return Response({"items": items, "next_cursor": None})

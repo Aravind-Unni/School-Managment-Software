@@ -30,6 +30,7 @@ export function StudentPicker({
   useEffect(() => {
     const needle = query.trim();
     if (needle.length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- loads this screen's data
       setMatches([]);
       return undefined;
     }

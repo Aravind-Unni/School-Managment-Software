@@ -304,6 +304,42 @@
           }
         }
       }
+    },
+    "/notices/recent": {
+      "get": {
+        "operationId": "list_recent_notices",
+        "summary": "The school's recent notices, drafts first (staff who write or approve notices)",
+        "responses": {
+          "200": {
+            "description": "Up to 100 notices.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

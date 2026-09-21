@@ -46,6 +46,7 @@ export function TransportBillingPage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loads this screen's data
     void load(period);
   }, [period, load]);
 

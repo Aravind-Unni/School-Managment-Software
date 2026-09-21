@@ -31,6 +31,7 @@ function usePanel<T>(load: (() => Promise<T>) | null, key: string): Panel<T> {
   const [panel, setPanel] = useState<Panel<T>>({ kind: "loading" });
   useEffect(() => {
     if (load === null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- loads this screen's data
       setPanel({ kind: "hidden" });
       return undefined;
     }
@@ -166,7 +167,7 @@ function ProgressPanel({ student }: { readonly student: Chosen }) {
   );
 }
 
-function FeesPanel({ student }: { readonly student: Chosen }) {
+export function FeesPanel({ student }: { readonly student: Chosen }) {
   const { t, language } = useLanguage();
   const panel = usePanel(
     () =>

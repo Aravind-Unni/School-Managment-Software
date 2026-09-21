@@ -31,8 +31,12 @@ def copy_to_wire(row: Copy) -> dict:
 
 
 def loan_to_wire(row: Loan) -> dict:
-    """Serialise a Loan row."""
+    """Serialise a Loan row, with the book's title and accession number."""
+    copy = Copy.objects.filter(id=row.copy_id).first()
+    title = Title.objects.filter(id=copy.title_id).first() if copy is not None else None
     return {
+        "title_name": title.name if title is not None else None,
+        "accession_no": copy.accession_no if copy is not None else None,
         "id": str(row.id),
         "school_id": str(row.school_id),
         "copy_id": str(row.copy_id),

@@ -26,6 +26,10 @@ export interface AuthorizedPeriod {
   readonly session_id: string | null;
   readonly submission_state: "unopened" | "draft" | "submitted";
   readonly missing_count: number;
+  readonly section_label?: string | null;
+  readonly subject_name?: string | null;
+  readonly starts_at_local?: string;
+  readonly ends_at_local?: string;
 }
 
 export interface RosterSnapshotEntry {

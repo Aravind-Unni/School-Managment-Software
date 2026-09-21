@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, timedelta
 from uuid import UUID
 
@@ -10,6 +10,7 @@ from contracts.errors import ObjectInaccessible, ValidationFailed
 from contracts.identity import RequestContext
 from contracts.scope import Relationship, ScopeFacts
 from contracts.timetable import AttendanceSummaryDTO
+from shared.people import system_actor_id
 
 from ..models import AttendanceEntry, AttendanceStatus
 
@@ -61,22 +62,27 @@ class SummaryService:
                 ScopeFacts(resource_school_id=context.school_id),
             )
 
+        # The reader is authorised for this pupil above. The day-by-day lookups
+        # below (class timetable, rosters) are internal, so they run as the
+        # school's read-only jobs account rather than needing the reader to
+        # hold class-wide timetable rights a parent never has.
+        lookup = replace(context, actor_id=system_actor_id(context.school_id))
         eligible = 0
         present = absent = late = excused = 0
         cursor = from_date
         while cursor <= to_date:
-            section_id = self._section_on(context, student_id, cursor)
+            section_id = self._section_on(lookup, student_id, cursor)
             if section_id is None:
                 cursor += timedelta(days=1)
                 continue
-            periods = self.timetable.get_sessions(context, section_id, cursor)
+            periods = self.timetable.get_sessions(lookup, section_id, cursor)
             for period in periods:
                 if period.cancelled:
                     continue
                 if subject_id is not None and period.subject_id != subject_id:
                     continue
                 roster = self.registry.get_roster(
-                    context, section_id, cursor, subject_id=period.subject_id
+                    lookup, section_id, cursor, subject_id=period.subject_id
                 )
                 on_roster = any(r.student_id == student_id for r in roster.students)
                 if not on_roster:

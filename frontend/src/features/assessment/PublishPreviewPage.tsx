@@ -34,6 +34,7 @@ export function PublishPreviewPage() {
     if (!assessmentId) return;
     const fromState = (location.state as { assessment?: AssessmentDTO } | null)?.assessment;
     const cached = fromState ?? loadAssessment(assessmentId);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loads this screen's data
     if (cached) setAssessment(cached);
   }, [assessmentId, location.state]);
 

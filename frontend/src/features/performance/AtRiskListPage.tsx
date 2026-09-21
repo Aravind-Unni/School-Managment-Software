@@ -21,7 +21,7 @@ export function AtRiskListPage() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    void (async () => {
       try {
         const students = await fetchAll<StudentRecord>("/api/v1/students");
         const collected: ListedWarning[] = [];

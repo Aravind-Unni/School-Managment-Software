@@ -20,6 +20,7 @@ export function TotpQrCode({
 
   useEffect(() => {
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loads this screen's data
     setFailed(false);
     void QRCode.toDataURL(otpauthUri, {
       errorCorrectionLevel: "M",

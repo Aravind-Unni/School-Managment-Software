@@ -23,7 +23,10 @@ function AddStaffForm({
   readonly onAdded: (staff: api.StaffMember) => void;
 }) {
   const { t } = useLanguage();
-  const staffRoles = roles.filter((role) => !role.is_owner_role && !/guardian|parent|student/i.test(role.name));
+  // People-facing staff roles only: not owner, family roles or the jobs account's role.
+  const staffRoles = roles.filter(
+    (role) => !role.is_owner_role && !/guardian|parent|student|automatic jobs/i.test(role.name),
+  );
   const [name, setName] = useState("");
   const [roleId, setRoleId] = useState("");
   const [loginName, setLoginName] = useState("");
@@ -37,6 +40,7 @@ function AddStaffForm({
   useEffect(() => {
     if (roleId === "" && staffRoles.length > 0) {
       const teacher = staffRoles.find((role) => /teacher/i.test(role.name)) ?? staffRoles[0];
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- loads this screen's data
       if (teacher) setRoleId(teacher.id);
     }
   }, [roleId, staffRoles]);

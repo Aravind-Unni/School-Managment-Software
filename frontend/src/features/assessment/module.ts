@@ -3,7 +3,8 @@
  */
 
 import type { FeatureModule } from "@app/moduleRegistry";
-import { AssessmentSetupPage } from "./AssessmentSetupPage";
+import { AssessmentsPage } from "./AssessmentsPage";
+import { MarkingPage } from "./MarkingPage";
 import { MarkingGridPage } from "./MarkingGridPage";
 import { PublishPreviewPage } from "./PublishPreviewPage";
 import { PublishedResultPage } from "./PublishedResultPage";
@@ -26,12 +27,17 @@ export const assessmentModule: FeatureModule = {
   routes: [
     {
       path: "/assessment/setup",
-      component: AssessmentSetupPage,
+      component: AssessmentsPage,
       navLabelKey: "nav.assessment_setup",
       requiredPermission: ASSESSMENT_PERMISSIONS.manage,
     },
     {
       path: "/assessment/:assessmentId/marking",
+      component: MarkingPage,
+      requiredPermission: ASSESSMENT_PERMISSIONS.evidenceView,
+    },
+    {
+      path: "/assessment/:assessmentId/evidence",
       component: MarkingGridPage,
       requiredPermission: ASSESSMENT_PERMISSIONS.edit,
     },

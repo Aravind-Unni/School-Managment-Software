@@ -111,10 +111,12 @@ export function AccountsPage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loads this screen's data
     void load();
   }, [load]);
 
   const roleName = useMemo(() => new Map(roles.map((role) => [role.id, role.name])), [roles]);
+  const assignable = roles.filter((role) => role.name !== "Automatic jobs");
   // The automatic-jobs account cannot sign in and is not a person; hide it.
   const visible = accounts.filter((row) => row.login_name !== "system.jobs").filter((row) => {
     const needle = filter.trim().toLowerCase();
@@ -186,7 +188,7 @@ export function AccountsPage() {
                 </td>
                 <td>
                   {editing === account.id ? (
-                    <RoleChooser roles={roles} selected={editRoles} onChange={setEditRoles} />
+                    <RoleChooser roles={assignable} selected={editRoles} onChange={setEditRoles} />
                   ) : (
                     account.role_ids.map((id) => roleName.get(id) ?? "?").join(", ") || "—"
                   )}
@@ -291,7 +293,7 @@ export function AccountsPage() {
         </label>
         <fieldset>
           <legend>{t("access.accounts.roles")}</legend>
-          <RoleChooser roles={roles} selected={newRoles} onChange={setNewRoles} />
+          <RoleChooser roles={assignable} selected={newRoles} onChange={setNewRoles} />
         </fieldset>
         <button type="submit">{t("access.accounts.create")}</button>
       </form>

@@ -43,6 +43,7 @@ export function InterventionListPage() {
 
   useEffect(() => {
     if (!studentId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- loads this screen's data
       setLoading(false);
       return;
     }

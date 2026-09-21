@@ -8,6 +8,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
+import { useLabels } from "@features/registry/useLabels";
 import {
   assignSubstitution,
   listSubstitutions,
@@ -18,7 +19,7 @@ import {
   type SectionDay,
   type Substitution,
 } from "./api";
-import { periodLabel, shortId, todayIso, toErrorState, type LoadState } from "./state";
+import { periodLabel, todayIso, toErrorState, type LoadState } from "./state";
 import { useTimetableMessages } from "./useMessages";
 
 interface SubstitutionValue {
@@ -29,6 +30,7 @@ interface SubstitutionValue {
 
 export function SubstitutionPage() {
   const t = useTimetableMessages();
+  const labels = useLabels();
   const [date, setDate] = useState(todayIso());
   const [sectionId, setSectionId] = useState("");
   const [slotId, setSlotId] = useState("");
@@ -123,7 +125,7 @@ export function SubstitutionPage() {
         >
           {sections.map((section) => (
             <option key={section} value={section}>
-              {shortId(section)}
+              {labels.section(section)}
             </option>
           ))}
         </select>
@@ -194,7 +196,7 @@ export function SubstitutionPage() {
         <ul>
           {substitutions.map((substitution) => (
             <li key={substitution.id} data-testid="substitution">
-              <span>{shortId(substitution.substitute_teacher_id)}</span>
+              <span>{labels.person(substitution.substitute_teacher_id)}</span>
               <span>{substitution.withdrawn ? t("timetable.substitution.withdrawn") : ""}</span>
               <span>{`${t("timetable.substitution.validUntil")}: ${substitution.valid_until}`}</span>
               {!substitution.withdrawn && (

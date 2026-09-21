@@ -406,7 +406,7 @@
           "kind": "openapi",
           "owner": "M05 assessment",
           "path": "contracts/M05/openapi.json",
-          "sha256": "d159bd0dfd6a51bf308edc253a0c4ebe381736890a66adfaee1323937acb53dc"
+          "sha256": "b0c64d59a5833de6b531a95ee914d7cb7a02f6fec75f792ee467524718fe3138"
         },
         {
           "frozen": true,
@@ -826,7 +826,7 @@
           "kind": "openapi",
           "owner": "M11 communications",
           "path": "contracts/M11/openapi.json",
-          "sha256": "9afae9de585d90c8462a7a730e2384e10a2820e28ae68f641c4c92ce36a3d5f9"
+          "sha256": "6e95aaa91bc458fbf435801ec213561af8e33c2bb7b4ecc51363797accd10794"
         },
         {
           "frozen": true,

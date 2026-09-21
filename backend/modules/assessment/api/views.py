@@ -37,8 +37,24 @@ def validated(serializer_class, data) -> dict:
     return payload.validated_data
 
 
+class AssessmentDetailView(APIView):
+    """GET /assessments/{id} -- one assessment with its pupils' results."""
+
+    def get(self, request: Request, assessment_id: UUID) -> Response:
+        """See views_list.assessment_detail."""
+        from .views_list import assessment_detail
+
+        return assessment_detail(request, assessment_id)
+
+
 class AssessmentCollectionView(APIView):
-    """POST /assessments."""
+    """GET the caller's assessments; POST creates one."""
+
+    def get(self, request: Request) -> Response:
+        """List assessments for the caller's classes (see views_list)."""
+        from .views_list import list_assessments
+
+        return list_assessments(request)
 
     @extend_schema(
         operation_id="create_assessment",

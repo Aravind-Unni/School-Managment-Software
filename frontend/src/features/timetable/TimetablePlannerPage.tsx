@@ -102,6 +102,7 @@ export function TimetablePlannerPage() {
 
   const structure = structureState.kind === "ready" ? structureState.structure : null;
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization -- reload identity only needs the year
   const reload = useCallback(async () => {
     try {
       const [loaded, people, rows] = await Promise.all([
@@ -128,6 +129,7 @@ export function TimetablePlannerPage() {
   // so unsaved edits in other classes are kept.
   useEffect(() => {
     if (structure === null) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loads this screen's data
     void reload();
   }, [structure, reload]);
 
@@ -139,6 +141,7 @@ export function TimetablePlannerPage() {
     structure?.sections[0]?.id ??
     "";
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loads this screen's data
     if (sectionId === "" && firstSection !== "" && grid.size > 0) setSectionId(firstSection);
   }, [sectionId, firstSection, grid.size]);
 

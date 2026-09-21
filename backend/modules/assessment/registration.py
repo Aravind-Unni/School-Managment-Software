@@ -17,12 +17,17 @@ REGISTRATION = ModuleRegistration(
     frontend_routes=(
         FrontendRoute(
             path="/assessment/setup",
-            component="AssessmentSetupPage",
+            component="AssessmentsPage",
             nav_label_key="nav.assessment_setup",
             required_permission="assessment.manage",
         ),
         FrontendRoute(
             path="/assessment/:assessmentId/marking",
+            component="MarkingPage",
+            required_permission="evidence.view",
+        ),
+        FrontendRoute(
+            path="/assessment/:assessmentId/evidence",
             component="MarkingGridPage",
             required_permission="marks.edit",
         ),

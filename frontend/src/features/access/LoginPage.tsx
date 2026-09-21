@@ -54,7 +54,7 @@ export function LoginPage() {
   const finishSignedIn = async (authLevel: string) => {
     setStep({ kind: "done", authLevel });
     await refresh();
-    navigate("/", { replace: true });
+    void navigate("/", { replace: true });
   };
 
   const submitPassword = () =>

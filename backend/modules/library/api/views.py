@@ -92,7 +92,41 @@ class TitleAvailabilityView(APIView):
 
 
 class CopyCollectionView(APIView):
-    """POST /library/copies."""
+    """GET copies of one title (for the issue desk); POST registers a copy."""
+
+    def get(self, request: Request) -> Response:
+        """Return a title's copies with whether each is on the shelf."""
+        from uuid import UUID
+
+        from ..models import Copy, Loan
+
+        deps.gate().require_catalogue_read(request.school_context)
+        raw = request.query_params.get("title_id") or ""
+        try:
+            title_id = UUID(raw)
+        except ValueError:
+            return Response({"items": [], "next_cursor": None})
+        rows = Copy.objects.filter(
+            school_id=request.school_context.school_id, title_id=title_id
+        ).order_by("accession_no")
+        on_loan = set(
+            Loan.objects.filter(
+                school_id=request.school_context.school_id,
+                copy_id__in=[row.id for row in rows],
+                returned_at__isnull=True,
+            ).values_list("copy_id", flat=True)
+        )
+        items = [
+            {
+                "id": str(row.id),
+                "accession_no": row.accession_no,
+                "state": row.state,
+                "on_loan": row.id in on_loan,
+                "version": row.version,
+            }
+            for row in rows
+        ]
+        return Response({"items": items, "next_cursor": None})
 
     @extend_schema(
         operation_id="create_library_copy",

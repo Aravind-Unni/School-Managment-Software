@@ -87,7 +87,7 @@ export function MarkingGridPage() {
   useEffect(() => {
     if (!assessmentId || !assessment) return;
     let cancelled = false;
-    (async () => {
+    void (async () => {
       try {
         const roster = await getSectionRoster(
           assessment.section_id,
@@ -120,6 +120,7 @@ export function MarkingGridPage() {
     return () => {
       cancelled = true;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once for the initial load
   }, [assessment, assessmentId]);
 
   async function saveRow(studentId: string) {
@@ -219,7 +220,7 @@ export function MarkingGridPage() {
       return;
     }
     let cancelled = false;
-    (async () => {
+    void (async () => {
       try {
         const grant = await viewEvidence(row.resultId!, row.bindingId!);
         if (!cancelled) setViewerUrl(grant.read_url);

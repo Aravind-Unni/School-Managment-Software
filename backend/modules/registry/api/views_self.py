@@ -31,7 +31,7 @@ def _section_label(school_id, student_id, on) -> tuple[str | None, str | None]:
     )
     if row is None:
         return None, None
-    return str(row.section_id), f"Std {row.section.standard.number} - {row.section.name}"
+    return str(row.section_id), f"Std {row.section.standard.number} – {row.section.name}"  # noqa: RUF001 -- en dash is the label's typography
 
 
 class MyStudentsView(APIView):

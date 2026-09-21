@@ -101,10 +101,12 @@ class AuthorityGate:
             context, "library.issue"
         ):
             return
+        # A pupil or parent browsing the catalogue acts for themselves.
         self.require_action(
             context,
             "library.read_own",
-            relationship=Relationship.NONE,
+            subject_person_id=context.actor_id,
+            relationship=Relationship.SELF,
         )
 
     def ensure_student_in_school(self, context: RequestContext, person_id: UUID) -> object:

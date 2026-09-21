@@ -46,6 +46,8 @@ class DraftService:
         """Return the actor's authorised periods for a school date."""
         self.gate.require_school_read(context)
         sessions = self.timetable.get_sessions_for_staff(context, context.actor_id, on)
+        subject_names = {str(k): v for k, v in self.registry.subject_names(context).items()}
+        labels: dict[str, str | None] = {}
         items: list[dict[str, object]] = []
         for period in sessions:
             if period.cancelled:
@@ -66,9 +68,16 @@ class DraftService:
                 submission_state = existing.state
                 missing = existing.entries.filter(status=AttendanceStatus.UNMARKED).count()
                 session_id = str(existing.id)
+            section_key = str(period.section_id)
+            if section_key not in labels:
+                labels[section_key] = self.registry.section_label(context, period.section_id)
             items.append(
                 {
                     "timetable_session_id": str(period.timetable_session_id),
+                    "section_label": labels[section_key],
+                    "subject_name": subject_names.get(str(period.subject_id)),
+                    "starts_at_local": period.starts_at_local.strftime("%H:%M"),
+                    "ends_at_local": period.ends_at_local.strftime("%H:%M"),
                     "date": period.date.isoformat(),
                     "section_id": str(period.section_id),
                     "slot_id": str(period.slot_id),

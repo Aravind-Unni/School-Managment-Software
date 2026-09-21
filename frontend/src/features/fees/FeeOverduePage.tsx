@@ -1,38 +1,98 @@
-/** Overdue balances list. */
+/**
+ * Overdue fees: who owes what, since when, and one tap to collect.
+ * Sorted by amount so the office sees the largest balances first.
+ */
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useLanguage } from "@shared/i18n/LanguageContext";
+import { rupees, shortDate } from "@shared/format";
+import { Problem } from "@shared/ui/Problem";
+import { schoolToday } from "@features/registry/useSchoolStructure";
 import { fetchOverdue, type OverdueItemDTO } from "./api";
-import { feeErrorMessageKey } from "./formatError";
-import { feesMessages } from "./locales/messages";
+
+function daysBetween(fromIso: string, toIso: string): number {
+  return Math.max(0, Math.round((Date.parse(toIso) - Date.parse(fromIso)) / 86_400_000));
+}
 
 export function FeeOverduePage() {
-  const { language, t: translate } = useLanguage();
-  const t = feesMessages[language];
-  const [items, setItems] = useState<readonly OverdueItemDTO[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { t, language } = useLanguage();
+  const [items, setItems] = useState<readonly OverdueItemDTO[] | null>(null);
+  const [error, setError] = useState<unknown>(null);
+  const today = schoolToday();
 
   useEffect(() => {
-    fetchOverdue()
-      .then((body) => setItems(body.items))
-      .catch((err: unknown) => setError(translate(feeErrorMessageKey(err))))
-      .finally(() => setLoading(false));
-  }, [t, translate]);
+    fetchOverdue().then(
+      (body) => setItems(body.items),
+      (caught: unknown) => {
+        setError(caught);
+        setItems([]);
+      },
+    );
+  }, []);
+
+  const byStudent = useMemo(() => {
+    const totals = new Map<string, { name: string; balance: number; oldest: string }>();
+    for (const row of items ?? []) {
+      const current = totals.get(row.student_id);
+      totals.set(row.student_id, {
+        name: row.display_name ?? "",
+        balance: (current?.balance ?? 0) + row.balance_paise,
+        oldest: current && current.oldest < row.due_date ? current.oldest : row.due_date,
+      });
+    }
+    return [...totals.entries()].sort((a, b) => b[1].balance - a[1].balance);
+  }, [items]);
+  const grand = byStudent.reduce((sum, [, row]) => sum + row.balance, 0);
 
   return (
-    <section>
-      <h1>{t["fees.overdue_title"]}</h1>
-      {loading && <p role="status">{t["fees.loading"]}</p>}
-      {error && <p role="alert">{error}</p>}
-      {!loading && !error && items.length === 0 && <p>{t["fees.empty"]}</p>}
-      <ul>
-        {items.map((row) => (
-          <li key={row.charge_id}>
-            {row.display_name ?? row.student_id} — {row.balance_paise}
-          </li>
-        ))}
-      </ul>
+    <section aria-labelledby="overdue-title">
+      <h2 id="overdue-title">{t("fees.overdue_title")}</h2>
+      <Problem error={error} />
+      {items === null ? <p role="status">{t("ui.loading")}</p> : null}
+      {items !== null && byStudent.length === 0 && error === null ? (
+        <p role="status" className="notice-success">
+          {t("fees.overdue.none")}
+        </p>
+      ) : null}
+      {byStudent.length > 0 ? (
+        <>
+          <p>
+            {byStudent.length} {t("fees.overdue.students")} · <strong>{rupees(grand)}</strong>{" "}
+            {t("fees.overdue.in_total")}
+          </p>
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">{t("fees.collect.student")}</th>
+                  <th scope="col">{t("fees.overdue.since")}</th>
+                  <th scope="col">{t("fees.overdue.days")}</th>
+                  <th scope="col">{t("fees.collect.balance")}</th>
+                  <th scope="col" />
+                </tr>
+              </thead>
+              <tbody>
+                {byStudent.map(([studentId, row]) => (
+                  <tr key={studentId}>
+                    <th scope="row">{row.name}</th>
+                    <td>{shortDate(row.oldest, language)}</td>
+                    <td>{daysBetween(row.oldest, today)}</td>
+                    <td>
+                      <strong>{rupees(row.balance)}</strong>
+                    </td>
+                    <td>
+                      <Link className="button-link secondary" to={`/fees/collect?student=${studentId}`}>
+                        {t("fees.overdue.collect")}
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      ) : null}
     </section>
   );
 }

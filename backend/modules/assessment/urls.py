@@ -7,6 +7,7 @@ from django.urls import path
 from .api.views import (
     AssessmentApproveView,
     AssessmentCollectionView,
+    AssessmentDetailView,
     AssessmentPublicationView,
     AssessmentReopenView,
     AssessmentSubmitView,
@@ -19,6 +20,11 @@ app_name = "assessment"
 
 urlpatterns = [
     path("assessments", AssessmentCollectionView.as_view(), name="assessment-collection"),
+    path(
+        "assessments/<uuid:assessment_id>",
+        AssessmentDetailView.as_view(),
+        name="assessment-detail",
+    ),
     path(
         "assessments/<uuid:assessment_id>/results/<uuid:student_id>",
         ResultPatchView.as_view(),

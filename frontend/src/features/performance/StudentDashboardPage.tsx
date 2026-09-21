@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { fetchAll } from "@shared/api/client";
-import type { StudentRecord } from "@features/registry/api";
+import { listMyStudents, type StudentRecord } from "@features/registry/api";
 import { useSession } from "@app/SessionContext";
 import { useLanguage } from "@shared/i18n/LanguageContext";
 import { fetchDashboard, type DashboardDTO } from "./api";
@@ -23,7 +23,13 @@ export function StudentDashboardPage() {
 
   useEffect(() => {
     let cancelled = false;
-    fetchAll<StudentRecord>("/api/v1/students")
+    // Parents and pupils get their own children; staff get the directory.
+    listMyStudents()
+      .then(async (mine) =>
+        mine.length > 0
+          ? mine.map((row) => ({ ...row, status: "active" }) as unknown as StudentRecord)
+          : fetchAll<StudentRecord>("/api/v1/students"),
+      )
       .then((rows) => {
         if (cancelled) return;
         setStudents(rows);
@@ -43,6 +49,7 @@ export function StudentDashboardPage() {
 
   useEffect(() => {
     if (!studentId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- loads this screen's data
       setLoading(false);
       return;
     }

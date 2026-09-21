@@ -463,3 +463,8 @@ export async function searchStudents(query: string): Promise<readonly StudentRec
   const page = await listStudents({ pageSize: 20, query });
   return page.items;
 }
+
+/** Every term of every year. */
+export async function listAllTerms(): Promise<Term[]> {
+  return fetchAll<Term>(`${BASE}/terms`, { pageSize: 100 });
+}

@@ -11,6 +11,8 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
+import { useSession } from "@app/SessionContext";
+import { listAllStaff, type StaffMember } from "@features/registry/api";
 import { readTeacherDay, type TeacherDay } from "./api";
 import { SessionList } from "./SessionList";
 import { todayIso, toErrorState, type LoadState } from "./state";
@@ -18,7 +20,17 @@ import { useTimetableMessages } from "./useMessages";
 
 export function TeacherSchedulePage() {
   const t = useTimetableMessages();
-  const [staffId, setStaffId] = useState("");
+  const { session } = useSession();
+  // Opens on the signed-in teacher's own day; staff who may read other
+  // teachers' schedules also get a list to choose from.
+  const [staffId, setStaffId] = useState(session?.actor_id ?? "");
+  const [staff, setStaff] = useState<readonly StaffMember[]>([]);
+  useEffect(() => {
+    listAllStaff().then(
+      (rows) => setStaff(rows.filter((row) => !row.archived)),
+      () => setStaff([]),
+    );
+  }, []);
   const [date, setDate] = useState(todayIso());
   const [state, setState] = useState<LoadState<TeacherDay | null>>({
     status: "ready",
@@ -47,15 +59,18 @@ export function TeacherSchedulePage() {
     <section aria-labelledby="timetable-teacher-heading">
       <h2 id="timetable-teacher-heading">{t("timetable.schedule.teacherTitle")}</h2>
 
-      <label>
-        {t("timetable.editor.teacher")}
-        <input
-          type="text"
-          value={staffId}
-          aria-label={t("timetable.editor.teacher")}
-          onChange={(event) => setStaffId(event.target.value.trim())}
-        />
-      </label>
+      {staff.length > 1 ? (
+        <label>
+          {t("timetable.editor.teacher")}
+          <select value={staffId} onChange={(event) => setStaffId(event.target.value)}>
+            {staff.map((row) => (
+              <option key={row.id} value={row.id}>
+                {row.display_name}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
 
       <label>
         {t("timetable.schedule.date")}
@@ -92,6 +107,7 @@ export function TeacherSchedulePage() {
             isSchoolDay={state.value.is_school_day}
             reasonKey={state.value.reason_key}
             t={t}
+            showClass
           />
         ))}
     </section>
