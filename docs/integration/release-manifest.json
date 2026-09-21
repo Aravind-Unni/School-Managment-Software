@@ -1,6 +1,6 @@
 {
   "document": "docs/integration/release-manifest.json",
-  "recorded_at": "2026-09-21T16:50:19Z",
+  "recorded_at": "2026-09-21T17:04:31Z",
   "integration_branch": "c02/integration",
   "started_from_main": "63bbbca86e1bb771234487ba166631d275bd7ac5",
   "contract_revision": "school-contracts-v15",
@@ -11,27 +11,27 @@
   "RELEASE_ACCEPTED_note": "Requires school and operations approval after INTEGRATION_VERIFIED.",
   "independent_approvals_count": 0,
   "independent_approvals_required": 14,
-  "assembly_status": "inventory_complete_wiring_not_started",
+  "assembly_status": "host_wired_partial_suites_green",
   "hard_blockers": [
     {
       "id": "M01_contracts_unfrozen",
       "severity": "high",
-      "summary": "M01 implementation is on main but contracts/manifest.json status is not_started."
-    },
-    {
-      "id": "M02_incomplete_no_RegistryPort",
-      "severity": "critical",
-      "summary": "M02 is step 1 of 4; no real RegistryPort; C02 journeys cannot pass."
+      "summary": "M01 on main but manifest not_started."
     },
     {
       "id": "zero_standalone_verified",
       "severity": "high",
-      "summary": "0 of 14 modules have STANDALONE_VERIFIED true."
+      "summary": "0 of 14 STANDALONE_VERIFIED."
     },
     {
-      "id": "integrated_profile_scaffold_only",
+      "id": "no_container_engine",
       "severity": "high",
-      "summary": "APPROVED_MODULE_IDS is still (M00,) and real_providers is empty at inventory time."
+      "summary": "doctor exit 2; browser/load/restore/up all blocked."
+    },
+    {
+      "id": "journeys_not_executed",
+      "severity": "critical",
+      "summary": "Required real C02 journeys not run on live integrated stack."
     }
   ],
   "assembly_order": [
@@ -52,8 +52,8 @@
     "M13"
   ],
   "suites": {
-    "contracts": "not-run",
-    "integration": "not-run",
+    "contracts": "passed",
+    "integration": "passed",
     "browser": "not-run",
     "load": "not-run",
     "restore": "not-run"
@@ -113,23 +113,23 @@
       "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/3",
       "contract_status": "frozen",
       "standalone_verified": false,
-      "implementation": "step_1_of_4",
-      "provides_ports": [],
-      "port_gap": "RegistryPort has no real provider; only FakeRegistry exists.",
+      "implementation": "steps_2_3_registry_port",
+      "provides_ports": [
+        "registry"
+      ],
+      "port_gap": "",
       "consumes": [
         "access",
         "platform",
         "clock"
       ],
-      "openapi_ops_implemented_approx": "17/81",
+      "openapi_ops_implemented_approx": "lifecycle endpoints + RegistryPort; step4 open",
       "remaining_cases": [
-        "Steps 2-4 not implemented: guardian links, teaching assignments, enrolments, subject enrolments, rosters.",
-        "No RegistryPort implementation.",
-        "No frontend.",
-        "Standalone/browser not-run."
+        "Step 4 promotion/withdrawal/exchange polish.",
+        "STANDALONE_VERIFIED false; browser not-run without containers."
       ],
       "independent_approval": false,
-      "blocks_integration_journeys": true
+      "blocks_integration_journeys": false
     },
     "M03": {
       "slug": "timetable",
