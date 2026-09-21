@@ -1,9 +1,5 @@
 # frontend/src/features/files -- M12
 
-Not implemented. Feature code, routes, permissions and navigation metadata live
-here, beside the feature, so deleting the directory cannot leave a dangling menu
-entry.
-
-The TypeScript API client for this feature is **generated** from the module's
-approved OpenAPI document once it is frozen in `contracts/manifest.json`. Do not
-hand-write request types.
+Teacher quality review and parent/student canonical viewer. Locales in
+`locales/messages.ts` (en+ml). Registered via `module.ts` in
+`registeredModules.ts`.

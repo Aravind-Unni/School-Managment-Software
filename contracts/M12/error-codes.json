@@ -1,0 +1,102 @@
+{
+  "status": "frozen",
+  "note": "Reuses frozen ErrorCode values; message_key values are module-owned.",
+  "rows": [
+    {
+      "status": 401,
+      "code": "unauthenticated",
+      "message_key": "error.unauthenticated",
+      "when": "No server-derived session."
+    },
+    {
+      "status": 403,
+      "code": "action_denied",
+      "message_key": "error.action_denied",
+      "when": "Actor lacks files.upload / files.review_quality / files.retention.manage."
+    },
+    {
+      "status": 403,
+      "code": "auth_step_up_required",
+      "message_key": "error.auth_step_up_required",
+      "when": "files.retention.manage requires recent 2FA and fixture says stale."
+    },
+    {
+      "status": 404,
+      "code": "object_inaccessible",
+      "message_key": "error.object_inaccessible",
+      "when": "Absent or other-school file/upload. Cross-school always 404. Wrong-child grant fails as inaccessible."
+    },
+    {
+      "status": 409,
+      "code": "version_conflict",
+      "message_key": "error.version_conflict",
+      "when": "expected_version or candidate_version mismatch."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "files.error.invalid_state",
+      "when": "Operation incompatible with file/upload/purge state."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.validation_failed",
+      "when": "Malformed body or unknown field."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.server_internal_field_rejected",
+      "when": "Body carried school_id/actor_id/resource_grant."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "files.error.unsupported_purpose",
+      "when": "Purpose not in allowlist."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "files.error.unsupported_mime",
+      "when": "MIME/extension not allowed for purpose."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "files.error.bytes_limit",
+      "when": "Declared or actual bytes exceed purpose limit."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "files.error.sha256_mismatch",
+      "when": "Complete body hash != source_sha256."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "files.error.decode_rejected",
+      "when": "Malformed, animated, bomb, or over megapixel/page limits."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "files.error.pin_not_answer_sheet",
+      "when": "Quality confirm or pin on non-answer_sheet purpose."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "files.error.unconfirmed_candidate",
+      "when": "Pin or purge requires confirmed readable candidate."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "files.error.purge_blocked",
+      "when": "Hold, unverified backup, unreviewed, or grace not elapsed."
+    }
+  ]
+}

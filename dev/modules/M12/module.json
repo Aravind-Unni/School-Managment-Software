@@ -2,12 +2,12 @@
   "module_id": "M12",
   "slug": "files",
   "_comment": "Owns private S3-compatible storage.",
-  "_status": "module not implemented; this declaration describes the stack `dev.py up` would start once it is",
+  "_status": "implemented",
   "resources": {
     "postgres": true,
     "frontend": true,
-    "broker": false,
-    "worker": false,
+    "broker": true,
+    "worker": true,
     "object_storage": true
   },
   "seed_scenarios": [

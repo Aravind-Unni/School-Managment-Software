@@ -10,6 +10,7 @@ django-cors-headers
 celery
 redis
 boto3
+Pillow
 gunicorn
 pyotp
 cryptography

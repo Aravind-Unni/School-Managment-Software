@@ -1,0 +1,366 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M12/dtos",
+  "title": "M12 files DTOs",
+  "$defs": {
+    "FilePurpose": {
+      "type": "string",
+      "enum": [
+        "answer_sheet",
+        "import_csv",
+        "import_xlsx",
+        "report_pdf",
+        "report_csv",
+        "report_xlsx"
+      ]
+    },
+    "FileState": {
+      "type": "string",
+      "enum": [
+        "processing",
+        "candidate_ready",
+        "accepted",
+        "rejected",
+        "purging"
+      ]
+    },
+    "UploadSessionState": {
+      "type": "string",
+      "enum": [
+        "open",
+        "completed",
+        "expired",
+        "abandoned"
+      ]
+    },
+    "UploadSessionDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "upload_url",
+        "expires_at",
+        "max_bytes"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "upload_url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "max_bytes": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "BeginUploadRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "purpose",
+        "client_name",
+        "declared_bytes",
+        "mime"
+      ],
+      "properties": {
+        "purpose": {
+          "$ref": "#/$defs/FilePurpose"
+        },
+        "client_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "declared_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "mime": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "CompleteUploadRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_sha256"
+      ],
+      "properties": {
+        "source_sha256": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "CompleteUploadResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file_id",
+        "state"
+      ],
+      "properties": {
+        "file_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "type": "string",
+          "const": "processing"
+        }
+      }
+    },
+    "FileDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "state",
+        "review_confirmed"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "$ref": "#/$defs/FileState"
+        },
+        "canonical_version": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "sha256": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "width": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "height": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "profile_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review_confirmed": {
+          "type": "boolean"
+        },
+        "rejection_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "QualityConfirmationRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_version",
+        "readability_confirmed"
+      ],
+      "properties": {
+        "candidate_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "readability_confirmed": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    },
+    "ReprocessRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "reason"
+      ],
+      "properties": {
+        "profile": {
+          "type": "string",
+          "enum": [
+            "higher_fidelity"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      }
+    },
+    "FileEvidenceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file_id",
+        "version",
+        "sha256"
+      ],
+      "properties": {
+        "file_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sha256": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      }
+    },
+    "ReadUrlDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "read_url",
+        "expires_at"
+      ],
+      "properties": {
+        "read_url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "ArtifactRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file_id",
+        "version",
+        "sha256",
+        "mime"
+      ],
+      "properties": {
+        "file_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sha256": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "mime": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "RetentionHoldRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "legal_hold",
+        "expected_version"
+      ],
+      "properties": {
+        "legal_hold": {
+          "type": "boolean"
+        },
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      }
+    },
+    "PurgeJobDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "source_id",
+        "state"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "source_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "blocked",
+            "completed",
+            "failed"
+          ]
+        },
+        "block_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

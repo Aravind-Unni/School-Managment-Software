@@ -1,19 +1,20 @@
 # M12 files
 
-Status: **not started**. The foundation (B00) is built; this module is not.
+Status: **implemented** (contracts frozen under `school-contracts-v13`).
 
 - Contract packet: [`contracts/M12/PACKET.md`](../../../contracts/M12/PACKET.md)
-- Code will live in `backend/modules/files/` and `frontend/src/features/files/`
-- Nothing here is importable yet: `backend/modules/files/` deliberately has no
-  `__init__.py`, so no other module can accidentally depend on it and
-  `scripts/dev.py up M12` fails honestly rather than serving an empty app.
+- Backend: `backend/modules/files/`
+- Frontend: `frontend/src/features/files/` (review + parent viewer)
+- Standalone: `python3 scripts/dev.py up M12 --profile standalone`
 
-## Before writing any code
+## Behaviour
 
-Produce the exact OpenAPI, JSON Schema, Protocol signatures, error enums and
-example fixtures listed in the packet, get them reviewed, and freeze them in
-`contracts/manifest.json`. Only then implement.
+Private upload quarantine, answer-sheet decode/compress (WebP q85, long-edge
+2400), teacher quality confirmation, evidence pin, grant-based private reads,
+economical source purge (confirm + backup verify + 7-day grace + no hold).
+Imports/reports preserve bytes without the quality pipeline.
 
-## B00 note
+## PENDING
 
-Owns private S3-compatible storage. Access checks apply to private files, not only to API routes.
+Real M01 auth/2FA, Assessment publication gates, independent backup restoration,
+production object lifecycle rules.

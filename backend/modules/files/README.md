@@ -1,19 +1,9 @@
 # backend/modules/files -- M12
 
-Not implemented. This directory holds no Python yet.
+Implemented. Private answer-sheet evidence and private files.
 
-Note on importability, stated precisely because it is easy to get wrong: because
-Python treats a directory without `__init__.py` as a *namespace package*,
-`import modules.files` does technically succeed and yields an empty module. What
-does **not** exist -- and what the guarantee actually rests on -- is
-`modules.files.registration`. Importing it raises `ModuleNotFoundError`, which is
-why `scripts/dev.py up M12` reports "not implemented" instead of booting an empty
-Django app that looks like it works. `scripts/arch_check.py` additionally fails if
-anything imports a module that has no `registration.py`.
+Import `modules.files.registration` for the host declaration. Collaborate only
+through `contracts.ports.FilesPort` — never import another `modules.*` package.
 
-Read [`contracts/M12/PACKET.md`](../../../contracts/M12/PACKET.md) first. The
-contract is frozen in `contracts/manifest.json` **before** any code here.
-
-When implementing, this package may import `contracts` and `shared`. It may
-**never** import another `modules.*` package -- collaborate through the typed
-service ports in `contracts/ports.py`.
+See [`contracts/M12/PACKET.md`](../../../contracts/M12/PACKET.md) and
+[`docs/modules/M12/README.md`](../../../docs/modules/M12/README.md).
