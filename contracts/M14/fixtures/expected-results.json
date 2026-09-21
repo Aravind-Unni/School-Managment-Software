@@ -1,0 +1,55 @@
+{
+  "status": "proposed",
+  "assertions": [
+    {
+      "id": "rollback_no_dispatch",
+      "given": "Caller transaction rolls back after record_audit + append_event",
+      "then": "No audit row; no outbox row; dispatcher delivers nothing"
+    },
+    {
+      "id": "duplicate_delivery_one_effect",
+      "given": "Same event_id delivered twice to consumer sample_consumer",
+      "then": "One ConsumerReceipt; side effect applied once"
+    },
+    {
+      "id": "worker_crash_recoverable",
+      "given": "Worker stops between job attempts with real broker",
+      "then": "Job resumes or is retryable; not claimed via eager-only mode"
+    },
+    {
+      "id": "job_scope_isolation",
+      "given": "School B requests School A job id",
+      "then": "404 object_inaccessible"
+    },
+    {
+      "id": "secrets_redacted",
+      "given": "Audit after contains token field",
+      "then": "GET /audit shows [REDACTED]; raw secret never in response"
+    },
+    {
+      "id": "two_school_isolation",
+      "given": "Two school deployments with distinct manifests",
+      "then": "Audit and jobs never cross school_id"
+    },
+    {
+      "id": "restore_exact_hashes",
+      "given": "Restore rehearsal for backup_manifest_id to restore-rehearsal-a",
+      "then": "object_hashes_matched true; fee_total_paise 125000; record_counts match fixture"
+    },
+    {
+      "id": "production_target_forbidden",
+      "given": "isolated_target_label production",
+      "then": "409 platform.error.production_target_forbidden"
+    },
+    {
+      "id": "retry_not_retryable",
+      "given": "POST retry on running job",
+      "then": "409 platform.error.job_not_retryable"
+    },
+    {
+      "id": "ops_identity_required",
+      "given": "School admin posts restore rehearsal",
+      "then": "403 platform.error.ops_identity_required"
+    }
+  ]
+}

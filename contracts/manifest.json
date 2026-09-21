@@ -1021,8 +1021,66 @@
       "status": "frozen"
     },
     "M14": {
-      "artefacts": [],
-      "fixtures": [],
+      "artefacts": [
+        {
+          "frozen": false,
+          "id": "M14/error-codes.json",
+          "kind": "json-schema",
+          "owner": "M14 platform",
+          "path": "contracts/M14/error-codes.json",
+          "sha256": "c5c809f1a289d293fab73869fe363924d2e2f0cca2c8e0d2f02722b0298df147"
+        },
+        {
+          "frozen": false,
+          "id": "M14/openapi.json",
+          "kind": "openapi",
+          "owner": "M14 platform",
+          "path": "contracts/M14/openapi.json",
+          "sha256": "fa662041e97f4ec5420aef5dda992cd3edc98e7654dcd962f00640fad50dab2e"
+        },
+        {
+          "frozen": false,
+          "id": "M14/schemas/dtos.schema.json",
+          "kind": "json-schema",
+          "owner": "M14 platform",
+          "path": "contracts/M14/schemas/dtos.schema.json",
+          "sha256": "44a422f9ce8d0354529fa17feae644c8440259ed3a43627f58cfa169de4537b9"
+        },
+        {
+          "frozen": false,
+          "id": "M14/schemas/events.schema.json",
+          "kind": "json-schema",
+          "owner": "M14 platform",
+          "path": "contracts/M14/schemas/events.schema.json",
+          "sha256": "c338f3029d4a820a692512803061a64118188610f51ab36217f35a422da43fb3"
+        }
+      ],
+      "fixtures": [
+        {
+          "frozen": false,
+          "id": "M14/fixtures/expected-results.json",
+          "kind": "consumer-fixture",
+          "owner": "M14 platform",
+          "path": "contracts/M14/fixtures/expected-results.json",
+          "sha256": "1de9b925461cdc13a479ecb02643dbbe91ab6dfe6dc0a54a6deb09f07678c6d8"
+        },
+        {
+          "frozen": false,
+          "id": "M14/fixtures/responses.json",
+          "kind": "consumer-fixture",
+          "owner": "M14 platform",
+          "path": "contracts/M14/fixtures/responses.json",
+          "sha256": "daf216dbcaf9a7282e1fed49a0783d7332906949589b06490c63165d3e737275"
+        },
+        {
+          "frozen": false,
+          "id": "M14/fixtures/scenario.json",
+          "kind": "consumer-fixture",
+          "owner": "M14 platform",
+          "path": "contracts/M14/fixtures/scenario.json",
+          "sha256": "d9cb2d598adb769e4f658a3717baa75a3ec12c2492bcc2d03a21d2aa5bc6a501"
+        }
+      ],
       "packet": "contracts/M14/PACKET.md",
       "slug": "platform",
       "status": "not_started"

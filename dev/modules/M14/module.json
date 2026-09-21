@@ -1,14 +1,14 @@
 {
   "module_id": "M14",
   "slug": "platform",
-  "_comment": "Owns the real audit/outbox relay and background jobs.",
-  "_status": "module not implemented; this declaration describes the stack `dev.py up` would start once it is",
+  "_comment": "Owns the real audit/outbox relay, background jobs, backup manifests and restore rehearsals.",
+  "_status": "contracts proposed; module not implemented; object_storage required for backup acceptance",
   "resources": {
     "postgres": true,
     "frontend": true,
     "broker": true,
     "worker": true,
-    "object_storage": false
+    "object_storage": true
   },
   "seed_scenarios": [
     "baseline"

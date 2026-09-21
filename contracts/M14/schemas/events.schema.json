@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M14/events",
+  "title": "M14 platform event payloads",
+  "description": "Payloads only. Envelope is frozen common. Delivery receipts must not emit recursive events.",
+  "$defs": {
+    "platform.job_state_changed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "job_id",
+        "kind",
+        "from_state",
+        "to_state"
+      ],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "from_state": {
+          "type": "string",
+          "enum": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "dead"
+          ]
+        },
+        "to_state": {
+          "type": "string",
+          "enum": [
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "dead"
+          ]
+        }
+      }
+    },
+    "platform.restore_rehearsal_verified": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rehearsal_id",
+        "backup_manifest_id",
+        "object_hashes_matched",
+        "record_counts"
+      ],
+      "properties": {
+        "rehearsal_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "backup_manifest_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "object_hashes_matched": {
+          "type": "boolean"
+        },
+        "record_counts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  }
+}

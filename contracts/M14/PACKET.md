@@ -1,44 +1,48 @@
 # Contract packet -- M14 platform
 
-Status: **NOT STARTED**. No executable contract exists for this module yet.
+Status: **PROPOSED — awaiting human freeze**. Artefacts exist; `contracts/manifest.json`
+lists them with `frozen: false`. Do **not** implement until a named reviewer
+approves `review-decisions.md` and freezes under `school-contracts-v15`.
 
-Manifest revision this packet targets: `school-contracts-v3-draft`
-(the current draft in `contracts/manifest.json`; replace with the approved
-revision once review completes).
+Manifest revision this packet targets: `school-contracts-v14` (current) →
+proposed freeze revision `school-contracts-v15`.
+
+Branched from `a2f16c24dc6a7c7004e5358a094f0bd0fc5760dd` (`origin/main`).
 
 ---
 
 ## The rule this packet exists to enforce
 
-**Contract approval comes before module coding.** The module task must first
-produce, for developer review:
+**Contract approval comes before module coding.** Artefacts below are proposed
+for review:
 
-1. the exact **OpenAPI** document for this module's REST API
-2. the **JSON Schema** for every request, response and event payload
-3. the **Protocol signatures** for every service port this module provides
-4. the **error enums** -- which `code`/`message_key` pairs this module returns
-5. **example fixtures** a consumer suite can assert against
+### Checklist — proposed artefacts
 
-Those are then **frozen in `contracts/manifest.json`** before implementation
-starts. A later provider of the same contract must pass the same consumer
-fixture suite. A mismatch needs a reviewed contract revision -- **not** an
-invented per-module field and **not** a local adapter.
+| # | Artefact | Path | Status |
+|---|---|---|---|
+| 1 | OpenAPI 3.1.0 | `openapi.json` | proposed |
+| 2 | Request/response DTOs | `schemas/dtos.schema.json` | proposed |
+| 3 | Event payloads | `schemas/events.schema.json` | proposed |
+| 4 | Error rows | `error-codes.json` | proposed |
+| 5 | Service ports | `ports.md` | proposed |
+| 6 | Review decisions | `review-decisions.md` | proposed |
+| 7 | Seed scenario | `fixtures/scenario.json` | proposed |
+| 8 | Example responses | `fixtures/responses.json` | proposed |
+| 9 | Acceptance assertions | `fixtures/expected-results.json` | proposed |
 
-## What this module must declare
+## Module registration
 
-A `ModuleRegistration` in `backend/modules/platform/registration.py`:
-
-| field | meaning |
+| field | value |
 |---|---|
-| `id` | `M14` |
-| `slug` | `platform` |
-| `api_prefix` | `/api/platform/` |
-| `frontend_routes` | React routes, each with nav metadata and required permission |
-| `permission_codes` | all namespaced `platform.<verb>_<noun>` |
-| `consumers` | service ports this module requires from others |
-| `scheduled_jobs` | periodic work, cron interpreted in Asia/Kolkata |
-| `migration_dependencies` | module ids whose migrations must apply first |
-| `health_checks` | readiness probes contributed to `/readyz` |
+| id | `M14` |
+| slug | `platform` |
+| api_prefix | `/api/v1/` |
+| api_path_roots | `health/`, `jobs/`, `audit/`, `operations/` |
+| permission_codes | `platform.read_health`, `jobs.read`, `jobs.retry`, `audit.read`, `backups.manage` |
+| permission_prefixes | `platform.`, `jobs.`, `audit.`, `backups.` |
+| consumers | access, clock (+ local object store for backup versions) |
+| public_paths | `health/live` |
+| scheduled_jobs | outbox dispatcher; backup age monitor (Asia/Kolkata cron) |
 
 ## Inherited, non-negotiable constraints
 
@@ -65,12 +69,15 @@ python scripts/dev.py seed M14 --scenario baseline
 python scripts/dev.py check M14 --suite standalone
 ```
 
-Dependency ports bind to deterministic fakes. Real authentication and 2FA
-integration stay **explicitly pending** until M01 is integrated.
+Fake Access only. **No FakePlatform** — M14 uses its actual implementation.
+Real authentication and 2FA integration stay **explicitly pending** until M01
+is integrated. Production RPO/RTO and full-scale load stay **PENDING**.
 
 ## B00 notes specific to this module
 
-Owns the REAL audit/outbox and production deployment. Uses its ACTUAL implementation, not the harness test adapter. Production deployment is covered here; Kubernetes is NOT required.
+Owns the REAL audit/outbox and production deployment. Uses its ACTUAL
+implementation, not the harness test adapter. Production deployment is covered
+here; Kubernetes is NOT required.
 
 ## Human gates before this module ships
 
