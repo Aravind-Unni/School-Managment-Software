@@ -72,9 +72,7 @@ def test_registry_port_relationships_and_assignments(registry_cast):
     )
     assert guardian.relationship == Relationship.GUARDIAN
 
-    assignments = port.get_teaching_assignments(
-        _context(), fixtures.TEACHER_T1, on
-    )
+    assignments = port.get_teaching_assignments(_context(), fixtures.TEACHER_T1, on)
     assert len(assignments) == 1
     assert assignments[0].section_id == fixtures.CLASS_C1
 
