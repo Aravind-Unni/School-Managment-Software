@@ -10,6 +10,7 @@ from contracts.errors import ObjectInaccessible
 from contracts.identity import RequestContext
 from contracts.scope import Relationship, ScopeFacts
 from contracts.values import school_date
+from shared.people import is_school_wide_reader
 
 READING_RELATIONSHIPS = frozenset(
     {
@@ -50,7 +51,9 @@ class AuthorityGate:
             raise ObjectInaccessible("error.object_inaccessible")
         on = self.effective_date()
         facts = self.registry.get_relationships(context, context.actor_id, student_id, on)
-        if facts.relationship not in READING_RELATIONSHIPS:
+        if facts.relationship not in READING_RELATIONSHIPS and not is_school_wide_reader(
+            self.access, context, on
+        ):
             raise ObjectInaccessible("error.object_inaccessible")
         self.access.check(
             context,

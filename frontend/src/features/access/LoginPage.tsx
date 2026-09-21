@@ -244,7 +244,12 @@ export function LoginPage() {
         </>
       ) : null}
 
-      {step.kind === "codes" ? <RecoveryCodes codes={step.codes} /> : null}
+      {step.kind === "codes" ? (
+        <RecoveryCodes
+          codes={step.codes}
+          onDone={() => void guard(() => finishSignedIn("password_totp"))}
+        />
+      ) : null}
 
       {step.kind === "recovery" ? (
         <form
@@ -301,7 +306,13 @@ export function LoginPage() {
 }
 
 /** One-time recovery codes, with a download that does not touch the network. */
-function RecoveryCodes({ codes }: { readonly codes: readonly string[] }) {
+function RecoveryCodes({
+  codes,
+  onDone,
+}: {
+  readonly codes: readonly string[];
+  readonly onDone: () => void;
+}) {
   const t = useAccessMessages();
   const download = () => {
     // Built in the browser from values already in memory: the codes are never sent
@@ -325,9 +336,14 @@ function RecoveryCodes({ codes }: { readonly codes: readonly string[] }) {
           </li>
         ))}
       </ul>
-      <button type="button" onClick={download}>
-        {t("access.recovery.download")}
-      </button>
+      <div className="row-actions">
+        <button type="button" className="secondary" onClick={download}>
+          {t("access.recovery.download")}
+        </button>
+        <button type="button" onClick={onDone}>
+          {t("access.recovery.done")}
+        </button>
+      </div>
     </>
   );
 }

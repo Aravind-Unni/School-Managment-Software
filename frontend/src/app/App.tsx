@@ -5,8 +5,8 @@
  * filters navigation by the caller's held action codes from /auth/capabilities.
  */
 
-import { NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom";
-import type { ReactNode } from "react";
+import { Link, NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { useEffect, useState, type ReactNode } from "react";
 import { LanguageProvider, useLanguage } from "@shared/i18n/LanguageContext";
 import { LANGUAGES, type Language } from "@shared/i18n/messages";
 import { REGISTERED_MODULES } from "./registeredModules";
@@ -91,13 +91,9 @@ function visibleRoutes(actions: ReadonlySet<string>): FeatureRoute[] {
   });
 }
 
-function Navigation() {
+function Navigation({ onNavigate }: { readonly onNavigate: () => void }) {
   const { t } = useLanguage();
-  const { status, actions } = useSession();
-  const location = useLocation();
-  if (status !== "authenticated" || location.pathname === "/login") {
-    return null;
-  }
+  const { actions } = useSession();
   const routes = visibleRoutes(actions);
   return (
     <nav aria-label="Main" className="product-nav">
@@ -112,7 +108,9 @@ function Navigation() {
             <ul>
               {items.map((route) => (
                 <li key={route.path}>
-                  <NavLink to={route.path}>{t(route.navLabelKey ?? route.path)}</NavLink>
+                  <NavLink to={route.path} onClick={onNavigate}>
+                    {t(route.navLabelKey ?? route.path)}
+                  </NavLink>
                 </li>
               ))}
             </ul>
@@ -124,14 +122,21 @@ function Navigation() {
 }
 
 function SessionControls() {
-  const { status, signOut } = useSession();
+  const { status, session, signOut } = useSession();
   if (status !== "authenticated") {
     return null;
   }
   return (
-    <button type="button" className="secondary" onClick={() => void signOut()}>
-      Sign out
-    </button>
+    <>
+      {session?.display_name ? (
+        <span className="signed-in-name" title={session.login_name ?? undefined}>
+          {session.display_name}
+        </span>
+      ) : null}
+      <button type="button" className="secondary" onClick={() => void signOut()}>
+        Sign out
+      </button>
+    </>
   );
 }
 
@@ -162,37 +167,76 @@ export function AppShell() {
     <LanguageProvider>
       <SessionProvider>
         <RequireAuth>
-          <div className="app-frame">
-            <header>
-              <div className="brand-row">
-                <h1>School platform</h1>
-                <div className="header-actions">
-                  <LanguageSwitch />
-                  <SessionControls />
-                </div>
-              </div>
-              <Navigation />
-            </header>
-            <main>
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/login" element={<LoginRoute />} />
-                {REGISTERED_MODULES.flatMap((module) =>
-                  module.routes.map((route) => (
-                    <Route
-                      key={route.path}
-                      path={route.path}
-                      element={<route.component />}
-                    />
-                  )),
-                )}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </main>
-          </div>
+          <Frame />
         </RequireAuth>
       </SessionProvider>
     </LanguageProvider>
+  );
+}
+
+/** Sidebar + top bar + routed page. The sidebar is a drawer on phones. */
+function Frame() {
+  const { status, session } = useSession();
+  const location = useLocation();
+  const [navOpen, setNavOpen] = useState(false);
+  const signedIn = status === "authenticated" && location.pathname !== "/login";
+  const schoolName = session?.school_name ?? "School";
+
+  useEffect(() => {
+    if (!navOpen) return undefined;
+    const close = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setNavOpen(false);
+    };
+    window.addEventListener("keydown", close);
+    return () => window.removeEventListener("keydown", close);
+  }, [navOpen]);
+
+  return (
+    <div className={`app${signedIn ? "" : " signed-out"}${navOpen ? " nav-open" : ""}`}>
+      {signedIn ? (
+        <aside className="sidebar" id="main-navigation">
+          <Link className="brand" to="/" onClick={() => setNavOpen(false)}>
+            {schoolName}
+            <small>School management</small>
+          </Link>
+          <Navigation onNavigate={() => setNavOpen(false)} />
+        </aside>
+      ) : null}
+      {signedIn ? (
+        <div className="scrim" aria-hidden="true" onClick={() => setNavOpen(false)} />
+      ) : null}
+      <div className="main-column">
+        {signedIn ? (
+          <header className="topbar">
+            <button
+              type="button"
+              className="secondary menu-button"
+              aria-controls="main-navigation"
+              aria-expanded={navOpen}
+              onClick={() => setNavOpen((open) => !open)}
+            >
+              Menu
+            </button>
+            <span className="school-name">{schoolName}</span>
+            <span className="spacer" />
+            <LanguageSwitch />
+            <SessionControls />
+          </header>
+        ) : null}
+        <main>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginRoute />} />
+            {REGISTERED_MODULES.flatMap((module) =>
+              module.routes.map((route) => (
+                <Route key={route.path} path={route.path} element={<route.component />} />
+              )),
+            )}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </main>
+      </div>
+    </div>
   );
 }
 

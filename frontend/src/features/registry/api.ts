@@ -409,3 +409,36 @@ export async function createTeachingAssignment(input: {
     },
   });
 }
+
+export interface TeachingAssignment {
+  readonly id: string;
+  readonly version: number;
+  readonly staff_id: string;
+  readonly section_id: string;
+  readonly subject_id: string;
+  readonly from_date: string;
+  readonly to_date: string | null;
+}
+
+/** Every teaching assignment (current and ended). */
+export async function listAllTeachingAssignments(): Promise<TeachingAssignment[]> {
+  return fetchAll<TeachingAssignment>(`${BASE}/teaching-assignments`, { pageSize: 100 });
+}
+
+/** End a teaching assignment on a date (inclusive). */
+export async function endTeachingAssignment(
+  row: TeachingAssignment,
+  lastDay: string,
+): Promise<TeachingAssignment> {
+  return request<TeachingAssignment>(`${BASE}/teaching-assignments/${row.id}`, {
+    method: "PUT",
+    body: {
+      staff_id: row.staff_id,
+      section_id: row.section_id,
+      subject_id: row.subject_id,
+      from_date: row.from_date,
+      to_date: lastDay,
+      expected_version: row.version,
+    },
+  });
+}

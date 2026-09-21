@@ -14,7 +14,14 @@ import {
   type ReactNode,
 } from "react";
 import * as accessApi from "@features/access/api";
-import type { Authenticated } from "@features/access/api";
+import type { Authenticated as AuthenticatedBase } from "@features/access/api";
+
+/** The session plus the header niceties /auth/session also returns. */
+type Authenticated = AuthenticatedBase & {
+  readonly display_name?: string;
+  readonly login_name?: string;
+  readonly school_name?: string | null;
+};
 
 export interface SessionState {
   readonly status: "loading" | "anonymous" | "authenticated";

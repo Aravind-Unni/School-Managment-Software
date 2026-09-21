@@ -109,7 +109,7 @@ class AcademicYearCollectionView(APIView):
         """Return one keyset page (``cursor``, ``page_size``)."""
         return list_response(
             request,
-            "AcademicYear",
+            models.AcademicYear,
             wire.academic_year_to_wire,
             action="students.read",
             with_external_ids=False,
@@ -141,7 +141,7 @@ class TermCollectionView(APIView):
         """Return one keyset page (``cursor``, ``page_size``)."""
         return list_response(
             request,
-            "Term",
+            models.Term,
             wire.term_to_wire,
             action="students.read",
             with_external_ids=False,
@@ -174,7 +174,7 @@ class StandardCollectionView(APIView):
         """Return one keyset page (``cursor``, ``page_size``)."""
         return list_response(
             request,
-            "Standard",
+            models.Standard,
             wire.standard_to_wire,
             action="students.read",
             with_external_ids=False,
@@ -203,7 +203,7 @@ class SectionCollectionView(APIView):
         """Return one keyset page (``cursor``, ``page_size``)."""
         return list_response(
             request,
-            "Section",
+            models.Section,
             wire.section_to_wire,
             action="students.read",
             with_external_ids=False,
@@ -275,7 +275,7 @@ class SubjectCollectionView(APIView):
         """Return one keyset page (``cursor``, ``page_size``)."""
         return list_response(
             request,
-            "Subject",
+            models.Subject,
             wire.subject_to_wire,
             action="students.read",
             with_external_ids=False,
@@ -437,7 +437,7 @@ class GuardianCollectionView(APIView):
         """Return one keyset page (``cursor``, ``page_size``, ``query``)."""
         return list_response(
             request,
-            "Guardian",
+            models.Guardian,
             wire.guardian_to_wire,
             action="guardians.manage",
             with_external_ids=True,
@@ -473,7 +473,7 @@ class StaffCollectionView(APIView):
         """Return one keyset page (``cursor``, ``page_size``, ``query``)."""
         return list_response(
             request,
-            "StaffProfile",
+            models.StaffProfile,
             wire.staff_to_wire,
             action="students.read",
             with_external_ids=True,

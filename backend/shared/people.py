@@ -29,3 +29,24 @@ def actor_kind(registry, context: RequestContext) -> str | None:
 def actor_is_family(registry, context: RequestContext) -> bool:
     """Return True when the actor is a guardian or student in Registry."""
     return actor_kind(registry, context) in FAMILY_KINDS
+
+
+#: The grant that marks school-wide oversight (principal, academic office):
+#: its holder may read any pupil's records without a teaching or family link.
+SCHOOL_WIDE_READ_ACTION = "reports.read"
+
+
+def is_school_wide_reader(access, context: RequestContext, on) -> bool:
+    """Return whether the actor holds school-wide oversight of pupil records.
+
+    Teachers hold subject/class relationships instead and do not pass this.
+    Assumes ``access`` is an AccessPort. Does not grant any write.
+    """
+    from contracts.scope import ScopeFacts
+
+    decision = access.authorize(
+        context,
+        SCHOOL_WIDE_READ_ACTION,
+        ScopeFacts(resource_school_id=context.school_id, effective_date=on),
+    )
+    return decision.allowed

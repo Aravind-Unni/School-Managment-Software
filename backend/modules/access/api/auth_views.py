@@ -210,6 +210,10 @@ class CurrentSessionView(APIView):
                 "actor_id": str(context.actor_id),
                 "school_id": str(context.school_id),
                 "auth_time": context.auth_time.isoformat(),
+                # For the product shell's header; never used for authorisation.
+                "display_name": session.user.display_name,
+                "login_name": session.user.login_name,
+                "school_name": deps.school_name(context),
             }
         )
 

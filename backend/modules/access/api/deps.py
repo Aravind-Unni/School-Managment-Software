@@ -96,3 +96,12 @@ def remote_addr(request) -> str:
 def user_agent(request) -> str:
     """Return the raw User-Agent, used only to derive a coarse family."""
     return request.META.get("HTTP_USER_AGENT", "")
+
+
+def school_name(context) -> str | None:
+    """Return the installed school's display name, or None if unavailable."""
+    try:
+        profile = registry().school_profile(context)
+    except Exception:
+        return None
+    return profile.display_name if profile is not None else None

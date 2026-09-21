@@ -149,7 +149,11 @@ class RoleCollectionView(APIView):
         from ..models import Role
 
         context = deps.require_context(request)
-        deps.access_service().require_action(context, "roles.manage", _school_scope(context))
+        access = deps.access_service()
+        # Reading the role list is also needed by whoever creates logins, to
+        # choose a role; editing roles still requires roles.manage.
+        if not access.is_allowed(context, "roles.manage", _school_scope(context)):
+            access.require_action(context, "accounts.manage", _school_scope(context))
 
         queryset = (
             Role.objects.filter(school_id=context.school_id)

@@ -11,7 +11,7 @@ import { ClassSchedulePage } from "./ClassSchedulePage";
 import { StudentSchedulePage } from "./StudentSchedulePage";
 import { SubstitutionPage } from "./SubstitutionPage";
 import { TeacherSchedulePage } from "./TeacherSchedulePage";
-import { WeeklyEditorPage } from "./WeeklyEditorPage";
+import { TimetablePlannerPage } from "./TimetablePlannerPage";
 
 export const TIMETABLE_PERMISSIONS = {
   read: "timetable.read",
@@ -31,7 +31,7 @@ export const timetableModule: FeatureModule = {
   routes: [
     {
       path: "/timetable/editor",
-      component: WeeklyEditorPage,
+      component: TimetablePlannerPage,
       navLabelKey: "nav.timetable_editor",
       requiredPermission: TIMETABLE_PERMISSIONS.edit,
     },

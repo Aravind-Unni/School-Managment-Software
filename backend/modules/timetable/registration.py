@@ -33,7 +33,7 @@ REGISTRATION = ModuleRegistration(
     frontend_routes=(
         FrontendRoute(
             path="/timetable/editor",
-            component="WeeklyEditorPage",
+            component="TimetablePlannerPage",
             nav_label_key="nav.timetable_editor",
             required_permission="timetable.edit",
         ),
