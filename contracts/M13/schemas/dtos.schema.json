@@ -1,0 +1,670 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M13/dtos",
+  "title": "M13 exchange DTOs",
+  "$defs": {
+    "ImportDataset": {
+      "type": "string",
+      "enum": [
+        "enrolments",
+        "opening_balances",
+        "results",
+        "library_loans"
+      ]
+    },
+    "ExportDataset": {
+      "type": "string",
+      "enum": [
+        "attendance_summary",
+        "progress",
+        "at_risk",
+        "ptm_summary",
+        "class_roster",
+        "subject_summary"
+      ]
+    },
+    "ImportMode": {
+      "type": "string",
+      "enum": [
+        "validate"
+      ]
+    },
+    "ExportFormat": {
+      "type": "string",
+      "enum": [
+        "csv",
+        "xlsx",
+        "pdf"
+      ]
+    },
+    "Locale": {
+      "type": "string",
+      "enum": [
+        "en",
+        "ml"
+      ]
+    },
+    "ImportJobState": {
+      "type": "string",
+      "enum": [
+        "validating",
+        "validated",
+        "validation_failed",
+        "committing",
+        "applied",
+        "commit_failed"
+      ]
+    },
+    "ExportJobState": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "processing",
+        "ready",
+        "failed"
+      ]
+    },
+    "ReportCardJobState": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "processing",
+        "ready",
+        "failed"
+      ]
+    },
+    "ReportSnapshotState": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "ready",
+        "superseded",
+        "revoked"
+      ]
+    },
+    "ReportSnapshotType": {
+      "type": "string",
+      "enum": [
+        "report_card",
+        "attendance_summary",
+        "progress",
+        "at_risk",
+        "ptm_summary",
+        "class_roster",
+        "subject_summary"
+      ]
+    },
+    "CreateImportRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dataset",
+        "file_ref",
+        "mode"
+      ],
+      "properties": {
+        "dataset": {
+          "$ref": "#/$defs/ImportDataset"
+        },
+        "file_ref": {
+          "type": "string",
+          "format": "uuid",
+          "description": "FilesPort artifact id after upload completes."
+        },
+        "mode": {
+          "$ref": "#/$defs/ImportMode"
+        }
+      }
+    },
+    "CreateImportResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "job_id",
+        "template_version",
+        "schema_version"
+      ],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "template_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "schema_version": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "CommitImportRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "validation_version",
+        "source_digest"
+      ],
+      "properties": {
+        "validation_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "source_digest": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "ImportRowErrorDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "row",
+        "field",
+        "code"
+      ],
+      "properties": {
+        "row": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "field": {
+          "type": "string",
+          "minLength": 1
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message_key": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "ImportErrorsPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ImportRowErrorDTO"
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "ImportJobDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "dataset",
+        "state",
+        "file_ref",
+        "validation_version",
+        "source_digest",
+        "accepted_count",
+        "error_count",
+        "applied_count"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "dataset": {
+          "$ref": "#/$defs/ImportDataset"
+        },
+        "state": {
+          "$ref": "#/$defs/ImportJobState"
+        },
+        "file_ref": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "validation_version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source_digest": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 64,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "accepted_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "error_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "applied_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "template_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "schema_version": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "ImportTemplateDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dataset",
+        "schema_version",
+        "columns"
+      ],
+      "properties": {
+        "dataset": {
+          "$ref": "#/$defs/ImportDataset"
+        },
+        "schema_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "sample_csv_url": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "CreateExportRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dataset",
+        "filters",
+        "fields",
+        "format",
+        "locale"
+      ],
+      "properties": {
+        "dataset": {
+          "$ref": "#/$defs/ExportDataset"
+        },
+        "filters": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "format": {
+          "$ref": "#/$defs/ExportFormat"
+        },
+        "locale": {
+          "$ref": "#/$defs/Locale"
+        }
+      }
+    },
+    "ExportJobDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "dataset",
+        "format",
+        "locale",
+        "state"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "dataset": {
+          "$ref": "#/$defs/ExportDataset"
+        },
+        "format": {
+          "$ref": "#/$defs/ExportFormat"
+        },
+        "locale": {
+          "$ref": "#/$defs/Locale"
+        },
+        "state": {
+          "$ref": "#/$defs/ExportJobState"
+        },
+        "artifact_ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "failure_message_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "CreateReportCardsRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "publication_id",
+        "student_ids",
+        "locale",
+        "template_version"
+      ],
+      "properties": {
+        "publication_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "student_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 1
+        },
+        "locale": {
+          "$ref": "#/$defs/Locale"
+        },
+        "template_version": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "ReportCardJobDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "publication_id",
+        "student_id",
+        "locale",
+        "template_version",
+        "state"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "publication_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "student_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "locale": {
+          "$ref": "#/$defs/Locale"
+        },
+        "template_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "state": {
+          "$ref": "#/$defs/ReportCardJobState"
+        },
+        "report_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        }
+      }
+    },
+    "CreateReportCardsResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "jobs"
+      ],
+      "properties": {
+        "jobs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ReportCardJobDTO"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "ReportSnapshotDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "source_revision_ids",
+        "policy_versions",
+        "locale",
+        "artifact_ref",
+        "state"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "type": {
+          "$ref": "#/$defs/ReportSnapshotType"
+        },
+        "source_revision_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 1
+        },
+        "policy_versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        },
+        "locale": {
+          "$ref": "#/$defs/Locale"
+        },
+        "artifact_ref": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "$ref": "#/$defs/ReportSnapshotState"
+        },
+        "superseded_by": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        }
+      }
+    },
+    "ArtifactAccessDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authorized_read_url",
+        "expires_at"
+      ],
+      "properties": {
+        "authorized_read_url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "ReportJobStartDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "job_id",
+        "state"
+      ],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "queued",
+            "processing"
+          ]
+        }
+      }
+    },
+    "DomainRowError": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "row",
+        "field",
+        "code"
+      ],
+      "properties": {
+        "row": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "field": {
+          "type": "string",
+          "minLength": 1
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "DomainValidateResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "accepted",
+        "errors"
+      ],
+      "properties": {
+        "accepted": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DomainRowError"
+          }
+        }
+      }
+    },
+    "DomainApplyResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "applied",
+        "errors"
+      ],
+      "properties": {
+        "applied": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DomainRowError"
+          }
+        }
+      }
+    },
+    "DomainExportPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "rows"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

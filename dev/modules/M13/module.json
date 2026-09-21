@@ -1,14 +1,14 @@
 {
   "module_id": "M13",
   "slug": "exchange",
-  "_comment": "Minimum declaration. If this module turns out to own asynchronous work or files, its contract packet must say so and this file must be updated before implementation.",
-  "_status": "module not implemented; this declaration describes the stack `dev.py up` would start once it is",
+  "_comment": "Owns validate/commit/export/report-card jobs and private report artifacts.",
+  "_status": "implemented; contracts frozen under school-contracts-v14",
   "resources": {
     "postgres": true,
     "frontend": true,
-    "broker": false,
-    "worker": false,
-    "object_storage": false
+    "broker": true,
+    "worker": true,
+    "object_storage": true
   },
   "seed_scenarios": [
     "baseline"

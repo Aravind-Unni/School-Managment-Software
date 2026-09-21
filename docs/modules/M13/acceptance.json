@@ -1,0 +1,22 @@
+{
+  "module_id": "M13",
+  "slug": "exchange",
+  "status": "implemented_contracts_frozen",
+  "STANDALONE_VERIFIED": false,
+  "branch": "m13/reports-imports-exports",
+  "manifest_revision": "school-contracts-v14",
+  "suites": {
+    "contracts": "pass",
+    "module_sqlite": "47 passed",
+    "standalone": "not-run",
+    "browser": "not-run"
+  },
+  "pending_integration": [
+    "real_domain_adapters",
+    "balances_loans_reconciliation",
+    "real_artifact_acls",
+    "real_m01_auth_2fa"
+  ],
+  "head_commit": "95ade94089094903a1d50ae462cb0a31ef1a7b1d",
+  "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/14"
+}

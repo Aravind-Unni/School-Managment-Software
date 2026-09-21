@@ -1,19 +1,17 @@
 # M13 exchange
 
-Status: **not started**. The foundation (B00) is built; this module is not.
+Status: **implemented**; contracts frozen under `school-contracts-v14`.
 
 - Contract packet: [`contracts/M13/PACKET.md`](../../../contracts/M13/PACKET.md)
-- Code will live in `backend/modules/exchange/` and `frontend/src/features/exchange/`
-- Nothing here is importable yet: `backend/modules/exchange/` deliberately has no
-  `__init__.py`, so no other module can accidentally depend on it and
-  `scripts/dev.py up M13` fails honestly rather than serving an empty app.
+- Code: `backend/modules/exchange/`, `frontend/src/features/exchange/`
+- Progress: [`progress.md`](progress.md) · Handoff: [`handoff.md`](handoff.md)
 
-## Before writing any code
+Standalone requires broker, worker and object storage. Other business apps stay
+out of `INSTALLED_APPS`; dependency ports bind to deterministic fakes.
 
-Produce the exact OpenAPI, JSON Schema, Protocol signatures, error enums and
-example fixtures listed in the packet, get them reviewed, and freeze them in
-`contracts/manifest.json`. Only then implement.
-
-## B00 note
-
-_No module-specific note in the B00 packet beyond the inherited constraints above._
+```bash
+python3 scripts/dev.py up M13 --profile standalone
+python3 scripts/dev.py migrate M13 --profile standalone
+python3 scripts/dev.py seed M13 --scenario baseline
+python3 scripts/dev.py check M13 --suite standalone
+```

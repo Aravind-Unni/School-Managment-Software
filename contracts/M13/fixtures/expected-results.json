@@ -1,0 +1,50 @@
+{
+  "status": "frozen",
+  "assertions": [
+    {
+      "id": "resume_no_duplicate",
+      "given": "Commit retried with same Idempotency-Key after partial apply",
+      "then": "applied_count unchanged; no duplicate enrolment rows"
+    },
+    {
+      "id": "digest_mismatch_blocks",
+      "given": "CommitImportRequest.source_digest dddddddd... does not match import_file_digest",
+      "then": "409 state_conflict exchange.error.digest_mismatch; job stays validated"
+    },
+    {
+      "id": "formula_escaped",
+      "given": "CSV cell raw '=1+1'",
+      "then": "validate succeeds; stored value prefixed with tab or apostrophe; no error row"
+    },
+    {
+      "id": "malayalam_pdf",
+      "given": "CreateReportCardsRequest locale ml for S1",
+      "then": "PDF artifact uses embedded Malayalam font bundle; report_snapshot locale ml"
+    },
+    {
+      "id": "historical_revision_stable",
+      "given": "Report snapshot v1 bound to result_revision_id_s1 and policy_version_v1",
+      "then": "After policy_version_v2 publication, v1 metadata unchanged; v2 supersedes via exchange.report_superseded"
+    },
+    {
+      "id": "revoked_blocks_download",
+      "given": "Guardian G2 revoked requests GET /reports/{id}/download",
+      "then": "403 action_denied exchange.error.artifact_access_revoked; no authorized_read_url"
+    },
+    {
+      "id": "unknown_dataset",
+      "given": "CreateImportRequest dataset not in allowlist",
+      "then": "422 validation_failed exchange.error.unknown_dataset"
+    },
+    {
+      "id": "job_not_ready",
+      "given": "Download while export state processing",
+      "then": "409 state_conflict exchange.error.job_not_ready"
+    },
+    {
+      "id": "cross_school",
+      "given": "School B job or report id",
+      "then": "404 object_inaccessible"
+    }
+  ]
+}

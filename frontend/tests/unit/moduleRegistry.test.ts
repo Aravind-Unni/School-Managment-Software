@@ -22,6 +22,7 @@ describe("module registry", () => {
       "M10",
       "M11",
       "M12",
+      "M13",
     ]);
   });
 
@@ -67,6 +68,10 @@ describe("module registry", () => {
       "nav.deliveries",
       "nav.files_review",
       "nav.files_view",
+      "nav.imports",
+      "nav.exports",
+      "nav.reports",
+      "nav.report_cards",
     ]);
   });
 
