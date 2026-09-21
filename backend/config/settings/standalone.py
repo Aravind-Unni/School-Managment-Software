@@ -85,20 +85,33 @@ CORS_ALLOWED_ORIGIN_REGEXES = [r"^http://(localhost|127\.0\.0\.1):\d+$"]
 
 
 def build_port_registry(registration: ModuleRegistration | None) -> PortRegistry:
-    """Bind every dependency port the module declares to a deterministic fake.
+    """Bind dependency ports; M14 overrides platform with its real adapter.
 
     Delegates to shared.ports.build_fake_registry so the standalone runner and
     the local test profile bind ports identically. A module that declares a
     consumer it never uses, or uses one it never declared, fails at boot.
 
-    Does not handle: real providers. Selecting a real adapter is integrated mode
-    only, which keeps a half-finished provider out of standalone runs.
+    Does not handle: real providers for unfinished modules. Selecting those is
+    integrated mode only.
     """
+    from shared.ports.registry import AdapterKind
+
+    overrides = None
+    if registration is not None and registration.id == "M14":
+        from modules.platform.services.adapter import PlatformAdapter
+
+        overrides = {
+            "platform": (
+                lambda: PlatformAdapter(worker_available=WORKER_AVAILABLE, clock=SCHOOL_CLOCK),
+                AdapterKind.REAL,
+            )
+        }
     return build_fake_registry(
         registration,
         app_env=APP_ENV,
         clock=SCHOOL_CLOCK,
         worker_available=WORKER_AVAILABLE,
+        overrides=overrides,
     )
 
 

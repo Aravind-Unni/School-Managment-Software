@@ -44,6 +44,7 @@ def build_fake_registry(
     app_env: str,
     clock,
     worker_available: bool,
+    overrides: dict[str, tuple] | None = None,
 ) -> PortRegistry:
     """Bind a deterministic fake for each port the module declares.
 
@@ -51,11 +52,15 @@ def build_fake_registry(
     with a clear message instead of handing back a working adapter the module
     never admitted depending on.
 
+    ``overrides`` lets a profile replace a named port's factory and kind without
+    shared importing a business module (M14 binds its real PlatformAdapter this
+    way from settings).
+
     Raises ValueError naming the unknown ports when a registration declares a
     consumer this harness cannot fake.
 
-    Does not handle: real adapters. Integrated and production profiles have their
-    own builders, which is what keeps a fake out of them structurally.
+    Does not handle: real adapters for unfinished modules. Integrated and
+    production profiles have their own builders.
     """
     from shared.fakes import (
         FakeAccess,
@@ -147,8 +152,13 @@ def build_fake_registry(
     }
 
     registry = PortRegistry(app_env=app_env, declared_consumers=frozenset(consumers))
+    override_map = overrides or {}
     for port_name in consumers:
-        registry.register(port_name, factories[port_name], kind=AdapterKind.FAKE)
+        if port_name in override_map:
+            factory, kind = override_map[port_name]
+            registry.register(port_name, factory, kind=kind)
+        else:
+            registry.register(port_name, factories[port_name], kind=AdapterKind.FAKE)
     return registry
 
 

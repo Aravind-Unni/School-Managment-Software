@@ -1,0 +1,80 @@
+{
+  "status": "proposed",
+  "note": "Example responses a consumer suite may assert. Synthetic only.",
+  "live_health": {
+    "status": "live"
+  },
+  "ready_health_ok": {
+    "status": "ready",
+    "checks": [
+      {
+        "name": "database",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "name": "queue",
+        "ok": true,
+        "detail": null
+      },
+      {
+        "name": "file_processor",
+        "ok": true,
+        "detail": null
+      }
+    ]
+  },
+  "job_failed": {
+    "id": "c3333333-3333-4333-8333-3333333333d3",
+    "kind": "platform.sample_producer",
+    "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "actor_id": "eda913d7-a893-5ecc-af4e-766d1332b2ee",
+    "payload_ref": "payloads/sample-producer-1",
+    "state": "failed",
+    "progress": 40,
+    "error_code": "platform.error.worker_interrupted",
+    "idempotency_key": "sample-producer-1",
+    "version": 2,
+    "created_at": "2026-09-21T10:00:00+00:00",
+    "updated_at": "2026-09-21T10:05:00+00:00"
+  },
+  "audit_redacted": {
+    "id": "e5555555-5555-4555-8555-5555555555f5",
+    "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "actor_id": "eda913d7-a893-5ecc-af4e-766d1332b2ee",
+    "action": "platform.sample_write",
+    "aggregate_id": "c3333333-3333-4333-8333-3333333333d3",
+    "redacted_diff": {
+      "before": {},
+      "after": {
+        "token": "[REDACTED]"
+      }
+    },
+    "request_id": "req-m14-baseline-1",
+    "occurred_at": "2026-09-21T10:00:01+00:00"
+  },
+  "restore_rehearsal_verified": {
+    "id": "aa111111-1111-4111-8111-1111111111aa",
+    "backup_manifest_id": "f6666666-6666-4666-8666-6666666666a6",
+    "isolated_target_label": "restore-rehearsal-a",
+    "state": "verified",
+    "record_counts": {
+      "audit_records": 2,
+      "jobs": 1
+    },
+    "object_hashes_matched": true,
+    "fee_total_paise": 125000,
+    "error_code": null,
+    "created_at": "2026-09-21T11:00:00+00:00",
+    "completed_at": "2026-09-21T11:12:00+00:00"
+  },
+  "event_job_state_changed": {
+    "event_type": "platform.job_state_changed",
+    "payload": {
+      "job_id": "c3333333-3333-4333-8333-3333333333d3",
+      "kind": "platform.sample_producer",
+      "from_state": "running",
+      "to_state": "failed"
+    }
+  }
+}

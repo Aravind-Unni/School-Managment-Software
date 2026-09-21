@@ -1021,14 +1021,77 @@
       "status": "frozen"
     },
     "M14": {
-      "artefacts": [],
-      "fixtures": [],
+      "artefacts": [
+        {
+          "frozen": true,
+          "id": "M14/error-codes.json",
+          "kind": "json-schema",
+          "owner": "M14 platform",
+          "path": "contracts/M14/error-codes.json",
+          "sha256": "c5c809f1a289d293fab73869fe363924d2e2f0cca2c8e0d2f02722b0298df147"
+        },
+        {
+          "frozen": true,
+          "id": "M14/openapi.json",
+          "kind": "openapi",
+          "owner": "M14 platform",
+          "path": "contracts/M14/openapi.json",
+          "sha256": "fa662041e97f4ec5420aef5dda992cd3edc98e7654dcd962f00640fad50dab2e"
+        },
+        {
+          "frozen": true,
+          "id": "M14/schemas/dtos.schema.json",
+          "kind": "json-schema",
+          "owner": "M14 platform",
+          "path": "contracts/M14/schemas/dtos.schema.json",
+          "sha256": "44a422f9ce8d0354529fa17feae644c8440259ed3a43627f58cfa169de4537b9"
+        },
+        {
+          "frozen": true,
+          "id": "M14/schemas/events.schema.json",
+          "kind": "json-schema",
+          "owner": "M14 platform",
+          "path": "contracts/M14/schemas/events.schema.json",
+          "sha256": "c338f3029d4a820a692512803061a64118188610f51ab36217f35a422da43fb3"
+        }
+      ],
+      "fixtures": [
+        {
+          "frozen": true,
+          "id": "M14/fixtures/expected-results.json",
+          "kind": "consumer-fixture",
+          "owner": "M14 platform",
+          "path": "contracts/M14/fixtures/expected-results.json",
+          "sha256": "1de9b925461cdc13a479ecb02643dbbe91ab6dfe6dc0a54a6deb09f07678c6d8"
+        },
+        {
+          "frozen": true,
+          "id": "M14/fixtures/responses.json",
+          "kind": "consumer-fixture",
+          "owner": "M14 platform",
+          "path": "contracts/M14/fixtures/responses.json",
+          "sha256": "daf216dbcaf9a7282e1fed49a0783d7332906949589b06490c63165d3e737275"
+        },
+        {
+          "frozen": true,
+          "id": "M14/fixtures/scenario.json",
+          "kind": "consumer-fixture",
+          "owner": "M14 platform",
+          "path": "contracts/M14/fixtures/scenario.json",
+          "sha256": "d9cb2d598adb769e4f658a3717baa75a3ec12c2492bcc2d03a21d2aa5bc6a501"
+        }
+      ],
       "packet": "contracts/M14/PACKET.md",
+      "review": {
+        "note": "Platform packet, OpenAPI, DTO/event schemas, error rows, ports and consumer fixtures approved as proposed (items 1\u201316). Frozen PlatformPort signatures unchanged; no FakePlatform in standalone; real M01 auth and full-scale RPO/RTO remain PENDING.",
+        "reviewed_on": "2026-09-21",
+        "reviewer": "Abhinav M"
+      },
       "slug": "platform",
-      "status": "not_started"
+      "status": "frozen"
     }
   },
   "note": "Revision data, not code. The generator reads this file; it decides nothing itself. A module is listed under 'frozen_modules' only after its contract packet passed a human review gate, and the reviewer is named alongside the date. Adding a module here is the freeze; removing one un-freezes it and the drift guard will report every hash that moves.",
-  "revision": "school-contracts-v14",
+  "revision": "school-contracts-v15",
   "status": "reviewed"
 }

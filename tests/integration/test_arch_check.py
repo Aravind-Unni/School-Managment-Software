@@ -53,19 +53,28 @@ def test_a_cross_module_import_is_rejected():
 
 
 def test_importing_an_unimplemented_module_is_rejected():
-    """Namespace packages make this import succeed, so it needs a static check."""
+    """Namespace packages make this import succeed, so it needs a static check.
+
+    Every M00-M14 module is implemented, so the test temporarily hides one
+    registration.py to recreate the unimplemented condition the guard must catch.
+    """
+    registration = REPO_ROOT / "backend" / "modules" / "alumni" / "registration.py"
+    hidden = registration.with_suffix(".py.hidden_for_arch_check_test")
     offender = REPO_ROOT / "backend" / "shared" / "_tmp_violation.py"
-    offender.write_text(
-        '"""Temporary file introducing a deliberate violation."""\n'
-        "import modules.platform  # noqa: F401\n"
-    )
+    registration.rename(hidden)
     try:
+        offender.write_text(
+            '"""Temporary file introducing a deliberate violation."""\n'
+            "import modules.alumni  # noqa: F401\n"
+        )
         result = run(ARCH_CHECK)
         assert result.returncode == 1
         assert "unimplemented-import" in result.stderr
         assert "empty namespace" in result.stderr
     finally:
-        offender.unlink()
+        offender.unlink(missing_ok=True)
+        if hidden.exists():
+            hidden.rename(registration)
     assert run(ARCH_CHECK).returncode == 0
 
 

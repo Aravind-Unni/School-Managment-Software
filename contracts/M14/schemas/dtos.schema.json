@@ -1,0 +1,493 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M14/dtos",
+  "title": "M14 platform DTOs",
+  "$defs": {
+    "JobState": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "running",
+        "succeeded",
+        "failed",
+        "dead"
+      ]
+    },
+    "OutboxState": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "dispatching",
+        "dispatched",
+        "failed"
+      ]
+    },
+    "RestoreRehearsalState": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "running",
+        "verified",
+        "failed"
+      ]
+    },
+    "LiveHealthDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "const": "live"
+        }
+      }
+    },
+    "ReadyCheckDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "ok"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": [
+            "database",
+            "queue",
+            "file_processor"
+          ]
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "detail": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Sanitized status text only; never credentials."
+        }
+      }
+    },
+    "ReadyHealthDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "checks"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "ready",
+            "not_ready"
+          ]
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ReadyCheckDTO"
+          },
+          "minItems": 3,
+          "maxItems": 3
+        }
+      }
+    },
+    "JobDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "school_id",
+        "actor_id",
+        "payload_ref",
+        "state",
+        "progress",
+        "error_code",
+        "idempotency_key",
+        "version",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "actor_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "payload_ref": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Opaque storage or harness reference; not a browser upload body."
+        },
+        "state": {
+          "$ref": "#/$defs/JobState"
+        },
+        "progress": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "error_code": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Sanitized stable code only; no stack traces or secrets."
+        },
+        "idempotency_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "RetryJobRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reason"
+      ],
+      "properties": {
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      }
+    },
+    "AuditRecordDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "actor_id",
+        "action",
+        "aggregate_id",
+        "redacted_diff",
+        "request_id",
+        "occurred_at"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "actor_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "aggregate_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Maps from frozen AuditRecord.resource_id."
+        },
+        "redacted_diff": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "before",
+            "after"
+          ],
+          "properties": {
+            "before": {
+              "type": "object"
+            },
+            "after": {
+              "type": "object"
+            }
+          },
+          "description": "Server-redacted before/after; secrets stripped."
+        },
+        "request_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "AuditCollection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items",
+        "next_cursor"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AuditRecordDTO"
+          }
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "CreateRestoreRehearsalRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "backup_manifest_id",
+        "isolated_target_label"
+      ],
+      "properties": {
+        "backup_manifest_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "isolated_target_label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Must name a non-production restore target; production labels are rejected."
+        }
+      }
+    },
+    "BackupManifestDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "db_point",
+        "object_versions",
+        "verified_at",
+        "created_at"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "db_point": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Named WAL/base backup identifier; not connection credentials."
+        },
+        "object_versions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "storage_key",
+              "version_id",
+              "sha256"
+            ],
+            "properties": {
+              "storage_key": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          }
+        },
+        "verified_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "RestoreRehearsalDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "backup_manifest_id",
+        "isolated_target_label",
+        "state",
+        "record_counts",
+        "object_hashes_matched",
+        "fee_total_paise",
+        "error_code",
+        "created_at",
+        "completed_at"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "backup_manifest_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "isolated_target_label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "state": {
+          "$ref": "#/$defs/RestoreRehearsalState"
+        },
+        "record_counts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "object_hashes_matched": {
+          "type": "boolean"
+        },
+        "fee_total_paise": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "Sample ledger total from restore fixture; integer INR paise."
+        },
+        "error_code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completed_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      }
+    },
+    "OutboxEventDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event_id",
+        "state",
+        "attempts",
+        "envelope"
+      ],
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "$ref": "#/$defs/OutboxState"
+        },
+        "attempts": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "envelope": {
+          "type": "object",
+          "description": "Frozen common EventEnvelope wire shape."
+        }
+      }
+    },
+    "ConsumerReceiptDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "consumer",
+        "event_id",
+        "received_at"
+      ],
+      "properties": {
+        "consumer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "event_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "received_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "StartJobResultDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "job_id",
+        "state"
+      ],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "$ref": "#/$defs/JobState"
+        }
+      }
+    }
+  }
+}

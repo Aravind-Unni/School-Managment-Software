@@ -17,6 +17,7 @@ import { communicationsModule } from "@features/communications/module";
 import { filesModule } from "@features/files/module";
 import { libraryModule } from "@features/library/module";
 import { performanceModule } from "@features/performance/module";
+import { platformModule } from "@features/platform/module";
 import { timetableModule } from "@features/timetable/module";
 import { transportModule } from "@features/transport/module";
 import { validateModule, type FeatureModule } from "./moduleRegistry";
@@ -35,6 +36,7 @@ const ALL: readonly FeatureModule[] = [
   communicationsModule,
   filesModule,
   exchangeModule,
+  platformModule,
 ].map(validateModule);
 
 const selected = (import.meta.env as Record<string, string | undefined>)[
