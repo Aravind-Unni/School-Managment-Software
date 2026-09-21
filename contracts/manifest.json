@@ -881,11 +881,74 @@
       "status": "frozen"
     },
     "M12": {
-      "artefacts": [],
-      "fixtures": [],
+      "artefacts": [
+        {
+          "frozen": true,
+          "id": "M12/error-codes.json",
+          "kind": "json-schema",
+          "owner": "M12 files",
+          "path": "contracts/M12/error-codes.json",
+          "sha256": "ac0ab24b94e1ced219713edb195f0356f2904bfd30b466648743604e20c024bb"
+        },
+        {
+          "frozen": true,
+          "id": "M12/openapi.json",
+          "kind": "openapi",
+          "owner": "M12 files",
+          "path": "contracts/M12/openapi.json",
+          "sha256": "c4973929e39bfd95a5df0a20165f8b57b763a6bd2c84c324cdc2d664ed3a722e"
+        },
+        {
+          "frozen": true,
+          "id": "M12/schemas/dtos.schema.json",
+          "kind": "json-schema",
+          "owner": "M12 files",
+          "path": "contracts/M12/schemas/dtos.schema.json",
+          "sha256": "7f23dcdb6ddd9843a51b9da34700a62b6953a003836efd9b76f9945bb60afdb4"
+        },
+        {
+          "frozen": true,
+          "id": "M12/schemas/events.schema.json",
+          "kind": "json-schema",
+          "owner": "M12 files",
+          "path": "contracts/M12/schemas/events.schema.json",
+          "sha256": "1899da297ca99ad430c630baee4aedd6d8692cdb5a3d17fbab39f0f56d2cf75a"
+        }
+      ],
+      "fixtures": [
+        {
+          "frozen": true,
+          "id": "M12/fixtures/expected-results.json",
+          "kind": "consumer-fixture",
+          "owner": "M12 files",
+          "path": "contracts/M12/fixtures/expected-results.json",
+          "sha256": "5e12a2e04f891815eea1b7afee7ee538b5bd42b1d779e525805105679921fa83"
+        },
+        {
+          "frozen": true,
+          "id": "M12/fixtures/responses.json",
+          "kind": "consumer-fixture",
+          "owner": "M12 files",
+          "path": "contracts/M12/fixtures/responses.json",
+          "sha256": "4cd96056efe5d8a92666addb530a236deed237d31f9f42bc3464cdd8de0b9532"
+        },
+        {
+          "frozen": true,
+          "id": "M12/fixtures/scenario.json",
+          "kind": "consumer-fixture",
+          "owner": "M12 files",
+          "path": "contracts/M12/fixtures/scenario.json",
+          "sha256": "c9a854fd0e85b290103bb8c3c5e3987bcb683cd0ba69cad93130030824cd2ac0"
+        }
+      ],
       "packet": "contracts/M12/PACKET.md",
+      "review": {
+        "note": "Files packet, OpenAPI, DTO/event schemas, error rows, FilesPort signatures and consumer fixtures approved as proposed (items 1\u201311). No backend/contracts change; ResourceGrant foundation shape kept; economical retention is fixture-only.",
+        "reviewed_on": "2026-09-21",
+        "reviewer": "Abhinav M"
+      },
       "slug": "files",
-      "status": "not_started"
+      "status": "frozen"
     },
     "M13": {
       "artefacts": [],
@@ -903,6 +966,6 @@
     }
   },
   "note": "Revision data, not code. The generator reads this file; it decides nothing itself. A module is listed under 'frozen_modules' only after its contract packet passed a human review gate, and the reviewer is named alongside the date. Adding a module here is the freeze; removing one un-freezes it and the drift guard will report every hash that moves.",
-  "revision": "school-contracts-v12",
+  "revision": "school-contracts-v13",
   "status": "reviewed"
 }

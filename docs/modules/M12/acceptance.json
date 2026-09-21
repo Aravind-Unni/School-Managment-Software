@@ -1,0 +1,22 @@
+{
+  "module_id": "M12",
+  "slug": "files",
+  "status": "implemented_contracts_frozen",
+  "STANDALONE_VERIFIED": false,
+  "branch": "m12/compressed-answer-sheet-files",
+  "manifest_revision": "school-contracts-v13",
+  "suites": {
+    "contracts": "pass",
+    "module_sqlite": "22 passed",
+    "standalone": "not-run",
+    "browser": "not-run"
+  },
+  "pending_integration": [
+    "real_m01_auth_2fa",
+    "assessment_publication_gates",
+    "independent_backup_restoration",
+    "production_object_lifecycle"
+  ],
+  "head_commit": "adc53dd9b2137268b07e91b49e6dad316f4274e3",
+  "pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/13"
+}

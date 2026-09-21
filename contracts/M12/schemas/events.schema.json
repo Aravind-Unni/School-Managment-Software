@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M12/events",
+  "title": "M12 files event payloads",
+  "description": "Payloads only. Envelope is frozen common.",
+  "$defs": {
+    "files.candidate_ready": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file_id",
+        "candidate_version",
+        "bytes",
+        "profile_version"
+      ],
+      "properties": {
+        "file_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "candidate_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "profile_version": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "files.accepted": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file_id",
+        "canonical_version",
+        "sha256"
+      ],
+      "properties": {
+        "file_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "canonical_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sha256": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64
+        }
+      }
+    },
+    "files.rejected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file_id",
+        "reason_code"
+      ],
+      "properties": {
+        "file_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reason_code": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "files.source_purged": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file_id",
+        "source_hash",
+        "policy_version"
+      ],
+      "properties": {
+        "file_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "source_hash": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "policy_version": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

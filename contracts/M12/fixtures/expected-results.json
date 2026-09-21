@@ -1,0 +1,45 @@
+{
+  "status": "frozen",
+  "assertions": [
+    {
+      "id": "pin_immutable",
+      "given": "confirmed candidate pinned",
+      "then": "hash/version immutable; reprocess creates new candidate only"
+    },
+    {
+      "id": "wrong_child_grant",
+      "given": "grant for S2 file issued under S1 context",
+      "then": "issue_read inaccessible"
+    },
+    {
+      "id": "unreviewed_blocks_purge",
+      "given": "candidate not confirmed",
+      "then": "purge blocked"
+    },
+    {
+      "id": "unverified_backup_blocks_purge",
+      "given": "backup verifier unverified",
+      "then": "purge blocked"
+    },
+    {
+      "id": "hold_blocks_purge",
+      "given": "legal_hold true",
+      "then": "purge blocked"
+    },
+    {
+      "id": "decode_quarantine",
+      "given": "animated or bomb image",
+      "then": "files.error.decode_rejected; state rejected"
+    },
+    {
+      "id": "cross_school",
+      "given": "school B file id",
+      "then": "404 object_inaccessible"
+    },
+    {
+      "id": "orphan_cleanup",
+      "given": "expired open upload",
+      "then": "session abandoned; quarantine object removed"
+    }
+  ]
+}
