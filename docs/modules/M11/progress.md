@@ -7,8 +7,8 @@
 | Branch | `m11/notices-third-party-sms` |
 | Started from | `8d84c00da9f3378514b91adc8b98c211dc77dfc9` (`origin/main`) |
 | Manifest revision | `school-contracts-v11` (current); proposed freeze `school-contracts-v12` |
-| PR | (pending push) |
-| Head commit | (pending commit) |
+| PR | (pending) |
+| Head commit | `cd2b8322f96df1b938fa1a3398b049c1e07e6200` |
 | Last recorded | 2026-09-21 |
 
 ## Original request
