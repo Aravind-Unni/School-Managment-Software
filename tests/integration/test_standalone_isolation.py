@@ -54,14 +54,24 @@ def test_the_harness_app_is_installed_in_a_development_profile():
     assert "shared.harness" in settings.INSTALLED_APPS
 
 
-def test_every_bound_port_is_a_fake_in_standalone():
+def test_every_bound_port_is_a_fake_or_m14_real_platform():
+    """Standalone binds fakes; M14 alone binds its real PlatformAdapter.
+
+    M14 owns PlatformPort, so its profile must not receive TestPlatformAdapter.
+    Every other consumer port stays a fake.
+    """
     # Read through the runtime holder, not settings.SCHOOL_PORTS: the holder
     # builds on demand, where the setting is only populated once something has
     # imported the URLconf. Depending on that made this test's result an accident
     # of collection order.
     from shared.ports import runtime
 
-    assert set(runtime.get_registry().kinds().values()) == {"fake"}
+    kinds = dict(runtime.get_registry().kinds())
+    if settings.MODULE_ID == "M14":
+        assert kinds.pop("platform") == "real"
+        assert all(kind == "fake" for kind in kinds.values())
+    else:
+        assert set(kinds.values()) == {"fake"}
 
 
 def test_the_bound_ports_are_exactly_what_the_module_declared():
@@ -102,12 +112,32 @@ def test_the_shared_exception_handler_is_installed():
     )
 
 
-def test_an_unimplemented_module_fails_honestly_rather_than_booting_empty():
+def test_hiding_registration_makes_a_module_fail_honestly_rather_than_booting_empty():
+    """Simulate unimplemented by hiding registration.py; import must fail.
+
+    All M00-M14 modules ship registration.py. The empty-namespace failure mode
+    is still required, so this test recreates it without leaving a permanent
+    half-module in the tree.
+    """
     import importlib
+    import pathlib
 
-    from shared.module_catalog import address_for
-
-    # M14 has no code yet. Importing its registration must fail, which is what
-    # makes `dev.py up M14` report absence instead of serving an empty app.
-    with pytest.raises(ModuleNotFoundError):
-        importlib.import_module(address_for("M14").registration_path)
+    registration = (
+        pathlib.Path(__file__).resolve().parents[2]
+        / "backend"
+        / "modules"
+        / "alumni"
+        / "registration.py"
+    )
+    hidden = registration.with_suffix(".py.hidden_for_isolation_test")
+    registration.rename(hidden)
+    try:
+        # Drop any prior successful import from this process.
+        for name in list(sys.modules):
+            if name == "modules.alumni" or name.startswith("modules.alumni."):
+                del sys.modules[name]
+        with pytest.raises(ModuleNotFoundError):
+            importlib.import_module(address_for("M10").registration_path)
+    finally:
+        if hidden.exists():
+            hidden.rename(registration)

@@ -2,7 +2,7 @@
   "module_id": "M14",
   "slug": "platform",
   "_comment": "Owns the real audit/outbox relay, background jobs, backup manifests and restore rehearsals.",
-  "_status": "contracts proposed; module not implemented; object_storage required for backup acceptance",
+  "_status": "implemented; contracts frozen under school-contracts-v15",
   "resources": {
     "postgres": true,
     "frontend": true,

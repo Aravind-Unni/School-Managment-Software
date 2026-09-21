@@ -136,10 +136,22 @@ def test_no_secret_value_survives_doctor_output(monkeypatch):
 
 
 def test_an_unimplemented_module_is_refused_with_its_own_exit_code():
-    result = run_dev("up", "M14")
-    assert result.returncode == 3
-    assert "not implemented" in result.stderr
-    assert "contracts/M14/PACKET.md" in result.stderr
+    """dev.py up must refuse a module whose registration.py is absent.
+
+    All catalogued modules are implemented, so this test temporarily hides one
+    registration to prove the honest-failure path still works.
+    """
+    registration = REPO_ROOT / "backend" / "modules" / "alumni" / "registration.py"
+    hidden = registration.with_suffix(".py.hidden_for_dev_cli_test")
+    registration.rename(hidden)
+    try:
+        result = run_dev("up", "M10")
+        assert result.returncode == 3
+        assert "not implemented" in result.stderr
+        assert "contracts/M10/PACKET.md" in result.stderr
+    finally:
+        if hidden.exists():
+            hidden.rename(registration)
 
 
 def test_an_unknown_module_id_is_refused():

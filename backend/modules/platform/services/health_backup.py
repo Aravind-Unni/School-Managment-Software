@@ -115,9 +115,7 @@ class BackupService:
             row.object_hashes_matched = matched
             row.record_counts = dict(manifest.record_counts)
             row.fee_total_paise = manifest.fee_total_paise
-            row.error_code = (
-                None if matched else "platform.error.restore_hash_mismatch"
-            )
+            row.error_code = None if matched else "platform.error.restore_hash_mismatch"
             row.completed_at = self.clock.now()
             row.save()
             self.platform.record_audit(
