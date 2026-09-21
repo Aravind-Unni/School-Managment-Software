@@ -13,7 +13,7 @@ Read [`progress.md`](progress.md) and [`release-manifest.json`](release-manifest
 
 - Independent standalone approval for any of M01–M14.
 - M01 contract freeze (still `not_started` in `contracts/manifest.json`).
-- M02 as a complete registry / `RegistryPort` provider.
+- M02 as a **complete** registry (step 4 promotion/withdrawal/exchange still open). `RegistryPort` for C02 journeys is present.
 - Any suite result not recorded from an actual run on this branch.
 
 ## Real adapter map (target)
