@@ -1,0 +1,55 @@
+{
+  "status": "frozen",
+  "note": "Synthetic M13 baseline. Reuses B00/M05/M11/M12 UUIDs where possible. Formula and duplicate rows documented for parser tests only.",
+  "policy_fixture": {
+    "formula_neutralization_prefixes": ["\t", "'"],
+    "malayalam_pdf_font_bundle": "embedded-noto-sans-malayalam-v1",
+    "signed_read_seconds": 120,
+    "commit_requires_2fa": false
+  },
+  "school_a": {
+    "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "principal_p1_actor_id": "eda913d7-a893-5ecc-af4e-766d1332b2ee",
+    "teacher_t1_staff_id": "eda913d7-a893-5ecc-af4e-766d1332b2ee",
+    "guardian_g1_id": "a98bf46f-c03f-59a9-96e4-5eb94f0cf4a7",
+    "guardian_g2_revoked_id": "7731fd5f-a464-53df-9429-a515f8a06301",
+    "student_s1_id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c",
+    "student_s2_id": "eceaa8ed-e2db-50cf-a649-557816565032",
+    "section_c1_id": "86847c87-bedd-505d-9e2f-3bb35275320c",
+    "publication_id": "1f4598ca-66b6-55e2-8868-f5d6c597d8e7",
+    "result_revision_id_s1": "cabb3885-af2f-5ba0-afe4-a256f00c35a8",
+    "policy_version_v1": "illustrative-v0",
+    "policy_version_v2": "illustrative-v1",
+    "import_file_id": "f7777777-7777-4777-8777-7777777777a7",
+    "import_file_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "import_job_id": "a8888888-8888-4888-8888-8888888888b8",
+    "export_job_id": "b9999999-9999-4999-8999-9999999999c9",
+    "report_card_job_s1_id": "daaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaad",
+    "report_snapshot_v1_id": "ebbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbe",
+    "report_snapshot_v2_id": "fccccccc-cccc-4ccc-8ccc-cccccccccccf"
+  },
+  "csv_notes": {
+    "enrolments_duplicate_row": {
+      "row_a": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c,86847c87-bedd-505d-9e2f-3bb35275320c,2026-07-15",
+      "row_b": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c,86847c87-bedd-505d-9e2f-3bb35275320c,2026-07-15",
+      "expect": "Second row rejected at validate; commit idempotency must not double-apply"
+    },
+    "formula_cell_examples": {
+      "raw": "=1+1",
+      "stored_after_neutralization_tab": "\t=1+1",
+      "stored_after_neutralization_apostrophe": "'=1+1",
+      "expect": "No validation error; cell persisted with neutralizing prefix"
+    }
+  },
+  "commit_mismatch": {
+    "wrong_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  },
+  "expected": {
+    "resume_no_duplicate": true,
+    "digest_mismatch_blocks": true,
+    "formula_escaped": true,
+    "malayalam_pdf": true,
+    "historical_revision_stable": true,
+    "revoked_blocks_download": true
+  }
+}

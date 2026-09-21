@@ -1,0 +1,95 @@
+{
+  "status": "frozen",
+  "examples": {
+    "create_import_validate": {
+      "job_id": "a8888888-8888-4888-8888-8888888888b8",
+      "template_version": "enrolments-v1",
+      "schema_version": "enrolments-schema-v1"
+    },
+    "import_job_validated": {
+      "id": "a8888888-8888-4888-8888-8888888888b8",
+      "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+      "dataset": "enrolments",
+      "state": "validated",
+      "file_ref": "f7777777-7777-4777-8777-7777777777a7",
+      "validation_version": 2,
+      "source_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "accepted_count": 1,
+      "error_count": 1,
+      "applied_count": 0,
+      "template_version": "enrolments-v1",
+      "schema_version": "enrolments-schema-v1"
+    },
+    "import_errors_page": {
+      "items": [
+        {
+          "row": 3,
+          "field": "student_id",
+          "code": "duplicate_row",
+          "message_key": "exchange.error.duplicate_row"
+        }
+      ],
+      "next_cursor": null
+    },
+    "commit_digest_mismatch_409": {
+      "code": "state_conflict",
+      "message_key": "exchange.error.digest_mismatch",
+      "request_id": "req-m13-commit-mismatch-001",
+      "field_errors": [
+        {
+          "field": "source_digest",
+          "message_key": "exchange.error.digest_mismatch"
+        }
+      ]
+    },
+    "export_job_ready": {
+      "id": "b9999999-9999-4999-8999-9999999999c9",
+      "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+      "dataset": "attendance_summary",
+      "format": "csv",
+      "locale": "en",
+      "state": "ready",
+      "artifact_ref": "f7777777-7777-4777-8777-7777777777a7",
+      "failure_message_key": null
+    },
+    "export_download_revoked_403": {
+      "code": "action_denied",
+      "message_key": "exchange.error.artifact_access_revoked",
+      "request_id": "req-m13-export-revoked-001",
+      "field_errors": []
+    },
+    "report_snapshot_ready": {
+      "id": "ebbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbe",
+      "type": "report_card",
+      "source_revision_ids": [
+        "cabb3885-af2f-5ba0-afe4-a256f00c35a8"
+      ],
+      "policy_versions": [
+        "illustrative-v0"
+      ],
+      "locale": "ml",
+      "artifact_ref": "f7777777-7777-4777-8777-7777777777a7",
+      "state": "ready",
+      "superseded_by": null
+    },
+    "artifact_access": {
+      "authorized_read_url": "https://storage.example/reports/get?sig=synthetic",
+      "expires_at": "2026-09-21T06:02:00+00:00"
+    },
+    "events": {
+      "exchange.import_completed": {
+        "job_id": "a8888888-8888-4888-8888-8888888888b8",
+        "applied_count": 1,
+        "error_count": 1
+      },
+      "exchange.report_ready": {
+        "job_id": "daaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaad",
+        "report_id": "ebbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbe"
+      },
+      "exchange.report_superseded": {
+        "old_report_id": "ebbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbe",
+        "new_report_id": "fccccccc-cccc-4ccc-8ccc-cccccccccccf"
+      }
+    }
+  }
+}

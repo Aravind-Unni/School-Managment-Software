@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M13/events",
+  "title": "M13 exchange event payloads",
+  "description": "Payloads only. Envelope is frozen common.",
+  "$defs": {
+    "exchange.import_completed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "job_id",
+        "applied_count",
+        "error_count"
+      ],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "applied_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "error_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "exchange.report_ready": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "job_id",
+        "report_id"
+      ],
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "report_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "exchange.report_superseded": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "old_report_id",
+        "new_report_id"
+      ],
+      "properties": {
+        "old_report_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "new_report_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    }
+  }
+}

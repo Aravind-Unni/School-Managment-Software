@@ -951,11 +951,74 @@
       "status": "frozen"
     },
     "M13": {
-      "artefacts": [],
-      "fixtures": [],
+      "artefacts": [
+        {
+          "frozen": true,
+          "id": "M13/error-codes.json",
+          "kind": "json-schema",
+          "owner": "M13 exchange",
+          "path": "contracts/M13/error-codes.json",
+          "sha256": "2b8f612072cb1d7772910dd3d970e7405eeeb94922196e80d920f01f0eca162e"
+        },
+        {
+          "frozen": true,
+          "id": "M13/openapi.json",
+          "kind": "openapi",
+          "owner": "M13 exchange",
+          "path": "contracts/M13/openapi.json",
+          "sha256": "c168de1c0035d0107f227fb64f340272eda3c3d1c2fecbb71a8e9dfbaa48c4eb"
+        },
+        {
+          "frozen": true,
+          "id": "M13/schemas/dtos.schema.json",
+          "kind": "json-schema",
+          "owner": "M13 exchange",
+          "path": "contracts/M13/schemas/dtos.schema.json",
+          "sha256": "0930e39539c618280db66c61fe889ca84d3a3c13969d51b778404ce40334081f"
+        },
+        {
+          "frozen": true,
+          "id": "M13/schemas/events.schema.json",
+          "kind": "json-schema",
+          "owner": "M13 exchange",
+          "path": "contracts/M13/schemas/events.schema.json",
+          "sha256": "3352f558f47b847146aed1ae754bcb5b2aa74b81134fc81a4070824a34c18373"
+        }
+      ],
+      "fixtures": [
+        {
+          "frozen": true,
+          "id": "M13/fixtures/expected-results.json",
+          "kind": "consumer-fixture",
+          "owner": "M13 exchange",
+          "path": "contracts/M13/fixtures/expected-results.json",
+          "sha256": "da0811f8712bb55d1b49244affadc5dad276bea84a8fc62a8d90ed68cff85c48"
+        },
+        {
+          "frozen": true,
+          "id": "M13/fixtures/responses.json",
+          "kind": "consumer-fixture",
+          "owner": "M13 exchange",
+          "path": "contracts/M13/fixtures/responses.json",
+          "sha256": "89b30a3631ca4ee5a08af54b48d51ffdf9b2a530d55f44943475bc1f1440eb09"
+        },
+        {
+          "frozen": true,
+          "id": "M13/fixtures/scenario.json",
+          "kind": "consumer-fixture",
+          "owner": "M13 exchange",
+          "path": "contracts/M13/fixtures/scenario.json",
+          "sha256": "af58aa0441a326d1c9705729b871d10ef9fa0384ee237549c82a38f2fd233c82"
+        }
+      ],
       "packet": "contracts/M13/PACKET.md",
+      "review": {
+        "note": "Exchange packet, OpenAPI, DTO/event schemas, error rows, ExchangePort/DomainExchangePort signatures and consumer fixtures approved as proposed (items 1\u201316). Permissions match manual (imports.*/reports.*/reportcards.*). Real domain adapters and M01 auth remain PENDING.",
+        "reviewed_on": "2026-09-21",
+        "reviewer": "Abhinav M"
+      },
       "slug": "exchange",
-      "status": "not_started"
+      "status": "frozen"
     },
     "M14": {
       "artefacts": [],
@@ -966,6 +1029,6 @@
     }
   },
   "note": "Revision data, not code. The generator reads this file; it decides nothing itself. A module is listed under 'frozen_modules' only after its contract packet passed a human review gate, and the reviewer is named alongside the date. Adding a module here is the freeze; removing one un-freezes it and the drift guard will report every hash that moves.",
-  "revision": "school-contracts-v13",
+  "revision": "school-contracts-v14",
   "status": "reviewed"
 }

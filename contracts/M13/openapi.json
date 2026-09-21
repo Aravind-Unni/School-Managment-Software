@@ -1,0 +1,1087 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "M13 Reports, Imports and Exports",
+    "version": "1.0.0",
+    "description": "Paths relative to /api/v1. Bulk import validate/commit, dataset exports, report cards and immutable report snapshots. Closed write schemas."
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "security": [
+    {
+      "session": []
+    }
+  ],
+  "paths": {
+    "/imports": {
+      "post": {
+        "operationId": "create_import",
+        "summary": "Start validate-only import job for an uploaded file",
+        "x-permission": "imports.validate",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateImportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateImportResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/imports/{id}": {
+      "get": {
+        "operationId": "get_import",
+        "summary": "Import job status and counts",
+        "x-permission": "imports.validate",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportJobDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/imports/{id}/commit": {
+      "post": {
+        "operationId": "commit_import",
+        "summary": "Apply validated rows after digest check",
+        "x-permission": "imports.commit",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommitImportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted for commit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportJobDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/imports/{id}/errors": {
+      "get": {
+        "operationId": "list_import_errors",
+        "summary": "Paginated row validation errors",
+        "x-permission": "imports.validate",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportErrorsPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/import-templates/{dataset}": {
+      "get": {
+        "operationId": "get_import_template",
+        "summary": "Column schema and optional sample for a dataset",
+        "x-permission": "imports.validate",
+        "parameters": [
+          {
+            "name": "dataset",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/ImportDataset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportTemplateDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/exports": {
+      "post": {
+        "operationId": "create_export",
+        "summary": "Enqueue export job",
+        "x-permission": "reports.export",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateExportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportJobDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/exports/{id}": {
+      "get": {
+        "operationId": "get_export",
+        "summary": "Export job status",
+        "x-permission": "reports.export",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportJobDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/exports/{id}/download": {
+      "get": {
+        "operationId": "download_export",
+        "summary": "Short-lived authorized read URL for export artifact",
+        "x-permission": "reports.export",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtifactAccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/reportcards": {
+      "post": {
+        "operationId": "create_report_cards",
+        "summary": "Enqueue report card generation for students",
+        "x-permission": "reportcards.generate",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReportCardsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateReportCardsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/reportcards/{id}": {
+      "get": {
+        "operationId": "get_report_card_job",
+        "summary": "Report card job status",
+        "x-permission": "reportcards.generate",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportCardJobDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/reports/{id}": {
+      "get": {
+        "operationId": "get_report_snapshot",
+        "summary": "Immutable report snapshot metadata",
+        "x-permission": "reports.read",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportSnapshotDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/reports/{id}/download": {
+      "get": {
+        "operationId": "download_report",
+        "summary": "Short-lived authorized read URL for report artifact",
+        "x-permission": "reports.read",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtifactAccessDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session"
+      }
+    },
+    "responses": {
+      "Error": {
+        "description": "Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ImportDataset": {
+        "type": "string",
+        "enum": [
+          "enrolments",
+          "opening_balances",
+          "results",
+          "library_loans"
+        ]
+      },
+      "ExportDataset": {
+        "type": "string",
+        "enum": [
+          "attendance_summary",
+          "progress",
+          "at_risk",
+          "ptm_summary",
+          "class_roster",
+          "subject_summary"
+        ]
+      },
+      "Locale": {
+        "type": "string",
+        "enum": [
+          "en",
+          "ml"
+        ]
+      },
+      "CreateImportRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "dataset",
+          "file_ref",
+          "mode"
+        ],
+        "properties": {
+          "dataset": {
+            "$ref": "#/components/schemas/ImportDataset"
+          },
+          "file_ref": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "validate"
+            ]
+          }
+        }
+      },
+      "CreateImportResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "job_id",
+          "template_version",
+          "schema_version"
+        ],
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "template_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "schema_version": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "CommitImportRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "validation_version",
+          "source_digest"
+        ],
+        "properties": {
+          "validation_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "source_digest": {
+            "type": "string",
+            "minLength": 64,
+            "maxLength": 64,
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      },
+      "ImportRowErrorDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "row",
+          "field",
+          "code"
+        ],
+        "properties": {
+          "row": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "field": {
+            "type": "string",
+            "minLength": 1
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message_key": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "ImportErrorsPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportRowErrorDTO"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "ImportJobDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "school_id",
+          "dataset",
+          "state",
+          "file_ref",
+          "validation_version",
+          "source_digest",
+          "accepted_count",
+          "error_count",
+          "applied_count"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "dataset": {
+            "$ref": "#/components/schemas/ImportDataset"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "validating",
+              "validated",
+              "validation_failed",
+              "committing",
+              "applied",
+              "commit_failed"
+            ]
+          },
+          "file_ref": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "validation_version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "source_digest": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 64,
+            "maxLength": 64
+          },
+          "accepted_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "error_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "applied_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "template_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "schema_version": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "ImportTemplateDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "dataset",
+          "schema_version",
+          "columns"
+        ],
+        "properties": {
+          "dataset": {
+            "$ref": "#/components/schemas/ImportDataset"
+          },
+          "schema_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "sample_csv_url": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "CreateExportRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "dataset",
+          "filters",
+          "fields",
+          "format",
+          "locale"
+        ],
+        "properties": {
+          "dataset": {
+            "$ref": "#/components/schemas/ExportDataset"
+          },
+          "filters": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "csv",
+              "xlsx",
+              "pdf"
+            ]
+          },
+          "locale": {
+            "$ref": "#/components/schemas/Locale"
+          }
+        }
+      },
+      "ExportJobDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "school_id",
+          "dataset",
+          "format",
+          "locale",
+          "state"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "dataset": {
+            "$ref": "#/components/schemas/ExportDataset"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "csv",
+              "xlsx",
+              "pdf"
+            ]
+          },
+          "locale": {
+            "$ref": "#/components/schemas/Locale"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "processing",
+              "ready",
+              "failed"
+            ]
+          },
+          "artifact_ref": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "failure_message_key": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "CreateReportCardsRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "publication_id",
+          "student_ids",
+          "locale",
+          "template_version"
+        ],
+        "properties": {
+          "publication_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "student_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 1
+          },
+          "locale": {
+            "$ref": "#/components/schemas/Locale"
+          },
+          "template_version": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "ReportCardJobDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "school_id",
+          "publication_id",
+          "student_id",
+          "locale",
+          "template_version",
+          "state"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "publication_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "student_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locale": {
+            "$ref": "#/components/schemas/Locale"
+          },
+          "template_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "processing",
+              "ready",
+              "failed"
+            ]
+          },
+          "report_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "CreateReportCardsResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "jobs"
+        ],
+        "properties": {
+          "jobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportCardJobDTO"
+            },
+            "minItems": 1
+          }
+        }
+      },
+      "ReportSnapshotDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "type",
+          "source_revision_ids",
+          "policy_versions",
+          "locale",
+          "artifact_ref",
+          "state"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "report_card",
+              "attendance_summary",
+              "progress",
+              "at_risk",
+              "ptm_summary",
+              "class_roster",
+              "subject_summary"
+            ]
+          },
+          "source_revision_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 1
+          },
+          "policy_versions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "locale": {
+            "$ref": "#/components/schemas/Locale"
+          },
+          "artifact_ref": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "ready",
+              "superseded",
+              "revoked"
+            ]
+          },
+          "superseded_by": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "ArtifactAccessDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "authorized_read_url",
+          "expires_at"
+        ],
+        "properties": {
+          "authorized_read_url": {
+            "type": "string",
+            "minLength": 1
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,44 +1,40 @@
-# Contract packet -- M13 exchange
+# Contract packet — M13 exchange
 
-Status: **NOT STARTED**. No executable contract exists for this module yet.
+Status: **FROZEN** under `school-contracts-v14` (reviewed 2026-09-21).
 
-Manifest revision this packet targets: `school-contracts-v3-draft`
-(the current draft in `contracts/manifest.json`; replace with the approved
-revision once review completes).
+Branched from `3d0b03bbae4d7509ec5c27ef8e4a029d4eebdf13` (`origin/main`).
 
 ---
 
 ## The rule this packet exists to enforce
 
-**Contract approval comes before module coding.** The module task must first
-produce, for developer review:
+**Contract approval comes before module coding.** Artefacts below are frozen in
+`contracts/manifest.json`.
 
-1. the exact **OpenAPI** document for this module's REST API
-2. the **JSON Schema** for every request, response and event payload
-3. the **Protocol signatures** for every service port this module provides
-4. the **error enums** -- which `code`/`message_key` pairs this module returns
-5. **example fixtures** a consumer suite can assert against
+### Checklist — frozen artefacts
 
-Those are then **frozen in `contracts/manifest.json`** before implementation
-starts. A later provider of the same contract must pass the same consumer
-fixture suite. A mismatch needs a reviewed contract revision -- **not** an
-invented per-module field and **not** a local adapter.
+| # | Artefact | Path | Status |
+|---|---|---|---|
+| 1 | OpenAPI 3.1.0 | `openapi.json` | frozen |
+| 2 | Request/response DTOs | `schemas/dtos.schema.json` | frozen |
+| 3 | Event payloads | `schemas/events.schema.json` | frozen |
+| 4 | Error rows | `error-codes.json` | frozen |
+| 5 | Service ports | `ports.md` | frozen |
+| 6 | Review decisions | `review-decisions.md` | frozen |
+| 7 | Seed scenario | `fixtures/scenario.json` | frozen |
+| 8 | Example responses | `fixtures/responses.json` | frozen |
+| 9 | Acceptance assertions | `fixtures/expected-results.json` | frozen |
 
-## What this module must declare
+## Module registration
 
-A `ModuleRegistration` in `backend/modules/exchange/registration.py`:
-
-| field | meaning |
+| field | value |
 |---|---|
-| `id` | `M13` |
-| `slug` | `exchange` |
-| `api_prefix` | `/api/exchange/` |
-| `frontend_routes` | React routes, each with nav metadata and required permission |
-| `permission_codes` | all namespaced `exchange.<verb>_<noun>` |
-| `consumers` | service ports this module requires from others |
-| `scheduled_jobs` | periodic work, cron interpreted in Asia/Kolkata |
-| `migration_dependencies` | module ids whose migrations must apply first |
-| `health_checks` | readiness probes contributed to `/readyz` |
+| id | `M13` |
+| slug | `exchange` |
+| api_prefix | `/api/v1/` |
+| api_path_roots | `imports/`, `import-templates/`, `exports/`, `reportcards/`, `reports/` |
+| permission_codes | `imports.validate`, `imports.commit`, `reports.read`, `reports.export`, `reportcards.generate` |
+| consumers | access, registry, assessment, attendance, fees, files, platform, clock |
 
 ## Inherited, non-negotiable constraints
 
@@ -68,13 +64,10 @@ python scripts/dev.py check M13 --suite standalone
 Dependency ports bind to deterministic fakes. Real authentication and 2FA
 integration stay **explicitly pending** until M01 is integrated.
 
-## B00 notes specific to this module
-
-_No module-specific note in the B00 packet beyond the inherited constraints above._
-
 ## Human gates before this module ships
 
-- this packet reviewed and frozen in the manifest
+- ~~this packet reviewed and frozen in the manifest~~
 - every equivalence/authorisation rule reviewed before being enabled
 - the phase exit gate
 - first customer-facing report for each design partner, where applicable
+- standalone PostgreSQL + browser evidence (container path)

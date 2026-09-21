@@ -1,0 +1,78 @@
+{
+  "status": "frozen",
+  "note": "Reuses frozen ErrorCode values; message_key values are module-owned. CSV formula injection is neutralized at parse time (tab or apostrophe prefix); it is not an error row.",
+  "rows": [
+    {
+      "status": 401,
+      "code": "unauthenticated",
+      "message_key": "error.unauthenticated",
+      "when": "No server-derived session."
+    },
+    {
+      "status": 403,
+      "code": "action_denied",
+      "message_key": "error.action_denied",
+      "when": "Actor lacks imports.validate, imports.commit, reports.read, reports.export, or reportcards.generate."
+    },
+    {
+      "status": 403,
+      "code": "auth_step_up_required",
+      "message_key": "error.auth_step_up_required",
+      "when": "Sensitive bulk commit or export requires recent 2FA and fixture says stale."
+    },
+    {
+      "status": 403,
+      "code": "action_denied",
+      "message_key": "exchange.error.artifact_access_revoked",
+      "when": "Guardian link revoked or relationship no longer grants read; download URL must not be issued."
+    },
+    {
+      "status": 404,
+      "code": "object_inaccessible",
+      "message_key": "error.object_inaccessible",
+      "when": "Absent job, report, template, or other-school resource. Cross-school always 404."
+    },
+    {
+      "status": 409,
+      "code": "version_conflict",
+      "message_key": "error.version_conflict",
+      "when": "validation_version stale after concurrent validate or template bump."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "exchange.error.digest_mismatch",
+      "when": "Commit source_digest does not match stored file digest for the import job."
+    },
+    {
+      "status": 409,
+      "code": "state_conflict",
+      "message_key": "exchange.error.job_not_ready",
+      "when": "Commit, download, or report fetch while job is still validating, committing, or failed."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.validation_failed",
+      "when": "Malformed body, unknown field, or closed-schema rejection."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "error.server_internal_field_rejected",
+      "when": "Body carried school_id, actor_id, or ResourceGrant."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "exchange.error.unknown_dataset",
+      "when": "dataset not in the module allowlist for imports, exports, or reports."
+    },
+    {
+      "status": 422,
+      "code": "validation_failed",
+      "message_key": "exchange.error.forbidden_field",
+      "when": "Export or import row referenced a column or field not permitted for the actor or dataset."
+    }
+  ]
+}

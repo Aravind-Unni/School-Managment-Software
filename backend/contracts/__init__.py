@@ -44,6 +44,7 @@ from .events import (
     EventEnvelope,
 )
 from .evidence import EvidenceRef, ResourceGrant
+from .exchange import ArtifactAccessDTO, ExchangePort, ReportJobStartDTO
 from .fees import (
     BalanceDTO,
     ChargeDTO,
@@ -141,6 +142,7 @@ __all__ = [
     "ActionDenied",
     "AlumniPort",
     "AlumniProfileView",
+    "ArtifactAccessDTO",
     "ArtifactRef",
     "AssessmentPort",
     "AttendancePort",
@@ -164,6 +166,7 @@ __all__ = [
     "ErrorEnvelope",
     "EventEnvelope",
     "EvidenceRef",
+    "ExchangePort",
     "FeesPort",
     "FieldError",
     "FileDTO",
@@ -191,6 +194,7 @@ __all__ = [
     "RegistryPort",
     "Relationship",
     "RelationshipFacts",
+    "ReportJobStartDTO",
     "RequestContext",
     "ResourceGrant",
     "RosterDTO",
