@@ -130,6 +130,16 @@ def source_key(school_id, file_ref) -> str:
     return f"import-source/{school_id}/{file_ref}"
 
 
+def accepted_upload_bytes(school_id, file_ref) -> bytes | None:
+    """Return an accepted M12 upload's bytes from the shared bucket, or None.
+
+    M12 keeps an accepted import file at ``canonical/{school}/{file}/v1``;
+    with object storage configured this is where an uploaded CSV really is.
+    None without object storage (tests stage bytes with ``source_store``).
+    """
+    return _bucket_get(f"canonical/{school_id}/{file_ref}/v1")
+
+
 def artifact_key(school_id, job_id) -> str:
     """Return the staging key for one school's generated artifact."""
     return f"artifact/{school_id}/{job_id}"

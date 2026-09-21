@@ -4,7 +4,6 @@
 
 import type { FeatureModule } from "@app/moduleRegistry";
 import { ExportCentrePage } from "./ExportCentrePage";
-import { ImportCentrePage } from "./ImportCentrePage";
 import { ReportCardPreviewPage } from "./ReportCardPreviewPage";
 import { ReportCentrePage } from "./ReportCentrePage";
 
@@ -22,12 +21,6 @@ export const exchangeModule: FeatureModule = {
   apiPrefix: "/api/v1/",
   permissionPrefixes: ["imports.", "reports.", "reportcards."],
   routes: [
-    {
-      path: "/imports",
-      component: ImportCentrePage,
-      navLabelKey: "nav.imports",
-      requiredPermission: EXCHANGE_PERMISSIONS.importsValidate,
-    },
     {
       path: "/exports",
       component: ExportCentrePage,

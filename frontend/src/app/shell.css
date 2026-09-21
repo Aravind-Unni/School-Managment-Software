@@ -1576,3 +1576,20 @@ td.num {
   display: flex;
   align-items: end;
 }
+
+/* Student import */
+.file-pick {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+  border: 2px dashed var(--line-strong);
+  border-radius: var(--radius);
+  font-weight: 600;
+  max-width: 100%;
+}
+
+.import-result {
+  margin-top: 1rem;
+}

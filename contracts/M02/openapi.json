@@ -7173,6 +7173,106 @@
           }
         }
       }
+    },
+    "/students/import": {
+      "post": {
+        "operationId": "import_students",
+        "summary": "Check, or admit, every pupil in an admissions spreadsheet (CSV text)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "csv"
+                ],
+                "properties": {
+                  "csv": {
+                    "type": "string"
+                  },
+                  "apply": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "What would happen (apply false) or what happened (apply true). Nobody is admitted while any problem remains.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "applied",
+                    "year",
+                    "ready",
+                    "per_class",
+                    "parents_with_phone",
+                    "problems"
+                  ],
+                  "properties": {
+                    "applied": {
+                      "type": "boolean"
+                    },
+                    "year": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "ready": {
+                      "type": "integer"
+                    },
+                    "per_class": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "integer"
+                      }
+                    },
+                    "parents_with_phone": {
+                      "type": "integer"
+                    },
+                    "parents_created": {
+                      "type": "integer"
+                    },
+                    "problems": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "row",
+                          "column",
+                          "message_key",
+                          "value"
+                        ],
+                        "properties": {
+                          "row": {
+                            "type": "integer"
+                          },
+                          "column": {
+                            "type": "string"
+                          },
+                          "message_key": {
+                            "type": "string"
+                          },
+                          "value": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

@@ -17,7 +17,7 @@ const SETUP_STEPS: readonly { readonly path: string; readonly key: string }[] = 
   { path: "/registry/setup", key: "home.setup.check_school" },
   { path: "/registry/staff", key: "home.setup.staff" },
   { path: "/registry/admit", key: "home.setup.students" },
-  { path: "/imports", key: "home.setup.import" },
+  { path: "/registry/import", key: "home.setup.import" },
   { path: "/timetable/editor", key: "home.setup.timetable" },
   { path: "/fees/setup", key: "home.setup.fees" },
   { path: "/settings/accounts", key: "home.setup.accounts" },

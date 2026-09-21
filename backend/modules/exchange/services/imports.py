@@ -31,7 +31,7 @@ from ..adapters.base import CODE_DUPLICATE_ROW
 from ..models import CommitBatch, ImportJob, ImportJobState, ImportRow, ImportRowState
 from . import csv_safe
 from .authority import AuthorityGate
-from .blobs import source_key, source_store
+from .blobs import accepted_upload_bytes, source_key, source_store
 from .wire import import_job_to_wire
 
 VALIDATE_TASK = "modules.exchange.tasks.process_import_validate"
@@ -333,9 +333,14 @@ class ImportService:
         """Return the staged source text for a job, or raise when it is gone."""
         store = source_store()
         key = source_key(job.school_id, job.file_ref)
-        if not store.exists(key):
-            raise ValidationFailed(SOURCE_UNREADABLE)
-        return store.get(key).decode("utf-8")
+        if store.exists(key):
+            body = store.get(key)
+        else:
+            body = accepted_upload_bytes(job.school_id, job.file_ref)
+            if body is None:
+                raise ValidationFailed(SOURCE_UNREADABLE)
+        # Spreadsheet programs often save CSV with a byte-order mark.
+        return body.decode("utf-8-sig")
 
     def _prefix(self, school_id: UUID) -> str:
         """Return the school's formula neutralisation prefix."""

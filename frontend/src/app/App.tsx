@@ -51,7 +51,7 @@ const NAV_GROUPS: readonly { readonly id: string; readonly label: string; readon
     id: "reports",
     label: "Reports & data",
     match: (path) =>
-      startsWithAny(path, ["/exchange", "/reports", "/report-cards", "/imports", "/exports"]),
+      startsWithAny(path, ["/exchange", "/reports", "/report-cards", "/exports"]),
   },
   {
     id: "admin",

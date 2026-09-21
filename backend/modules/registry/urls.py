@@ -33,6 +33,7 @@ from .api.views import (
     SubjectCollectionView,
     TermCollectionView,
 )
+from .api.views_import import StudentImportView
 from .api.views_lifecycle import (
     EnrolmentCollectionView,
     EnrolmentTransferView,
@@ -66,6 +67,7 @@ urlpatterns = [
     ),
     path("students", StudentCollectionView.as_view(), name="student-collection"),
     path("students/mine", MyStudentsView.as_view(), name="students-mine"),
+    path("students/import", StudentImportView.as_view(), name="students-import"),
     path("guardians", GuardianCollectionView.as_view(), name="guardian-collection"),
     path("staff", StaffCollectionView.as_view(), name="staff-collection"),
     path(

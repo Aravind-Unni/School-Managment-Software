@@ -196,7 +196,7 @@
           "kind": "openapi",
           "owner": "M02 registry",
           "path": "contracts/M02/openapi.json",
-          "sha256": "d55fd2cfa4f64205a4e03e4133b4d1bfb33d88393fc2f2043e11c561ac3ce7c8"
+          "sha256": "eb45cb45aaff3fb61060dc2dbe66c30e43687f948724cd9abf5bf7df0cc4dd56"
         },
         {
           "frozen": true,
