@@ -1,6 +1,7 @@
 # Contract packet — M13 exchange
 
-Status: **FROZEN** under `school-contracts-v14` (reviewed 2026-09-21).
+Status: **APPROVED AND FROZEN** under revision `school-contracts-v14` on 2026-09-21
+(reviewer: Abhinav M).
 
 Branched from `3d0b03bbae4d7509ec5c27ef8e4a029d4eebdf13` (`origin/main`).
 

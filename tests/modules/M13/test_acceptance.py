@@ -146,7 +146,9 @@ def test_changed_digest_blocks_commit(client, baseline):
 def test_stale_validation_version_is_a_version_conflict(client, baseline):
     """A commit quoting an older validation_version is 409 version_conflict."""
     created = create_import(client, baseline)
-    response = commit(client, created["job_id"], digest=baseline["import_file_digest"], version=99)
+    response = commit(
+        client, created["job_id"], digest=baseline["import_file_digest"], version=99
+    )
     assert response.status_code == 409
     assert response.json()["message_key"] == "error.version_conflict"
 
@@ -326,7 +328,10 @@ def test_export_csv_escapes_formula_cells():
 
     rendered = csv_safe.write_rows(
         ["student_id", "note"],
-        [{"student_id": "S1", "note": "=cmd|'/c calc'!A1"}, {"student_id": "S2", "note": "@SUM"}],
+        [
+            {"student_id": "S1", "note": "=cmd|'/c calc'!A1"},
+            {"student_id": "S2", "note": "@SUM"},
+        ],
     )
     assert "\t=cmd" in rendered
     assert "\t@SUM" in rendered
@@ -431,7 +436,9 @@ def test_historical_snapshot_is_unchanged_after_a_policy_edit(client, baseline, 
     assert after == before
 
 
-def test_supersede_creates_a_new_snapshot_and_links_the_old(client, baseline, as_persona, context_for):
+def test_supersede_creates_a_new_snapshot_and_links_the_old(
+    client, baseline, as_persona, context_for
+):
     """A replacement is a new row; the old one is retired and points at it."""
     from modules.exchange.api import deps
     from modules.exchange.models import Supersession
@@ -451,7 +458,8 @@ def test_supersede_creates_a_new_snapshot_and_links_the_old(client, baseline, as
     assert old["state"] == "superseded"
     assert old["superseded_by"] == new["id"]
     assert old["policy_versions"] == [baseline["policy_version_v1"]]
-    assert Supersession.objects.filter(old_report_id=old_id, new_report_id=UUID(new["id"])).count() == 1
+    linked = Supersession.objects.filter(old_report_id=old_id, new_report_id=UUID(new["id"]))
+    assert linked.count() == 1
     assert HarnessOutboxEvent.objects.filter(event_type="exchange.report_superseded").exists()
 
 

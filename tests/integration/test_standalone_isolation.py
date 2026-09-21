@@ -107,7 +107,7 @@ def test_an_unimplemented_module_fails_honestly_rather_than_booting_empty():
 
     from shared.module_catalog import address_for
 
-    # M13 has no code yet. Importing its registration must fail, which is what
-    # makes `dev.py up M13` report absence instead of serving an empty app.
+    # M14 has no code yet. Importing its registration must fail, which is what
+    # makes `dev.py up M14` report absence instead of serving an empty app.
     with pytest.raises(ModuleNotFoundError):
-        importlib.import_module(address_for("M13").registration_path)
+        importlib.import_module(address_for("M14").registration_path)

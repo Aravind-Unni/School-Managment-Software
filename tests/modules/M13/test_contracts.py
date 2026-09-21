@@ -145,10 +145,10 @@ def test_dataset_allowlists_match_the_frozen_enums():
 
 def test_error_codes_used_by_the_module_are_declared():
     """Every module-owned message key the code raises appears in error-codes.json."""
+    from modules.exchange.adapters.registry import UNKNOWN_DATASET
     from modules.exchange.services.authority import ARTIFACT_ACCESS_REVOKED
     from modules.exchange.services.exports import FORBIDDEN_FIELD
     from modules.exchange.services.imports import DIGEST_MISMATCH, JOB_NOT_READY
-    from modules.exchange.adapters.registry import UNKNOWN_DATASET
 
     declared = {row["message_key"] for row in load_json("error-codes.json")["rows"]}
     for key in (
@@ -180,8 +180,12 @@ def test_the_in_process_provider_satisfies_the_port():
 
 def test_adapters_satisfy_the_module_local_port():
     """Every registered adapter satisfies DomainExchangePort."""
-    from modules.exchange.adapters import DomainExchangePort, adapter_for
-    from modules.exchange.adapters import export_datasets, import_datasets
+    from modules.exchange.adapters import (
+        DomainExchangePort,
+        adapter_for,
+        export_datasets,
+        import_datasets,
+    )
 
     for dataset in import_datasets():
         assert isinstance(adapter_for(dataset, "import"), DomainExchangePort)
