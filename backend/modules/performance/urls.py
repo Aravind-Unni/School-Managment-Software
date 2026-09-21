@@ -14,12 +14,14 @@ from .api.views import (
     WarningDismissView,
     WarningRuleCollectionView,
 )
+from .api.views_warnings import WarningCollectionView
 
 urlpatterns = [
     path("performance/dashboard", DashboardView.as_view(), name="performance-dashboard"),
     path("performance/export", ExportView.as_view(), name="performance-export"),
     path("performance/rebuild", RebuildView.as_view(), name="performance-rebuild"),
     path("warning-rules", WarningRuleCollectionView.as_view(), name="warning-rules"),
+    path("warnings", WarningCollectionView.as_view(), name="warnings"),
     path(
         "warnings/<uuid:warning_id>/acknowledge",
         WarningAcknowledgeView.as_view(),

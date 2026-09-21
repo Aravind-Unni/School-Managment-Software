@@ -16,6 +16,7 @@ from .api.views import (
     PaymentReversalView,
     RefundCollectionView,
 )
+from .api.views_setup import ChargeClassesView, FeeHeadCollectionView
 
 app_name = "fees"
 
@@ -36,6 +37,8 @@ urlpatterns = [
         FeeStatementView.as_view(),
         name="fee-statement",
     ),
+    path("fee-heads", FeeHeadCollectionView.as_view(), name="fee-head-collection"),
+    path("fees/charge-classes", ChargeClassesView.as_view(), name="charge-classes"),
     path("fees/overdue", OverdueListView.as_view(), name="overdue-list"),
     path("fees/daily-collections", DailyCollectionsView.as_view(), name="daily-collections"),
 ]

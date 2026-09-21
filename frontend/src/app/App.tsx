@@ -108,7 +108,7 @@ function Navigation({ onNavigate }: { readonly onNavigate: () => void }) {
             <ul>
               {items.map((route) => (
                 <li key={route.path}>
-                  <NavLink to={route.path} onClick={onNavigate}>
+                  <NavLink to={route.path} end onClick={onNavigate}>
                     {t(route.navLabelKey ?? route.path)}
                   </NavLink>
                 </li>

@@ -482,6 +482,161 @@
           }
         }
       }
+    },
+    "/fee-heads": {
+      "get": {
+        "operationId": "list_fee_heads",
+        "summary": "Fee types with charged and outstanding totals",
+        "responses": {
+          "200": {
+            "description": "Ordered by first due date.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "code": {
+                            "type": "string"
+                          },
+                          "label_key": {
+                            "type": "string"
+                          },
+                          "charged_paise": {
+                            "type": "integer"
+                          },
+                          "outstanding_paise": {
+                            "type": "integer"
+                          },
+                          "pupils": {
+                            "type": "integer"
+                          },
+                          "first_due": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "date"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "code",
+                          "label_key",
+                          "charged_paise",
+                          "outstanding_paise",
+                          "pupils",
+                          "first_due"
+                        ]
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fees/charge-classes": {
+      "post": {
+        "operationId": "charge_classes",
+        "summary": "Charge one fee to every pupil in the chosen classes",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fee_head_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid"
+                  },
+                  "fee_name": {
+                    "type": "string"
+                  },
+                  "amount_paise": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "due_date": {
+                    "type": "string",
+                    "format": "date"
+                  },
+                  "section_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "minItems": 1
+                  }
+                },
+                "required": [
+                  "amount_paise",
+                  "due_date",
+                  "section_ids"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pupils charged now and pupils already charged for this fee and due date.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "fee_head_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "label_key": {
+                      "type": "string"
+                    },
+                    "charged": {
+                      "type": "integer"
+                    },
+                    "already_charged": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "fee_head_id",
+                    "label_key",
+                    "charged",
+                    "already_charged"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

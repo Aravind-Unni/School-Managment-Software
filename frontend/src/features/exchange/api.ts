@@ -62,6 +62,7 @@ export interface ReportCardJob {
   readonly locale: ExchangeLocale;
   readonly template_version: string;
   readonly state: string;
+  readonly report_id?: string | null;
 }
 
 export interface ReportSnapshot {

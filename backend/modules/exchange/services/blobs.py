@@ -17,14 +17,62 @@ Recorded as an open contract question in docs/modules/M13/handoff.md: either
 FilesPort grows a byte-read method, or M13 declares the object_storage consumer.
 Until that is reviewed, this module is the seam.
 
-Does not handle: persistence across processes. A worker in another process sees
-an empty store, which is correct for standalone and is why the integrated
-profile must not rely on it.
+When object storage is configured (``OBJECT_STORAGE_ENDPOINT``, as in
+production), every write is also put in the shared bucket and reads fall back
+to it, so a report rendered by the worker is the same object M12's
+``store_artifact`` reads and the download endpoint serves. Without it (tests,
+standalone) bytes stay in this process only.
 """
 
 from __future__ import annotations
 
 import hashlib
+import os
+
+
+def _bucket_client():
+    """Return (boto3 client, bucket) when object storage is configured, else None."""
+    endpoint = os.environ.get("OBJECT_STORAGE_ENDPOINT", "").strip()
+    if not endpoint:
+        return None
+    import boto3
+
+    client = boto3.client(
+        "s3",
+        endpoint_url=endpoint,
+        aws_access_key_id=os.environ.get("OBJECT_STORAGE_ACCESS_KEY", ""),
+        aws_secret_access_key=os.environ.get("OBJECT_STORAGE_SECRET_KEY", ""),
+    )
+    return client, os.environ.get("OBJECT_STORAGE_BUCKET", "school-files")
+
+
+def _bucket_put(key: str, body: bytes) -> None:
+    """Put bytes in the shared bucket, creating it on a fresh install."""
+    configured = _bucket_client()
+    if configured is None:
+        return
+    from botocore.exceptions import ClientError
+
+    client, bucket = configured
+    try:
+        client.put_object(Bucket=bucket, Key=key, Body=body)
+    except ClientError as exc:
+        if exc.response.get("Error", {}).get("Code") != "NoSuchBucket":
+            raise
+        client.create_bucket(Bucket=bucket)
+        client.put_object(Bucket=bucket, Key=key, Body=body)
+
+
+def _bucket_get(key: str) -> bytes | None:
+    """Return bytes from the shared bucket, or None when absent or unconfigured."""
+    configured = _bucket_client()
+    if configured is None:
+        return None
+    client, bucket = configured
+    try:
+        return client.get_object(Bucket=bucket, Key=key)["Body"].read()
+    except Exception:
+        return None
 
 
 class ByteStore:
@@ -38,18 +86,21 @@ class ByteStore:
     def put(self, key: str, body: bytes) -> str:
         """Store bytes under a key and return their sha256 hex digest."""
         self._objects[key] = body
+        _bucket_put(key, body)
         return hashlib.sha256(body).hexdigest()
 
     def get(self, key: str) -> bytes:
         """Return stored bytes, or raise KeyError naming the store and key."""
-        try:
+        if key in self._objects:
             return self._objects[key]
-        except KeyError as exc:
-            raise KeyError(f"{self._name} has no object {key!r}") from exc
+        remote = _bucket_get(key)
+        if remote is None:
+            raise KeyError(f"{self._name} has no object {key!r}")
+        return remote
 
     def exists(self, key: str) -> bool:
         """Return whether a key is present."""
-        return key in self._objects
+        return key in self._objects or _bucket_get(key) is not None
 
     def clear(self) -> None:
         """Drop every object. Used by the baseline seed to stay deterministic."""

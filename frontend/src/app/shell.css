@@ -1489,3 +1489,90 @@ a.button-link.secondary {
     grid-column: 1 / -1;
   }
 }
+
+/* At-risk list */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0.75rem 0 1rem;
+}
+
+.empty-state {
+  padding: 1.25rem 1rem;
+  background: var(--surface);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  color: var(--ink-soft);
+}
+
+.risk-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.risk-list li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--danger);
+  border-radius: var(--radius);
+}
+
+.risk-list li.risk-missing_work {
+  border-left-color: var(--marigold);
+}
+
+.risk-list li.acknowledged {
+  border-left-color: var(--line-strong);
+}
+
+.risk-who {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.risk-dismiss {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: end;
+}
+
+@media (max-width: 34rem) {
+  .risk-list li {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Fee setup */
+th.num,
+td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.inline-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.inline-fields > label {
+  flex: 1 1 10rem;
+}
+
+.inline-fields .form-end {
+  display: flex;
+  align-items: end;
+}

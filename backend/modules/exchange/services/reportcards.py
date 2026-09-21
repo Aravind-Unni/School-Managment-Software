@@ -35,9 +35,10 @@ REPORT_CARD_TASK = "modules.exchange.tasks.process_report_card"
 
 JOB_NOT_READY = "exchange.error.job_not_ready"
 NO_PUBLISHED_RESULTS = "exchange.error.no_published_results"
+RENDER_FAILED = "exchange.error.render_failed"
 
 #: FilesPort purpose for a generated report artifact.
-REPORT_PURPOSE = "report_artifact"
+REPORT_PURPOSE = "report_pdf"
 REPORT_MIME = "application/pdf"
 
 #: Snapshot type for a per-pupil report card.
@@ -169,6 +170,21 @@ class ReportCardService:
     # --- rendering -----------------------------------------------------------
 
     def process(self, job_id: UUID) -> dict:
+        """Render one report card; a crash marks the card failed instead of stuck.
+
+        The exception is re-raised so the platform job records it too.
+        """
+        try:
+            return self._process(job_id)
+        except Exception:
+            ReportCardJob.objects.filter(id=job_id).exclude(state=JobState.READY).update(
+                state=JobState.FAILED,
+                failure_message_key=RENDER_FAILED,
+                updated_at=self.clock.now(),
+            )
+            raise
+
+    def _process(self, job_id: UUID) -> dict:
         """Render one report card and bind its snapshot to the source revisions."""
         job = ReportCardJob.objects.filter(id=job_id).first()
         if job is None:

@@ -8,6 +8,132 @@
   "servers": [{ "url": "/api/v1" }],
   "security": [{ "session": [] }],
   "paths": {
+    "/warnings": {
+      "get": {
+        "operationId": "list_warnings",
+        "summary": "Open and acknowledged warnings for pupils the caller may read",
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "acknowledged",
+                "dismissed"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Newest first. Pupils the caller cannot read are left out.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "student_id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "student_name": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "section_id": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "uuid"
+                          },
+                          "section_label": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "rule_code": {
+                            "type": "string"
+                          },
+                          "threshold": {
+                            "type": "string"
+                          },
+                          "state": {
+                            "type": "string"
+                          },
+                          "version": {
+                            "type": "integer"
+                          },
+                          "source_refs": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "explanation_key": {
+                            "type": "string"
+                          },
+                          "reason": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "opened_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "student_id",
+                          "student_name",
+                          "section_id",
+                          "section_label",
+                          "rule_code",
+                          "threshold",
+                          "state",
+                          "version",
+                          "source_refs",
+                          "explanation_key",
+                          "reason",
+                          "opened_at"
+                        ]
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/performance/dashboard": {
       "get": {
         "operationId": "get_performance_dashboard",

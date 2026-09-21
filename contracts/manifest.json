@@ -476,7 +476,7 @@
           "kind": "openapi",
           "owner": "M06 performance",
           "path": "contracts/M06/openapi.json",
-          "sha256": "46394ac5a44b4e3040064c55462a75b46b88e9cd05b211848143aeb5c0524758"
+          "sha256": "ed1016ff21d802b882d50d43c9670b4b47afedee260f43ea218eeaf9dc7400a6"
         },
         {
           "frozen": true,
@@ -546,7 +546,7 @@
           "kind": "openapi",
           "owner": "M07 fees",
           "path": "contracts/M07/openapi.json",
-          "sha256": "c766e213668812a51fb759c1073e5e6f8f34ac3024d33c34ce54fcd8c041fdfb"
+          "sha256": "94c62235a600bae2934369f3f4f00254d18ef4f398a978c588a7d6dbab25d6c7"
         },
         {
           "frozen": true,

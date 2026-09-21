@@ -69,43 +69,64 @@ class SummaryService:
         lookup = replace(context, actor_id=system_actor_id(context.school_id))
         eligible = 0
         present = absent = late = excused = 0
+        # One query for every mark this pupil has, keyed by timetable period.
+        marks = dict(
+            AttendanceEntry.objects.filter(
+                session__school_id=context.school_id, student_id=student_id
+            )
+            .exclude(status=AttendanceStatus.UNMARKED)
+            .values_list("session__timetable_session_id", "status")
+        )
+        rosters: dict[tuple, bool] = {}
+        known_section: UUID | None = None
         cursor = from_date
         while cursor <= to_date:
-            section_id = self._section_on(lookup, student_id, cursor)
+            if known_section is not None:
+                # Weekends, holidays and days before the timetable starts have
+                # no periods for the pupil's class: skip them without asking
+                # Registry which class the pupil was in.
+                periods = self.timetable.get_sessions(lookup, known_section, cursor)
+                if not periods:
+                    cursor += timedelta(days=1)
+                    continue
+                section_id = self._section_on(lookup, student_id, cursor)
+                if section_id is not None and section_id != known_section:
+                    periods = self.timetable.get_sessions(lookup, section_id, cursor)
+            else:
+                section_id = self._section_on(lookup, student_id, cursor)
+                periods = (
+                    self.timetable.get_sessions(lookup, section_id, cursor)
+                    if section_id is not None
+                    else []
+                )
             if section_id is None:
                 cursor += timedelta(days=1)
                 continue
-            periods = self.timetable.get_sessions(lookup, section_id, cursor)
+            known_section = section_id
             for period in periods:
                 if period.cancelled:
                     continue
                 if subject_id is not None and period.subject_id != subject_id:
                     continue
-                roster = self.registry.get_roster(
-                    lookup, section_id, cursor, subject_id=period.subject_id
-                )
-                on_roster = any(r.student_id == student_id for r in roster.students)
-                if not on_roster:
+                key = (section_id, cursor, period.subject_id)
+                if key not in rosters:
+                    roster = self.registry.get_roster(
+                        lookup, section_id, cursor, subject_id=period.subject_id
+                    )
+                    rosters[key] = any(r.student_id == student_id for r in roster.students)
+                if not rosters[key]:
                     continue
                 eligible += 1
-                entry = (
-                    AttendanceEntry.objects.filter(
-                        session__school_id=context.school_id,
-                        session__timetable_session_id=period.timetable_session_id,
-                        student_id=student_id,
-                    )
-                    .exclude(status=AttendanceStatus.UNMARKED)
-                    .first()
-                )
-                if entry is None:
+                status = marks.get(period.timetable_session_id)
+                if status is None:
                     continue
-                if entry.status == AttendanceStatus.PRESENT:
+                if status == AttendanceStatus.PRESENT:
                     present += 1
-                elif entry.status == AttendanceStatus.ABSENT:
+                elif status == AttendanceStatus.ABSENT:
                     absent += 1
-                elif entry.status == AttendanceStatus.LATE:
+                elif status == AttendanceStatus.LATE:
                     late += 1
-                elif entry.status == AttendanceStatus.EXCUSED:
+                elif status == AttendanceStatus.EXCUSED:
                     excused += 1
             cursor += timedelta(days=1)
 

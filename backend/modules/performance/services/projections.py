@@ -76,6 +76,9 @@ class ProjectionService:
             eligible=attendance.eligible,
             unmarked=attendance.unmarked,
             minimum_samples=1,
+            present=attendance.present,
+            late=attendance.late,
+            excused=attendance.excused,
         )
 
         metrics = {

@@ -140,6 +140,19 @@ class RebuildView(APIView):
 
         gate().require_staff_action(request.school_context, "warnings.manage")
         ctx = request.school_context
+        # A whole school takes minutes (every pupil's attendance since term
+        # start), longer than a web request may run, so the worker does it
+        # whenever there is one. Profiles without a worker rebuild inline.
+        platform = runtime.get_registry().resolve("platform")
+        if getattr(platform, "worker_available", False):
+            job_id = platform.enqueue(
+                "modules.performance.tasks.rebuild_projections",
+                payload={"school_id": str(ctx.school_id), "kind": "performance.rebuild"},
+            )
+            return Response(
+                {"job_id": str(job_id), "state": "queued"},
+                status=status.HTTP_202_ACCEPTED,
+            )
         proj = deps.projection_service()
         warn = deps.warning_service()
         registry = runtime.get_registry().resolve("registry")

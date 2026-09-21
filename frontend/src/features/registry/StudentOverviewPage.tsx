@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { useSearchParams } from "react-router-dom";
 import { request } from "@shared/api/client";
 import { useLanguage } from "@shared/i18n/LanguageContext";
 import { percent, rupees, shortDate } from "@shared/format";
@@ -269,16 +270,26 @@ export function StudentOverviewPage() {
   const { t } = useLanguage();
   const [mine, setMine] = useState<readonly api.MyStudent[] | null>(null);
   const [chosen, setChosen] = useState<Chosen | null>(null);
+  // Other screens (the at-risk list, fee overdue) link here with ?student=.
+  const [params] = useSearchParams();
+  const linkedStudent = params.get("student");
 
   useEffect(() => {
     api.listMyStudents().then(
       (rows) => {
         setMine(rows);
-        if (rows[0]) setChosen(rows[0]);
+        const linked = rows.find((row) => row.id === linkedStudent);
+        if (linked ?? rows[0]) setChosen(linked ?? rows[0] ?? null);
+        else if (linkedStudent) {
+          api.getStudent(linkedStudent).then(
+            (row) => setChosen({ id: row.id, display_name: row.display_name, admission_no: row.admission_no }),
+            () => undefined,
+          );
+        }
       },
       () => setMine([]),
     );
-  }, []);
+  }, [linkedStudent]);
 
   if (mine === null) return <p role="status">{t("ui.loading")}</p>;
   const isFamily = mine.length > 0;

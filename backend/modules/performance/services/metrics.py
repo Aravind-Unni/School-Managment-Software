@@ -37,20 +37,37 @@ def simple_mean_percent(
     return decimal_string(mean), "ok"
 
 
+#: Share of a pupil's periods that may still be unmarked (a teacher who has
+#: not yet submitted, periods later today) before the figure is withheld.
+UNMARKED_TOLERANCE = Decimal("0.20")
+
+
 def attendance_metric_status(
     *,
     percentage: str | None,
     eligible: int,
     unmarked: int,
     minimum_samples: int,
+    present: int = 0,
+    late: int = 0,
+    excused: int = 0,
 ) -> tuple[str | None, str]:
     """Return (value, status) distinguishing incomplete from low attendance.
 
-    Incomplete (unmarked > 0 or eligible below minimum) is never treated as a
-    low-percentage trigger input.
+    Uses the summary's own percentage when it has one; otherwise attended
+    periods (present or late) over marked periods, leaving excused ones out.
+    Incomplete (more than UNMARKED_TOLERANCE of periods unmarked, or nothing
+    marked) is never treated as a low-percentage trigger input.
     """
     if eligible < minimum_samples:
         return None, "insufficient_data"
-    if unmarked > 0 or percentage is None:
+    marked = eligible - unmarked
+    if marked <= 0 or Decimal(unmarked) > UNMARKED_TOLERANCE * Decimal(eligible):
         return None, "incomplete"
-    return percentage, "ok"
+    if percentage is not None:
+        return percentage, "ok"
+    counted = marked - excused
+    if counted <= 0:
+        return None, "incomplete"
+    attended = Decimal(present + late)
+    return decimal_string(attended / Decimal(counted) * Decimal("100")), "ok"

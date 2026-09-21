@@ -35,7 +35,11 @@ FORBIDDEN_FIELD = "exchange.error.forbidden_field"
 JOB_NOT_READY = "exchange.error.job_not_ready"
 
 #: FilesPort purpose for a generated export artifact.
-EXPORT_PURPOSE = "export_artifact"
+#: FilesPort purpose for each export MIME type (M12 accepts only these).
+PURPOSE_BY_MIME = {
+    "text/csv": "report_csv",
+    "application/pdf": "report_pdf",
+}
 
 MIME_BY_FORMAT = {
     "csv": "text/csv",
@@ -125,7 +129,7 @@ class ExportService:
         artifact_store().put(key, body)
         ref = self.files.store_artifact(
             context,
-            EXPORT_PURPOSE,
+            PURPOSE_BY_MIME[MIME_BY_FORMAT[job.format]],
             key,
             MIME_BY_FORMAT[job.format],
             digest,

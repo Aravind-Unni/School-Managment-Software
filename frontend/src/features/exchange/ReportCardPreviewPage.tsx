@@ -1,121 +1,181 @@
-/** Generate report cards for a publication and poll job status. */
+/**
+ * Report cards for a whole class: choose the term and the class, generate,
+ * and each pupil's card appears as it is ready, with an Open button.
+ *
+ * A card holds the marks published for that term, so publish results first.
+ * A pupil with nothing published gets "No published marks" rather than an
+ * empty card. Does not handle: sending cards to parents (they see published
+ * marks on their own overview) or editing a card's layout.
+ */
 
-import { useState } from "react";
-import { toLoadError } from "@shared/api/errors";
+import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "@shared/i18n/LanguageContext";
-import {
-  createReportCards,
-  getReportCardJob,
-  type ExchangeLocale,
-  type ReportCardJob,
-} from "./api";
+import { Problem } from "@shared/ui/Problem";
+import * as registry from "@features/registry/api";
+import { schoolToday, useSchoolStructure } from "@features/registry/useSchoolStructure";
+import { createReportCards, downloadReport, getReportCardJob, type ExchangeLocale, type ReportCardJob } from "./api";
+
+const TEMPLATE_VERSION = "standard-v1";
+
+interface CardRow {
+  readonly name: string;
+  readonly job: ReportCardJob;
+}
+
+const finished = (state: string) => state === "ready" || state === "failed";
 
 export function ReportCardPreviewPage() {
   const { t, language } = useLanguage();
-  const [publicationId, setPublicationId] = useState("");
-  const [studentIds, setStudentIds] = useState("");
-  const [templateVersion, setTemplateVersion] = useState("");
+  const { state } = useSchoolStructure();
+  const sections = state.kind === "ready" ? state.structure.sections : [];
+  const [terms, setTerms] = useState<readonly registry.Term[]>([]);
+  const [termId, setTermId] = useState("");
+  const [sectionId, setSectionId] = useState("");
   const [locale, setLocale] = useState<ExchangeLocale>(language === "ml" ? "ml" : "en");
-  const [jobs, setJobs] = useState<readonly ReportCardJob[]>([]);
-  const [pollId, setPollId] = useState("");
-  const [polled, setPolled] = useState<ReportCardJob | null>(null);
-  const [errorKey, setErrorKey] = useState<string | null>(null);
+  const [cards, setCards] = useState<readonly CardRow[]>([]);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<unknown>(null);
+  const cardsRef = useRef(cards);
+  useEffect(() => {
+    cardsRef.current = cards;
+  }, [cards]);
 
-  async function generate() {
+  useEffect(() => {
+    registry.listAllTerms().then(
+      (rows) => {
+        setTerms(rows);
+        const today = schoolToday();
+        const current = rows.find((row) => row.start <= today && today <= row.end) ?? rows[0];
+        if (current) setTermId(current.id);
+      },
+      setError,
+    );
+  }, []);
+
+  // Poll unfinished cards every two seconds until each is ready or failed.
+  const pending = cards.some((row) => !finished(row.job.state));
+  useEffect(() => {
+    if (!pending) return undefined;
+    const timer = window.setInterval(() => {
+      void Promise.all(
+        cardsRef.current.map(async (row) =>
+          finished(row.job.state) ? row : { ...row, job: await getReportCardJob(row.job.id).catch(() => row.job) },
+        ),
+      ).then(setCards);
+    }, 2000);
+    return () => window.clearInterval(timer);
+  }, [pending]);
+
+  const generate = async () => {
     setBusy(true);
-    setErrorKey(null);
-    setJobs([]);
-    setPolled(null);
-    const ids = studentIds
-      .split(/[\s,]+/)
-      .map((id) => id.trim())
-      .filter((id) => id.length > 0);
-    if (ids.length === 0 || publicationId.trim().length === 0 || templateVersion.trim().length === 0) {
-      setErrorKey("exchange.report_cards_form_incomplete");
-      setBusy(false);
-      return;
-    }
+    setError(null);
+    setCards([]);
     try {
+      const roster = await registry.getSectionRoster(sectionId, schoolToday());
+      const pupils = [...roster.students].sort((a, b) => a.display_name.localeCompare(b.display_name));
+      const names = new Map(pupils.map((row) => [row.student_id, row.display_name]));
       const result = await createReportCards({
-        publication_id: publicationId.trim(),
-        student_ids: ids,
+        publication_id: termId,
+        student_ids: pupils.map((row) => row.student_id),
         locale,
-        template_version: templateVersion.trim(),
+        template_version: TEMPLATE_VERSION,
       });
-      setJobs(result.jobs);
-    } catch (error) {
-      setErrorKey(toLoadError(error).messageKey);
+      setCards(result.jobs.map((job) => ({ job, name: names.get(job.student_id) ?? "" })));
+    } catch (caught) {
+      setError(caught);
     } finally {
       setBusy(false);
     }
-  }
+  };
 
-  async function poll() {
-    const id = pollId.trim();
-    if (id.length === 0) return;
-    setErrorKey(null);
+  const open = async (job: ReportCardJob) => {
+    const reportId = job.report_id;
+    if (!reportId) return;
+    // Open the tab now, inside the click, so pop-up blockers allow it.
+    const tab = window.open("", "_blank");
     try {
-      setPolled(await getReportCardJob(id));
-    } catch (error) {
-      setErrorKey(toLoadError(error).messageKey);
+      const access = await downloadReport(reportId);
+      if (tab) tab.location.replace(access.authorized_read_url);
+      else window.location.assign(access.authorized_read_url);
+    } catch (caught) {
+      tab?.close();
+      setError(caught);
     }
-  }
+  };
+
+  const ready = cards.filter((row) => row.job.state === "ready").length;
+  const failed = cards.filter((row) => row.job.state === "failed").length;
 
   return (
-    <section>
-      <h1>{t("exchange.report_cards_title")}</h1>
-      <label>
-        {t("exchange.publication_id")}
-        <input value={publicationId} onChange={(event) => setPublicationId(event.target.value)} />
-      </label>
-      <label>
-        {t("exchange.student_ids")}
-        <textarea value={studentIds} onChange={(event) => setStudentIds(event.target.value)} rows={3} />
-      </label>
-      <label>
-        {t("exchange.template_version")}
-        <input value={templateVersion} onChange={(event) => setTemplateVersion(event.target.value)} />
-      </label>
-      <label>
-        {t("exchange.locale")}
-        <select value={locale} onChange={(event) => setLocale(event.target.value as ExchangeLocale)}>
-          <option value="en">en</option>
-          <option value="ml">ml</option>
-        </select>
-      </label>
-      <button type="button" disabled={busy} onClick={() => void generate()}>
-        {t("exchange.generate_report_cards")}
-      </button>
-      {jobs.length > 0 && (
-        <ul>
-          {jobs.map((job) => (
-            <li key={job.id}>
-              {job.id} · {job.student_id} · {job.state}
-            </li>
-          ))}
-        </ul>
-      )}
-      <fieldset>
-        <legend>{t("exchange.poll_job")}</legend>
+    <section aria-labelledby="cards-title">
+      <h2 id="cards-title">{t("exchange.report_cards_title")}</h2>
+      <p className="hint">{t("cards.intro")}</p>
+      <form
+        className="inline-fields"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void generate();
+        }}
+      >
         <label>
-          {t("exchange.job_id")}
-          <input value={pollId} onChange={(event) => setPollId(event.target.value)} />
+          {t("cards.term")}
+          <select value={termId} onChange={(event) => setTermId(event.target.value)}>
+            {terms.map((row) => (
+              <option key={row.id} value={row.id}>
+                {row.name}
+              </option>
+            ))}
+          </select>
         </label>
-        <button type="button" onClick={() => void poll()}>
-          {t("exchange.refresh_status")}
-        </button>
-        {polled !== null && (
-          <p role="status">
-            {polled.id} · {polled.state}
-          </p>
-        )}
-      </fieldset>
-      {errorKey !== null && (
-        <div role="alert">
-          <p>{t(errorKey)}</p>
+        <label>
+          {t("cards.class")}
+          <select value={sectionId} onChange={(event) => setSectionId(event.target.value)}>
+            <option value="">—</option>
+            {sections.map((row) => (
+              <option key={row.id} value={row.id}>
+                {row.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          {t("cards.language")}
+          <select value={locale} onChange={(event) => setLocale(event.target.value as ExchangeLocale)}>
+            <option value="en">English</option>
+            <option value="ml">മലയാളം</option>
+          </select>
+        </label>
+        <div className="form-end">
+          <button type="submit" disabled={busy || termId === "" || sectionId === ""}>
+            {busy ? t("ui.loading") : t("exchange.generate_report_cards")}
+          </button>
         </div>
-      )}
+      </form>
+      <Problem error={error} />
+      {cards.length > 0 ? (
+        <>
+          <p role="status" aria-live="polite">
+            {ready}/{cards.length} {t("cards.ready")}
+            {failed > 0 ? ` · ${failed} ${t("cards.no_marks")}` : ""}
+          </p>
+          <ul className="register-list">
+            {cards.map((row) => (
+              <li key={row.job.id}>
+                <span className="register-name">{row.name}</span>
+                {row.job.state === "ready" ? (
+                  <button type="button" className="secondary" onClick={() => void open(row.job)}>
+                    {t("cards.open")}
+                  </button>
+                ) : row.job.state === "failed" ? (
+                  <span className="attention">{t("cards.no_marks")}</span>
+                ) : (
+                  <span className="hint">{t("cards.preparing")}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
     </section>
   );
 }
