@@ -7,6 +7,8 @@
 | Branch | `m12/compressed-answer-sheet-files` |
 | Started from | `c3ece552164f4d7b99c8f688903f3892ecfeaeac` (`origin/main`) |
 | Manifest revision | `school-contracts-v13` |
+| PR | https://github.com/Aravind-Unni/School-Managment-Software/pull/13 |
+| Head commit | `adc53dd9b2137268b07e91b49e6dad316f4274e3` |
 | Last recorded | 2026-09-21 |
 
 ## Original request
