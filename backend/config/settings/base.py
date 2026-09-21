@@ -35,7 +35,10 @@ if DEV_PERSONA_MODE not in env.VALID_PERSONA_MODES:
 SECRET_KEY = env.optional("SESSION_SECRET", "unset-secret-for-collectstatic-only")
 
 DEBUG = APP_ENV != "production"
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]"] if DEBUG else []
+#: `api` is the Compose service name. Vite proxies /api to it and (with
+#: changeOrigin) sends Host: api:8000; without this entry every proxied call
+#: is DisallowedHost 400 and the login form reports "could not reach the server".
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]", "api"] if DEBUG else []
 
 #: Django apps every profile needs. No business module appears here.
 DJANGO_APPS = [

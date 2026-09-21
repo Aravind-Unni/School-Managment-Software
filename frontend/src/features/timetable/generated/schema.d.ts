@@ -277,7 +277,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/sessions/{timetable_session_id}": {
+    "/timetable-sessions/{timetable_session_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -294,7 +294,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/sessions/{timetable_session_id}/cancellation": {
+    "/timetable-sessions/{timetable_session_id}/cancellation": {
         parameters: {
             query?: never;
             header?: never;

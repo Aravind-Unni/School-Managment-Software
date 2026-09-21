@@ -33,7 +33,11 @@ def integration() -> dict[str, int]:
     Idempotent via fixed UUIDs from fixtures. Assumes migrations have applied.
     Does not handle: full multi-year history or production cutover data.
     """
+    from modules.access import seeds as access_seeds
+
+    access_summary = access_seeds.baseline()
     summary = registry_seeds.bootstrap(fixtures.SCHOOL_A)
+    summary = {**access_summary, **summary}
     school_id = fixtures.SCHOOL_A
     now = registry_seeds.SEED_INSTANT
 

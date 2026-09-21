@@ -16,7 +16,6 @@ REGISTRATION = ModuleRegistration(
         "payments/",
         "concessions/",
         "refunds/",
-        "students/",
         "fees/",
     ),
     django_app="modules.fees",

@@ -7,6 +7,7 @@
  */
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import * as api from "./api";
 import { Failure } from "./Feedback";
 import { useAccessMessages } from "./useMessages";
@@ -23,6 +24,7 @@ type Step =
 
 export function LoginPage() {
   const t = useAccessMessages();
+  const navigate = useNavigate();
   const [step, setStep] = useState<Step>({ kind: "password" });
   const [loginName, setLoginName] = useState("");
   const [password, setPassword] = useState("");
@@ -46,6 +48,12 @@ export function LoginPage() {
     }
   }
 
+  const finishSignedIn = (authLevel: string) => {
+    setStep({ kind: "done", authLevel });
+    // Leave /login so the shell can show module navigation.
+    navigate("/settings/security", { replace: true });
+  };
+
   const submitPassword = () =>
     guard(async () => {
       const challenge = await api.login({ loginName, password });
@@ -58,14 +66,14 @@ export function LoginPage() {
         });
         setStep({ kind: "enrol", challengeId: challenge.challenge_id, start });
       } else {
-        setStep({ kind: "done", authLevel: "password" });
+        finishSignedIn("password");
       }
     });
 
   const submitCode = (challengeId: string) =>
     guard(async () => {
       const result = await api.verifyTotp({ challengeId, code });
-      setStep({ kind: "done", authLevel: result.auth_level });
+      finishSignedIn(result.auth_level);
     });
 
   const submitEnrolment = (challengeId: string, factorId: string) =>
@@ -77,7 +85,7 @@ export function LoginPage() {
   const submitRecovery = (challengeId: string) =>
     guard(async () => {
       const result = await api.recover({ challengeId, recoveryCode });
-      setStep({ kind: "done", authLevel: result.auth_level });
+      finishSignedIn(result.auth_level);
     });
 
   const submitLostDevice = () =>
@@ -99,7 +107,9 @@ export function LoginPage() {
                 ? t("access.challenge.useRecovery")
                 : step.kind === "lostDevice"
                   ? t("access.lostDevice.title")
-                  : t("access.challenge.title")}
+                  : step.kind === "done"
+                    ? t("access.login.title")
+                    : t("access.challenge.title")}
       </h2>
 
       {problem ? <Failure messageKey={problem.messageKey} requestId={problem.requestId} /> : null}

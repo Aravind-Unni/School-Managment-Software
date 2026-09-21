@@ -82,6 +82,7 @@ DEMO_FIXTURES_ENABLED = env.flag("DEMO_FIXTURES_ENABLED", default=True)
 WORKER_AVAILABLE = env.flag("WORKER_AVAILABLE", default=False)
 
 CORS_ALLOWED_ORIGIN_REGEXES = [r"^http://(localhost|127\.0\.0\.1):\d+$"]
+CORS_ALLOW_CREDENTIALS = True
 
 
 def build_port_registry(registration: ModuleRegistration | None) -> PortRegistry:

@@ -39,7 +39,7 @@ export type PaymentReceiptDTO = {
 const S1 = "1e06f5ad-b530-51fa-a3be-e1bd65fd230c";
 
 export async function fetchStatement(studentId = S1): Promise<FeeStatementDTO> {
-  const res = await fetch(`/api/v1/students/${studentId}/fee-statement`, {
+  const res = await fetch(`/api/v1/fees/students/${studentId}/fee-statement`, {
     credentials: "include",
   });
   if (!res.ok) throw new Error(`statement_failed_${res.status}`);

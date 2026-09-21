@@ -6,11 +6,12 @@
  * module without the shell changing.
  */
 
-import { NavLink, Route, Routes } from "react-router-dom";
+import { NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { LanguageProvider, useLanguage } from "@shared/i18n/LanguageContext";
 import { LANGUAGES, type Language } from "@shared/i18n/messages";
 import { REGISTERED_MODULES } from "./registeredModules";
 import { navigationRoutes } from "./moduleRegistry";
+import "./shell.css";
 
 /** Language selector. Labels are the language's own name, so they are not translated. */
 function LanguageSwitch() {
@@ -37,6 +38,12 @@ function LanguageSwitch() {
 /** Primary navigation, built from each feature's own metadata. */
 function Navigation() {
   const { t } = useLanguage();
+  const location = useLocation();
+  // Login is the entry surface: dumping every module link here looks broken and
+  // is useless before a session exists.
+  if (location.pathname === "/login") {
+    return null;
+  }
   const routes = navigationRoutes(REGISTERED_MODULES);
   return (
     <nav aria-label="Main">
@@ -68,6 +75,7 @@ export function AppShell() {
       </header>
       <main>
         <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
           {REGISTERED_MODULES.flatMap((module) =>
             module.routes.map((route) => (
               <Route key={route.path} path={route.path} element={<route.component />} />

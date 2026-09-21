@@ -96,7 +96,9 @@ export async function request<Result>(
     const init: RequestInit = {
       method,
       headers,
-      credentials: "same-origin",
+      // Same-origin via the Vite proxy in local stacks; "include" keeps a future
+      // absolute VITE_SCHOOL_API_URL working once CORS credentials are enabled.
+      credentials: "include",
     };
     if (body !== undefined) init.body = JSON.stringify(body);
     if (signal) init.signal = signal;

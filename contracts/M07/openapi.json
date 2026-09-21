@@ -5,8 +5,16 @@
     "version": "1.0.0",
     "description": "Paths relative to /api/v1. Integer INR paise only. Posted entries are immutable; correct via reversal. No payment gateway. Closed write schemas."
   },
-  "servers": [{ "url": "/api/v1" }],
-  "security": [{ "session": [] }],
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "security": [
+    {
+      "session": []
+    }
+  ],
   "paths": {
     "/fee-plans": {
       "post": {
@@ -17,7 +25,9 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CreateFeePlanRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/CreateFeePlanRequest"
+              }
             }
           }
         },
@@ -26,13 +36,21 @@
             "description": "Created",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/FeePlanDTO" }
+                "schema": {
+                  "$ref": "#/components/schemas/FeePlanDTO"
+                }
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Error" },
-          "403": { "$ref": "#/components/responses/Error" },
-          "422": { "$ref": "#/components/responses/Error" }
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error"
+          }
         }
       }
     },
@@ -45,7 +63,9 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CreateChargeRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/CreateChargeRequest"
+              }
             }
           }
         },
@@ -54,7 +74,9 @@
             "description": "Created",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ChargeDTO" }
+                "schema": {
+                  "$ref": "#/components/schemas/ChargeDTO"
+                }
               }
             }
           },
@@ -62,15 +84,27 @@
             "description": "Idempotent replay of identical source_key",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ChargeDTO" }
+                "schema": {
+                  "$ref": "#/components/schemas/ChargeDTO"
+                }
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Error" },
-          "403": { "$ref": "#/components/responses/Error" },
-          "404": { "$ref": "#/components/responses/Error" },
-          "409": { "$ref": "#/components/responses/Error" },
-          "422": { "$ref": "#/components/responses/Error" }
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error"
+          }
         }
       }
     },
@@ -84,14 +118,19 @@
             "name": "Idempotency-Key",
             "in": "header",
             "required": true,
-            "schema": { "type": "string", "minLength": 1 }
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CreatePaymentRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentRequest"
+              }
             }
           }
         },
@@ -100,7 +139,9 @@
             "description": "Created receipt and balance",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/PaymentReceiptDTO" }
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentReceiptDTO"
+                }
               }
             }
           },
@@ -108,15 +149,27 @@
             "description": "Idempotent replay",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/PaymentReceiptDTO" }
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentReceiptDTO"
+                }
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Error" },
-          "403": { "$ref": "#/components/responses/Error" },
-          "404": { "$ref": "#/components/responses/Error" },
-          "409": { "$ref": "#/components/responses/Error" },
-          "422": { "$ref": "#/components/responses/Error" }
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error"
+          }
         }
       }
     },
@@ -130,7 +183,10 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "responses": {
@@ -138,13 +194,21 @@
             "description": "Payment",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/PaymentDTO" }
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDTO"
+                }
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Error" },
-          "403": { "$ref": "#/components/responses/Error" },
-          "404": { "$ref": "#/components/responses/Error" }
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          }
         }
       }
     },
@@ -158,14 +222,19 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
           }
         ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CreateReversalRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/CreateReversalRequest"
+              }
             }
           }
         },
@@ -174,15 +243,27 @@
             "description": "Reversal and new balance",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ReversalDTO" }
+                "schema": {
+                  "$ref": "#/components/schemas/ReversalDTO"
+                }
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Error" },
-          "403": { "$ref": "#/components/responses/Error" },
-          "404": { "$ref": "#/components/responses/Error" },
-          "409": { "$ref": "#/components/responses/Error" },
-          "422": { "$ref": "#/components/responses/Error" }
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error"
+          }
         }
       }
     },
@@ -195,7 +276,9 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CreateConcessionRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/CreateConcessionRequest"
+              }
             }
           }
         },
@@ -204,15 +287,27 @@
             "description": "Created",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/CreditDTO" }
+                "schema": {
+                  "$ref": "#/components/schemas/CreditDTO"
+                }
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Error" },
-          "403": { "$ref": "#/components/responses/Error" },
-          "404": { "$ref": "#/components/responses/Error" },
-          "409": { "$ref": "#/components/responses/Error" },
-          "422": { "$ref": "#/components/responses/Error" }
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error"
+          }
         }
       }
     },
@@ -225,7 +320,9 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/CreateRefundRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/CreateRefundRequest"
+              }
             }
           }
         },
@@ -234,49 +331,27 @@
             "description": "Created",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/RefundRecordDTO" }
+                "schema": {
+                  "$ref": "#/components/schemas/RefundRecordDTO"
+                }
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Error" },
-          "403": { "$ref": "#/components/responses/Error" },
-          "404": { "$ref": "#/components/responses/Error" },
-          "409": { "$ref": "#/components/responses/Error" },
-          "422": { "$ref": "#/components/responses/Error" }
-        }
-      }
-    },
-    "/students/{id}/fee-statement": {
-      "get": {
-        "operationId": "get_fee_statement",
-        "summary": "Ledger statement and balance for one student",
-        "x-permission": "fees.read",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "format": "uuid" }
+          "401": {
+            "$ref": "#/components/responses/Error"
           },
-          {
-            "name": "as_of",
-            "in": "query",
-            "required": false,
-            "schema": { "type": "string", "format": "date" }
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error"
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Statement",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/FeeStatementDTO" }
-              }
-            }
-          },
-          "401": { "$ref": "#/components/responses/Error" },
-          "403": { "$ref": "#/components/responses/Error" },
-          "404": { "$ref": "#/components/responses/Error" }
         }
       }
     },
@@ -290,13 +365,18 @@
             "name": "as_of",
             "in": "query",
             "required": false,
-            "schema": { "type": "string", "format": "date" }
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
           },
           {
             "name": "cursor",
             "in": "query",
             "required": false,
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -304,12 +384,18 @@
             "description": "Overdue page",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/OverduePage" }
+                "schema": {
+                  "$ref": "#/components/schemas/OverduePage"
+                }
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Error" },
-          "403": { "$ref": "#/components/responses/Error" }
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          }
         }
       }
     },
@@ -323,7 +409,10 @@
             "name": "date",
             "in": "query",
             "required": true,
-            "schema": { "type": "string", "format": "date" }
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
           }
         ],
         "responses": {
@@ -331,12 +420,66 @@
             "description": "Daily collection totals",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/DailyCollectionDTO" }
+                "schema": {
+                  "$ref": "#/components/schemas/DailyCollectionDTO"
+                }
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Error" },
-          "403": { "$ref": "#/components/responses/Error" }
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/fees/students/{id}/fee-statement": {
+      "get": {
+        "operationId": "get_fee_statement",
+        "summary": "Ledger statement and balance for one student",
+        "x-permission": "fees.read",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Statement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeeStatementDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          }
         }
       }
     }
@@ -353,26 +496,36 @@
       "CreateFeePlanRequest": {
         "$ref": "schemas/dtos.schema.json#/$defs/CreateFeePlanRequest"
       },
-      "FeePlanDTO": { "$ref": "schemas/dtos.schema.json#/$defs/FeePlanDTO" },
+      "FeePlanDTO": {
+        "$ref": "schemas/dtos.schema.json#/$defs/FeePlanDTO"
+      },
       "CreateChargeRequest": {
         "$ref": "schemas/dtos.schema.json#/$defs/CreateChargeRequest"
       },
-      "ChargeDTO": { "$ref": "schemas/dtos.schema.json#/$defs/ChargeDTO" },
+      "ChargeDTO": {
+        "$ref": "schemas/dtos.schema.json#/$defs/ChargeDTO"
+      },
       "CreatePaymentRequest": {
         "$ref": "schemas/dtos.schema.json#/$defs/CreatePaymentRequest"
       },
-      "PaymentDTO": { "$ref": "schemas/dtos.schema.json#/$defs/PaymentDTO" },
+      "PaymentDTO": {
+        "$ref": "schemas/dtos.schema.json#/$defs/PaymentDTO"
+      },
       "PaymentReceiptDTO": {
         "$ref": "schemas/dtos.schema.json#/$defs/PaymentReceiptDTO"
       },
       "CreateReversalRequest": {
         "$ref": "schemas/dtos.schema.json#/$defs/CreateReversalRequest"
       },
-      "ReversalDTO": { "$ref": "schemas/dtos.schema.json#/$defs/ReversalDTO" },
+      "ReversalDTO": {
+        "$ref": "schemas/dtos.schema.json#/$defs/ReversalDTO"
+      },
       "CreateConcessionRequest": {
         "$ref": "schemas/dtos.schema.json#/$defs/CreateConcessionRequest"
       },
-      "CreditDTO": { "$ref": "schemas/dtos.schema.json#/$defs/CreditDTO" },
+      "CreditDTO": {
+        "$ref": "schemas/dtos.schema.json#/$defs/CreditDTO"
+      },
       "CreateRefundRequest": {
         "$ref": "schemas/dtos.schema.json#/$defs/CreateRefundRequest"
       },
@@ -382,26 +535,42 @@
       "FeeStatementDTO": {
         "$ref": "schemas/dtos.schema.json#/$defs/FeeStatementDTO"
       },
-      "BalanceDTO": { "$ref": "schemas/dtos.schema.json#/$defs/BalanceDTO" },
-      "OverduePage": { "$ref": "schemas/dtos.schema.json#/$defs/OverduePage" },
+      "BalanceDTO": {
+        "$ref": "schemas/dtos.schema.json#/$defs/BalanceDTO"
+      },
+      "OverduePage": {
+        "$ref": "schemas/dtos.schema.json#/$defs/OverduePage"
+      },
       "DailyCollectionDTO": {
         "$ref": "schemas/dtos.schema.json#/$defs/DailyCollectionDTO"
       },
       "ErrorEnvelope": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["code", "message_key", "request_id"],
+        "required": [
+          "code",
+          "message_key",
+          "request_id"
+        ],
         "properties": {
-          "code": { "type": "string" },
-          "message_key": { "type": "string" },
+          "code": {
+            "type": "string"
+          },
+          "message_key": {
+            "type": "string"
+          },
           "field_errors": {
             "type": "object",
             "additionalProperties": {
               "type": "array",
-              "items": { "type": "string" }
+              "items": {
+                "type": "string"
+              }
             }
           },
-          "request_id": { "type": "string" }
+          "request_id": {
+            "type": "string"
+          }
         }
       }
     },
@@ -410,7 +579,9 @@
         "description": "Error envelope",
         "content": {
           "application/json": {
-            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
           }
         }
       }

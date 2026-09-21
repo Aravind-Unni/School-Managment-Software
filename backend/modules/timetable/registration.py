@@ -26,7 +26,7 @@ REGISTRATION = ModuleRegistration(
         "teacher-schedule/",
         "student-schedule/",
         "substitutions/",
-        "sessions/",
+        "timetable-sessions/",
     ),
     django_app="modules.timetable",
     permission_codes=PERMISSION_CODES,

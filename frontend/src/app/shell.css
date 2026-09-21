@@ -1,0 +1,134 @@
+/**
+ * Minimal shell styles so the integrated stack is readable in a browser.
+ * Feature pages stay plain: this only covers the shared chrome and forms.
+ */
+
+:root {
+  color: #1a1a1a;
+  background: #f6f4ef;
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  line-height: 1.45;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 1rem 1.5rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #d9d2c5;
+  background: #fffdf8;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  letter-spacing: 0.01em;
+}
+
+nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.85rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+nav a {
+  color: #245b4a;
+  text-decoration: none;
+}
+
+nav a:hover,
+nav a.active {
+  text-decoration: underline;
+}
+
+.language-switch {
+  margin-left: auto;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.95rem;
+}
+
+main {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+main h2 {
+  margin-top: 0;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.9rem;
+  max-width: 22rem;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+
+input,
+select,
+textarea {
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #b9b0a0;
+  border-radius: 4px;
+  background: #fff;
+}
+
+button {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid #245b4a;
+  border-radius: 4px;
+  background: #245b4a;
+  color: #fff;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+button[type="button"],
+button.secondary {
+  background: transparent;
+  color: #245b4a;
+}
+
+[role="alert"] {
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #b05050;
+  background: #f8e8e8;
+  border-radius: 4px;
+}
+
+[role="status"] {
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #cfc6b6;
+  background: #fff;
+  border-radius: 4px;
+}

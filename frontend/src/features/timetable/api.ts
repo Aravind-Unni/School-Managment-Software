@@ -222,12 +222,15 @@ export async function setSessionCancellation(
     readonly expectedVersion: number | null;
   },
 ): Promise<PeriodSession> {
-  return request<PeriodSession>(`${BASE}/sessions/${timetableSessionId}/cancellation`, {
-    method: "PUT",
-    body: {
-      cancelled: input.cancelled,
-      reason_key: input.reasonKey ?? null,
-      expected_version: input.expectedVersion,
+  return request<PeriodSession>(
+    `${BASE}/timetable-sessions/${timetableSessionId}/cancellation`,
+    {
+      method: "PUT",
+      body: {
+        cancelled: input.cancelled,
+        reason_key: input.reasonKey ?? null,
+        expected_version: input.expectedVersion,
+      },
     },
-  });
+  );
 }

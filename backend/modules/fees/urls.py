@@ -32,7 +32,7 @@ urlpatterns = [
     path("concessions", ConcessionCollectionView.as_view(), name="concession-collection"),
     path("refunds", RefundCollectionView.as_view(), name="refund-collection"),
     path(
-        "students/<uuid:student_id>/fee-statement",
+        "fees/students/<uuid:student_id>/fee-statement",
         FeeStatementView.as_view(),
         name="fee-statement",
     ),

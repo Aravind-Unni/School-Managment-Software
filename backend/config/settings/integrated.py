@@ -19,10 +19,15 @@ from config import env
 from config.real_ports import build_real_providers, required_ports_for
 from config.settings.base import *
 from config.settings.base import HARNESS_APPS, INSTALLED_APPS, MIDDLEWARE, SCHOOL_CLOCK
+from shared import fixtures
 from shared.module_catalog import MODULE_SLUGS
 from shared.ports import PortRegistry
 
 APP_ENV = "integrated"
+
+#: One-school deployment identity for this integrated verification stack.
+#: Same synthetic School A used by module seeds; never invent a real campus id.
+SCHOOL_ID = env.optional("SCHOOL_ID") or str(fixtures.SCHOOL_A)
 
 #: Assembly order from the C02 packet (B00 foundation first via M00, then M14
 #: platform, identity+registry, files, timetable/attendance, assessment, fees/
@@ -64,6 +69,7 @@ DEMO_FIXTURES_ENABLED = env.flag("DEMO_FIXTURES_ENABLED", default=False)
 WORKER_AVAILABLE = env.flag("WORKER_AVAILABLE", default=False)
 
 CORS_ALLOWED_ORIGIN_REGEXES = [r"^http://(localhost|127\.0\.0\.1):\d+$"]
+CORS_ALLOW_CREDENTIALS = True
 
 #: Re-export for adapters that read settings.SCHOOL_CLOCK.
 SCHOOL_CLOCK = SCHOOL_CLOCK

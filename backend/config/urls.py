@@ -114,7 +114,11 @@ def readyz(_request):
             module_path, _, attribute = check.callable_path.rpartition(".")
             try:
                 function = getattr(importlib.import_module(module_path), attribute)
-                results.append(function())
+                raw = function()
+                if isinstance(raw, bool):
+                    results.append({"name": check.name, "ok": raw})
+                else:
+                    results.append(raw)
             except Exception as exc:
                 results.append({"name": check.name, "ok": False, "detail": type(exc).__name__})
 
