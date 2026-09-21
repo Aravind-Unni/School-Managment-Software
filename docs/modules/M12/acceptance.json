@@ -16,5 +16,6 @@
     "assessment_publication_gates",
     "independent_backup_restoration",
     "production_object_lifecycle"
-  ]
+  ],
+  "head_commit": "870a80ab63b66149398479394c56bc16185a2168"
 }
