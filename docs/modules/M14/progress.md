@@ -8,7 +8,7 @@
 | Branched from | `a2f16c24dc6a7c7004e5358a094f0bd0fc5760dd` (`origin/main`) |
 | Manifest revision | `school-contracts-v15` (M14 frozen) |
 | PR | https://github.com/Aravind-Unni/School-Managment-Software/pull/15 (draft) |
-| Tip | (update after push) |
+| Tip | `25c7541c4ee13b124daba8e3b44fff660a670d5c` |
 | Last recorded | 2026-09-21 |
 
 ## Original request
