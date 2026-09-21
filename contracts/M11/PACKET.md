@@ -1,28 +1,26 @@
 # Contract packet -- M11 communications
 
-Status: **NOT STARTED**. No executable contract exists for this module yet.
+Status: **PROPOSED FOR REVIEW**. Artefacts exist under `contracts/M11/`; not
+frozen in `contracts/manifest.json` until items in `review-decisions.md` are
+approved.
 
-Manifest revision this packet targets: `school-contracts-v3-draft`
-(the current draft in `contracts/manifest.json`; replace with the approved
-revision once review completes).
+Manifest revision this packet targets: `school-contracts-v12` (proposed;
+current reviewed revision remains `school-contracts-v11`).
 
 ---
 
 ## The rule this packet exists to enforce
 
-**Contract approval comes before module coding.** The module task must first
-produce, for developer review:
+**Contract approval comes before module coding.** Review must approve:
 
-1. the exact **OpenAPI** document for this module's REST API
-2. the **JSON Schema** for every request, response and event payload
-3. the **Protocol signatures** for every service port this module provides
-4. the **error enums** -- which `code`/`message_key` pairs this module returns
-5. **example fixtures** a consumer suite can assert against
+1. OpenAPI — `openapi.json`
+2. JSON Schema — `schemas/dtos.schema.json`, `schemas/events.schema.json`
+3. Protocol signatures — `ports.md` → `backend/contracts/communications.py` after freeze
+4. Error enums — `error-codes.json`
+5. Example fixtures — `fixtures/*`
 
-Those are then **frozen in `contracts/manifest.json`** before implementation
-starts. A later provider of the same contract must pass the same consumer
-fixture suite. A mismatch needs a reviewed contract revision -- **not** an
-invented per-module field and **not** a local adapter.
+Then freeze hashes in `contracts/manifest.json` / `revision.json`. Only then
+implement.
 
 ## What this module must declare
 
@@ -32,31 +30,21 @@ A `ModuleRegistration` in `backend/modules/communications/registration.py`:
 |---|---|
 | `id` | `M11` |
 | `slug` | `communications` |
-| `api_prefix` | `/api/communications/` |
-| `frontend_routes` | React routes, each with nav metadata and required permission |
-| `permission_codes` | all namespaced `communications.<verb>_<noun>` |
-| `consumers` | service ports this module requires from others |
-| `scheduled_jobs` | periodic work, cron interpreted in Asia/Kolkata |
-| `migration_dependencies` | module ids whose migrations must apply first |
-| `health_checks` | readiness probes contributed to `/readyz` |
+| `api_prefix` | `/api/v1/` (operations under notices/messages/deliveries/sms) |
+| `frontend_routes` | composer, templates, delivery dashboard |
+| `permission_codes` | `notices.create`, `notices.publish`, `messages.send`, `messages.read_status`, `sms.configure` |
+| `consumers` | access, registry, platform, clock |
+| `scheduled_jobs` | deliver + reconcile workers |
+| `migration_dependencies` | none beyond foundation harness |
+| `health_checks` | readiness for DB + broker when profile includes worker |
 
 ## Inherited, non-negotiable constraints
 
-These come from the foundation and are already enforced; a module does not
-restate or relax them:
+Same as foundation: UUID id, trusted school_id, integer version, expected_version
+→ 409, error envelope, cross-school 404, cursor collections, UTC + Asia/Kolkata,
+audit+outbox same transaction, never trust client role/school/relationship.
 
-- UUID `id`, trusted `school_id`, integer `version` on mutable aggregates
-- `expected_version` on every update; stale means **409**
-- errors use the frozen envelope: 401 / 403 / 404 / 409 / 422
-- **cross-school access is 404, never 403**
-- collections return `items` + `next_cursor`; no offset pagination
-- UTC instants, Asia/Kolkata civil dates, integer INR paise, decimal-string marks
-- audit + outbox appended in the **same transaction** as the write
-- Access checks apply to API, service, workers, exports and private files
-- client role, school and relationship claims are never trusted
-- `ResourceGrant` is server-internal and never accepted from a browser
-
-## Standalone development
+## Standalone development (after freeze)
 
 ```bash
 python scripts/dev.py up M11 --profile standalone
@@ -65,16 +53,10 @@ python scripts/dev.py seed M11 --scenario baseline
 python scripts/dev.py check M11 --suite standalone
 ```
 
-Dependency ports bind to deterministic fakes. Real authentication and 2FA
-integration stay **explicitly pending** until M01 is integrated.
+Local/test profiles must NEVER contact a real SMS provider.
 
-## B00 notes specific to this module
+## Human gates
 
-Local and test profiles must NEVER contact a real SMS or email provider.
-
-## Human gates before this module ships
-
-- this packet reviewed and frozen in the manifest
-- every equivalence/authorisation rule reviewed before being enabled
-- the phase exit gate
-- first customer-facing report for each design partner, where applicable
+- this packet reviewed and frozen
+- real provider sandbox before production SMS
+- phase exit gate

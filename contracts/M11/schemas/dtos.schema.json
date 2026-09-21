@@ -1,0 +1,434 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "school/M11/dtos",
+  "title": "M11 communications DTOs",
+  "$defs": {
+    "Locale": {
+      "type": "string",
+      "enum": ["en", "ml"]
+    },
+    "NoticeState": {
+      "type": "string",
+      "enum": ["draft", "published"]
+    },
+    "DeliveryState": {
+      "type": "string",
+      "enum": ["queued", "sending", "accepted", "delivered", "failed", "unknown"]
+    },
+    "Channel": {
+      "type": "string",
+      "enum": ["in_app", "sms"]
+    },
+    "AudienceSelector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["section", "person_ids"]
+        },
+        "section_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "person_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 1,
+          "maxItems": 4000,
+          "uniqueItems": true
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "section"
+              }
+            }
+          },
+          "then": {
+            "required": ["section_id"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "person_ids"
+              }
+            }
+          },
+          "then": {
+            "required": ["person_ids"]
+          }
+        }
+      ]
+    },
+    "NoticeDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "title",
+        "body",
+        "locale",
+        "audience",
+        "state",
+        "version",
+        "scheduled_at",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20000
+        },
+        "locale": {
+          "$ref": "#/$defs/Locale"
+        },
+        "audience": {
+          "$ref": "#/$defs/AudienceSelector"
+        },
+        "state": {
+          "$ref": "#/$defs/NoticeState"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "scheduled_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "audience_snapshot_id": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        }
+      }
+    },
+    "AudienceSnapshotDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "notice_id", "recipient_ids", "created_at"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "notice_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "recipient_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "PublishNoticeRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expected_version"],
+      "properties": {
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "PublishNoticeResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["notice", "audience_snapshot"],
+      "properties": {
+        "notice": {
+          "$ref": "#/$defs/NoticeDTO"
+        },
+        "audience_snapshot": {
+          "$ref": "#/$defs/AudienceSnapshotDTO"
+        }
+      }
+    },
+    "CreateNoticeRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "body", "locale", "audience"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20000
+        },
+        "locale": {
+          "$ref": "#/$defs/Locale"
+        },
+        "audience": {
+          "$ref": "#/$defs/AudienceSelector"
+        },
+        "scheduled_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "MessageTemplateDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "key", "locale", "version", "body", "provider_template_id"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "locale": {
+          "$ref": "#/$defs/Locale"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "provider_template_id": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "maxLength": 200
+        }
+      }
+    },
+    "EnqueueMessageRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "template_key",
+        "recipient_ref",
+        "locale",
+        "variables",
+        "channel",
+        "dedupe_key"
+      ],
+      "properties": {
+        "template_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "recipient_ref": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "locale": {
+          "$ref": "#/$defs/Locale"
+        },
+        "variables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": ["string", "number", "boolean", "null"]
+          }
+        },
+        "channel": {
+          "$ref": "#/$defs/Channel"
+        },
+        "dedupe_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      }
+    },
+    "AttemptDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "attempted_at", "outcome"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attempted_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "accepted",
+            "delivered",
+            "failed",
+            "timeout",
+            "rejected_callback",
+            "skipped_revoked"
+          ]
+        }
+      }
+    },
+    "DeliveryDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "school_id",
+        "recipient_ref",
+        "channel",
+        "dedupe_key",
+        "payload_hash",
+        "state",
+        "provider_ref",
+        "template_key",
+        "locale",
+        "version",
+        "created_at",
+        "updated_at",
+        "attempts"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "school_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "recipient_ref": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "channel": {
+          "$ref": "#/$defs/Channel"
+        },
+        "dedupe_key": {
+          "type": "string"
+        },
+        "payload_hash": {
+          "type": "string",
+          "minLength": 64,
+          "maxLength": 64
+        },
+        "state": {
+          "$ref": "#/$defs/DeliveryState"
+        },
+        "provider_ref": {
+          "type": ["string", "null"]
+        },
+        "template_key": {
+          "type": "string"
+        },
+        "locale": {
+          "$ref": "#/$defs/Locale"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "attempts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AttemptDTO"
+          }
+        },
+        "provider_status": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "ProviderConfigDTO": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sender_id", "enabled", "secret_ref", "version"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "sender_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "secret_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Opaque secrets-manager reference; never the secret value."
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "CallbackAccepted": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accepted"],
+      "properties": {
+        "accepted": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "status": "proposed",
+  "assertions": [
+    {
+      "id": "forged_callback",
+      "given": "callback with forged signature",
+      "then": "401/communications.error.callback_unauthenticated; delivery state unchanged"
+    },
+    {
+      "id": "dup_dedupe",
+      "given": "two enqueue calls with same dedupe_key and payload",
+      "then": "one Delivery id; one provider send"
+    },
+    {
+      "id": "timeout_reconcile",
+      "given": "provider accept then timeout",
+      "then": "lookup before resend; no second provider send while accepted"
+    },
+    {
+      "id": "guardian_unlink",
+      "given": "pending delivery; guardian contact revoked",
+      "then": "attempt outcome skipped_revoked; no SMS"
+    },
+    {
+      "id": "malayalam_preserved",
+      "given": "template locale=ml",
+      "then": "body Unicode unchanged through render and fake provider"
+    },
+    {
+      "id": "no_credentials_logged",
+      "given": "provider send and callback",
+      "then": "logs/audit contain secret_ref only, never secret value"
+    },
+    {
+      "id": "notice_survives_outage",
+      "given": "SMS provider down after notice publish",
+      "then": "published notice still readable via in_app"
+    }
+  ]
+}

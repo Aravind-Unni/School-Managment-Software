@@ -811,8 +811,66 @@
       "status": "frozen"
     },
     "M11": {
-      "artefacts": [],
-      "fixtures": [],
+      "artefacts": [
+        {
+          "frozen": false,
+          "id": "M11/error-codes.json",
+          "kind": "json-schema",
+          "owner": "M11 communications",
+          "path": "contracts/M11/error-codes.json",
+          "sha256": "4702c6099f09be8555b45b85f6259debbd5007a13d16669cbf6f0309c6531181"
+        },
+        {
+          "frozen": false,
+          "id": "M11/openapi.json",
+          "kind": "openapi",
+          "owner": "M11 communications",
+          "path": "contracts/M11/openapi.json",
+          "sha256": "107e5f4da18bf44b42ca1553b68121b0446ab8710673e0ca51bfaf7af250b976"
+        },
+        {
+          "frozen": false,
+          "id": "M11/schemas/dtos.schema.json",
+          "kind": "json-schema",
+          "owner": "M11 communications",
+          "path": "contracts/M11/schemas/dtos.schema.json",
+          "sha256": "5bb49e0cd13d9d026aadf8b468b8e4468606fefe883dba2ac603ea7a8e2c5cd1"
+        },
+        {
+          "frozen": false,
+          "id": "M11/schemas/events.schema.json",
+          "kind": "json-schema",
+          "owner": "M11 communications",
+          "path": "contracts/M11/schemas/events.schema.json",
+          "sha256": "a903a2eb32dc7b03155210e275666ec9eb4d4f9f00f329661359c2974d4c4c09"
+        }
+      ],
+      "fixtures": [
+        {
+          "frozen": false,
+          "id": "M11/fixtures/expected-results.json",
+          "kind": "consumer-fixture",
+          "owner": "M11 communications",
+          "path": "contracts/M11/fixtures/expected-results.json",
+          "sha256": "7c75fbce5a2cab611873e4b3e58d5e8c9afbb1de9cd41a37b784a4b97b02fb89"
+        },
+        {
+          "frozen": false,
+          "id": "M11/fixtures/responses.json",
+          "kind": "consumer-fixture",
+          "owner": "M11 communications",
+          "path": "contracts/M11/fixtures/responses.json",
+          "sha256": "bbfaac18d6cae2e9ceedf13326f0c6f15574c15a032752b3a3be9d0532851360"
+        },
+        {
+          "frozen": false,
+          "id": "M11/fixtures/scenario.json",
+          "kind": "consumer-fixture",
+          "owner": "M11 communications",
+          "path": "contracts/M11/fixtures/scenario.json",
+          "sha256": "89a24fa7732c214f0865228bea8e1b496ce56b4a7fb7b07b0c62b7e0ce958484"
+        }
+      ],
       "packet": "contracts/M11/PACKET.md",
       "slug": "communications",
       "status": "not_started"

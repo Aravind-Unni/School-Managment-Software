@@ -1,0 +1,22 @@
+{
+  "module_id": "M11",
+  "slug": "communications",
+  "status": "contracts_proposed",
+  "STANDALONE_VERIFIED": false,
+  "branch": "m11/notices-third-party-sms",
+  "started_from": "8d84c00da9f3378514b91adc8b98c211dc77dfc9",
+  "manifest_revision": "school-contracts-v11",
+  "proposed_freeze_revision": "school-contracts-v12",
+  "head_commit": null,
+  "suites": {
+    "contracts": "not-run",
+    "standalone": "not-run",
+    "browser": "not-run"
+  },
+  "pending_integration": [
+    "real_sms_provider_sandbox",
+    "real_registry_verified_contacts",
+    "real_m01_auth_2fa",
+    "production_fake_adapter_refusal"
+  ]
+}

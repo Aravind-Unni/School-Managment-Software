@@ -1,0 +1,42 @@
+{
+  "status": "proposed",
+  "examples": {
+    "notice_draft_en": {
+      "state": "draft",
+      "locale": "en",
+      "title": "Sports day",
+      "version": 1
+    },
+    "notice_published_ml": {
+      "state": "published",
+      "locale": "ml",
+      "title": "കായികദിനം",
+      "version": 2
+    },
+    "delivery_queued": {
+      "state": "queued",
+      "channel": "sms",
+      "attempts": []
+    },
+    "delivery_after_timeout_reconcile": {
+      "state": "accepted",
+      "provider_ref": "fake-msg-1",
+      "attempts": [
+        {
+          "outcome": "timeout"
+        },
+        {
+          "outcome": "accepted"
+        }
+      ]
+    },
+    "callback_accepted": {
+      "accepted": true
+    },
+    "template_ml": {
+      "key": "attendance.absent",
+      "locale": "ml",
+      "body": "നമസ്കാരം {{name}}, {{student}} ഹാജരാകാത്തതായി രേഖപ്പെടുത്തി."
+    }
+  }
+}

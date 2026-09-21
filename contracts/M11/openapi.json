@@ -1,0 +1,633 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "M11 Notices and Third-Party SMS",
+    "version": "1.0.0",
+    "description": "Paths relative to /api/v1. In-app notices and replaceable SMS delivery. Closed write schemas. No credentials in responses. Not login 2FA."
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "security": [
+    {
+      "session": []
+    }
+  ],
+  "paths": {
+    "/notices": {
+      "post": {
+        "operationId": "create_notice",
+        "summary": "Create a draft notice",
+        "x-permission": "notices.create",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateNoticeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Draft notice",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoticeDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/notices/{id}/publish": {
+      "post": {
+        "operationId": "publish_notice",
+        "summary": "Publish notice and snapshot audience",
+        "x-permission": "notices.publish",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishNoticeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Published notice plus audience snapshot",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishNoticeResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/messages": {
+      "post": {
+        "operationId": "enqueue_message",
+        "summary": "Enqueue a templated delivery",
+        "x-permission": "messages.send",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnqueueMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Delivery created or idempotent replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/deliveries/{id}": {
+      "get": {
+        "operationId": "get_delivery",
+        "summary": "Delivery state, sanitized attempts, provider status",
+        "x-permission": "messages.read_status",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delivery",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/sms/callback/{provider}": {
+      "post": {
+        "operationId": "sms_provider_callback",
+        "summary": "Authenticated provider status callback",
+        "security": [],
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["fake", "launch"]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Provider-specific body; validated after signature check."
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallbackAccepted"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "sessionid"
+      }
+    },
+    "responses": {
+      "Error": {
+        "description": "Stable error envelope",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorEnvelope"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ErrorEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message_key", "request_id"],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message_key": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "field_errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["field", "message_key"],
+              "properties": {
+                "field": {
+                  "type": "string"
+                },
+                "message_key": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "CreateNoticeRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "body", "locale", "audience"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000
+          },
+          "locale": {
+            "type": "string",
+            "enum": ["en", "ml"]
+          },
+          "audience": {
+            "$ref": "#/components/schemas/AudienceSelector"
+          },
+          "scheduled_at": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          }
+        }
+      },
+      "AudienceSelector": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind"],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["section", "person_ids"]
+          },
+          "section_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "person_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 1,
+            "maxItems": 4000,
+            "uniqueItems": true
+          }
+        }
+      },
+      "NoticeDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "school_id",
+          "title",
+          "body",
+          "locale",
+          "audience",
+          "state",
+          "version",
+          "scheduled_at",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string",
+            "enum": ["en", "ml"]
+          },
+          "audience": {
+            "$ref": "#/components/schemas/AudienceSelector"
+          },
+          "state": {
+            "type": "string",
+            "enum": ["draft", "published"]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "scheduled_at": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "audience_snapshot_id": {
+            "type": ["string", "null"],
+            "format": "uuid"
+          }
+        }
+      },
+      "PublishNoticeRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["expected_version"],
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "AudienceSnapshotDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "notice_id", "recipient_ids", "created_at"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "notice_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recipient_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PublishNoticeResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["notice", "audience_snapshot"],
+        "properties": {
+          "notice": {
+            "$ref": "#/components/schemas/NoticeDTO"
+          },
+          "audience_snapshot": {
+            "$ref": "#/components/schemas/AudienceSnapshotDTO"
+          }
+        }
+      },
+      "EnqueueMessageRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "template_key",
+          "recipient_ref",
+          "locale",
+          "variables",
+          "channel",
+          "dedupe_key"
+        ],
+        "properties": {
+          "template_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "recipient_ref": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "locale": {
+            "type": "string",
+            "enum": ["en", "ml"]
+          },
+          "variables": {
+            "type": "object",
+            "additionalProperties": {
+              "type": ["string", "number", "boolean", "null"]
+            }
+          },
+          "channel": {
+            "type": "string",
+            "enum": ["in_app", "sms"]
+          },
+          "dedupe_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      },
+      "AttemptDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "attempted_at", "outcome"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attempted_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "accepted",
+              "delivered",
+              "failed",
+              "timeout",
+              "rejected_callback",
+              "skipped_revoked"
+            ]
+          }
+        }
+      },
+      "DeliveryDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "school_id",
+          "recipient_ref",
+          "channel",
+          "dedupe_key",
+          "payload_hash",
+          "state",
+          "provider_ref",
+          "template_key",
+          "locale",
+          "version",
+          "created_at",
+          "updated_at",
+          "attempts"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "recipient_ref": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "channel": {
+            "type": "string",
+            "enum": ["in_app", "sms"]
+          },
+          "dedupe_key": {
+            "type": "string"
+          },
+          "payload_hash": {
+            "type": "string",
+            "minLength": 64,
+            "maxLength": 64
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "sending",
+              "accepted",
+              "delivered",
+              "failed",
+              "unknown"
+            ]
+          },
+          "provider_ref": {
+            "type": ["string", "null"]
+          },
+          "template_key": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string",
+            "enum": ["en", "ml"]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "attempts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttemptDTO"
+            }
+          },
+          "provider_status": {
+            "type": ["string", "null"]
+          }
+        }
+      },
+      "CallbackAccepted": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["accepted"],
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "const": true
+          }
+        }
+      }
+    }
+  }
+}

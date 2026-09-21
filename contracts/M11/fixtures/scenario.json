@@ -1,0 +1,56 @@
+{
+  "status": "proposed",
+  "note": "Synthetic baseline for M11. Shared fixture UUIDs. One live fake SMS provider. sms.configure 2FA off.",
+  "policy_fixture": {
+    "sms_configure_requires_2fa": false,
+    "live_provider": "fake",
+    "channels_enabled": ["in_app", "sms"]
+  },
+  "school_a": {
+    "school_id": "83cfc7d4-738c-5527-ba46-c61563fe7c1c",
+    "publisher_actor_id": "5e101a6a-eca4-5a5f-b5ef-c2d776c939fe",
+    "sender_actor_id": "6a201b7b-fdb5-5b6f-c6f0-d3e887d0400f",
+    "unrelated_actor_id": "7b302c8c-0ec6-5c7f-d701-e4f998e15110",
+    "section_id": "a1111111-1111-5111-8111-111111111111",
+    "student_id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c",
+    "guardian_contact_ref": "c0a11111-1111-5111-8111-111111111101",
+    "revoked_guardian_contact_ref": "c0a11111-1111-5111-8111-111111111102",
+    "notice_en": {
+      "title": "Sports day",
+      "body": "Sports day is on Friday.",
+      "locale": "en"
+    },
+    "notice_ml": {
+      "title": "കായികദിനം",
+      "body": "വെള്ളിയാഴ്ച കായികദിനമാണ്.",
+      "locale": "ml"
+    },
+    "template_en": {
+      "key": "attendance.absent",
+      "locale": "en",
+      "body": "Hello {{name}}, {{student}} was marked absent."
+    },
+    "template_ml": {
+      "key": "attendance.absent",
+      "locale": "ml",
+      "body": "നമസ്കാരം {{name}}, {{student}} ഹാജരാകാത്തതായി രേഖപ്പെടുത്തി."
+    },
+    "dedupe_key": "attendance.absent:1e06f5ad-b530-51fa-a3be-e1bd65fd230c:2026-09-21",
+    "forged_callback_signature": "not-a-real-signature"
+  },
+  "school_b": {
+    "school_id": "8e1e985f-ba74-5baa-82c6-b884525e416c",
+    "contact_foreign": {
+      "id": "131631b7-b975-56ae-80b3-4294fd4071ed"
+    }
+  },
+  "expected": {
+    "duplicate_dedupe_one_provider_request": true,
+    "timeout_reconcile_before_resend": true,
+    "forged_callback_no_state_change": true,
+    "guardian_unlink_blocks_pending": true,
+    "malayalam_template_preserved": true,
+    "no_credentials_logged": true,
+    "in_app_notice_survives_sms_outage": true
+  }
+}
