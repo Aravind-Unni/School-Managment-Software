@@ -47,7 +47,7 @@ def test_response_fixtures_match_required_keys():
 def test_permission_codes_match_registration():
     """Backend permission list matches ModuleRegistration."""
     assert set(PERMISSION_CODES) == set(REGISTRATION.permission_codes)
-    assert set(REGISTRATION.consumers) == {"access", "platform", "clock"}
+    assert set(REGISTRATION.consumers) == {"access", "registry", "platform", "clock"}
 
 
 def test_openapi_lists_contract_operations():

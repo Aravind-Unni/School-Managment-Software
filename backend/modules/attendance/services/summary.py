@@ -123,15 +123,9 @@ class SummaryService:
         )
 
     def _section_on(self, context: RequestContext, student_id: UUID, on: date) -> UUID | None:
-        """Return the pupil's section on a date from roster membership overlays."""
-        # Probe C1 then C2 — FakeRegistry overlays cover the baseline cast.
-        from shared import fixtures
-
-        for section_id in (fixtures.CLASS_C1, fixtures.CLASS_C2):
-            try:
-                roster = self.registry.get_roster(context, section_id, on, subject_id=None)
-            except ObjectInaccessible:
-                continue
-            if any(r.student_id == student_id for r in roster.students):
-                return section_id
-        return None
+        """Return the pupil's section on a date, as Registry reports it."""
+        try:
+            facts = self.registry.get_relationships(context, context.actor_id, student_id, on)
+        except ObjectInaccessible:
+            return None
+        return facts.section_id

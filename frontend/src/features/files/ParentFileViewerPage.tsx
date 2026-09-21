@@ -28,7 +28,7 @@ export function ParentFileViewerPage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t("files.viewer_title")}</h1>
       <p>{t("files.viewer_api_note")}</p>
       <label>
@@ -64,6 +64,6 @@ export function ParentFileViewerPage() {
       {file === null && errorKey === null && !loading && (
         <p role="status">{t("files.enter_file_id")}</p>
       )}
-    </main>
+    </section>
   );
 }

@@ -27,9 +27,9 @@ from .files import (
     UploadSession,
 )
 from .identity import RequestContext
-from .people import RosterDTO, StudentDTO, TeachingAssignment
 from .performance import DashboardDTO, InterventionPage
-from .scope import RelationshipFacts, ScopeFacts
+from .ports_registry import RegistryPort, TermDTO  # noqa: F401 -- re-exported
+from .scope import ScopeFacts
 from .timetable import (
     AttendanceSummaryDTO,
     CalendarDayDTO,
@@ -125,88 +125,6 @@ class AccessPort(Protocol):
 
         For building navigation and conditional UI only. Never use this in place
         of ``check`` on a write path.
-        """
-        ...
-
-
-@runtime_checkable
-class RegistryPort(Protocol):
-    """People, sections and relationships. Owned by M02 registry.
-
-    Extended additively for M01. Every method is read-only: no consumer may
-    mutate Registry state through this port.
-    """
-
-    def get_student(
-        self,
-        context: RequestContext,
-        student_id: UUID,
-    ) -> StudentDTO:
-        """Return one student.
-
-        Raises ObjectInaccessible (404) for an unknown student AND for one in
-        another school, deliberately conflating them so cross-tenant probing
-        cannot tell the difference.
-        """
-        ...
-
-    def get_roster(
-        self,
-        context: RequestContext,
-        section_id: UUID,
-        effective_date: date,
-        subject_id: UUID | None = None,
-    ) -> RosterDTO:
-        """Return the pupils in a section on a date.
-
-        When ``subject_id`` is supplied, only pupils enrolled in that subject
-        offering on that date are included, and that filtered roster is the one a
-        timetable period must use.
-
-        Does not handle: authorising the caller to see the section. Ask Access.
-        """
-        ...
-
-    def get_relationships(
-        self,
-        context: RequestContext,
-        actor_id: UUID,
-        student_id: UUID,
-        effective_date: date,
-    ) -> RelationshipFacts:
-        """Return how an actor relates to a student on a date.
-
-        Dated because a guardianship or a posting can lapse. Returns
-        Relationship.NONE rather than raising when unrelated, because 'unrelated'
-        is a normal policy input.
-        """
-        ...
-
-    def get_teaching_assignments(
-        self,
-        context: RequestContext,
-        staff_id: UUID,
-        effective_date: date,
-    ) -> tuple[TeachingAssignment, ...]:
-        """Return the assignments in force for a staff member on a date.
-
-        Returns an empty tuple for an unassigned staff member -- not an error,
-        because 'teaches nothing today' is a legitimate state.
-        """
-        ...
-
-    def relationship_facts(
-        self,
-        context: RequestContext,
-        subject_person_id: UUID,
-    ) -> RelationshipFacts:
-        """Return how the context's actor relates to the subject person.
-
-        Returns Relationship.NONE rather than raising when unrelated, because
-        'unrelated' is a normal policy input, not an error.
-
-        Does not handle: authorising the caller to see the subject. The caller
-        folds this into ScopeFacts and asks Access.
         """
         ...
 

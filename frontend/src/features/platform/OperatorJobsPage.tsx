@@ -42,7 +42,7 @@ export function OperatorJobsPage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t("platform.jobs_title")}</h1>
       <label>
         {t("platform.job_id")}
@@ -92,6 +92,6 @@ export function OperatorJobsPage() {
         </section>
       )}
       {notice !== null && <p role="status">{t(notice)}</p>}
-    </main>
+    </section>
   );
 }

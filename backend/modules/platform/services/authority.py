@@ -11,8 +11,6 @@ from contracts.identity import RequestContext
 from contracts.scope import ScopeFacts
 from contracts.values import school_date
 
-from ..fixture_ids import COMPANY_OPS_ACTOR
-
 
 @dataclass(frozen=True, slots=True)
 class AuthorityGate:
@@ -37,10 +35,18 @@ class AuthorityGate:
         )
 
     def require_backups_manage(self, context: RequestContext) -> None:
-        """Authorise backups.manage, recent 2FA, and company-ops identity."""
+        """Authorise backups.manage, recent 2FA, and (optionally) ops identity.
+
+        When ``PLATFORM_OPS_ACTOR_IDS`` is configured, only those accounts may
+        manage backups even if a role grants backups.manage; when it is empty,
+        the grant plus a fresh second factor is sufficient.
+        """
+        from django.conf import settings
+
         self.require_action(context, "backups.manage")
         self.access.require_recent_2fa(context, max_age_seconds=300)
-        if context.actor_id != COMPANY_OPS_ACTOR:
+        ops_actors = {str(a) for a in getattr(settings, "PLATFORM_OPS_ACTOR_IDS", ()) or ()}
+        if ops_actors and str(context.actor_id) not in ops_actors:
             raise ActionDenied("platform.error.ops_identity_required")
 
     def same_school_or_404(self, context: RequestContext, school_id: UUID) -> None:

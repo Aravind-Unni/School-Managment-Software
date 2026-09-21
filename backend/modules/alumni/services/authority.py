@@ -10,14 +10,14 @@ from contracts.errors import ActionDenied, ObjectInaccessible, ValidationFailed
 from contracts.identity import RequestContext
 from contracts.scope import ScopeFacts
 from contracts.values import school_date
+from shared.people import actor_is_family
 
-from ..fixture_ids import NON_STAFF_ACTORS
 from ..models import AlumniPolicy
 
 
 @dataclass(frozen=True, slots=True)
 class AuthorityGate:
-    """Resolves Registry then asks Access. Denies known non-staff fixture actors."""
+    """Resolves Registry then asks Access. Staff-only actions refuse guardians and students."""
 
     access: object
     registry: object
@@ -35,7 +35,7 @@ class AuthorityGate:
         former parent/teacher grants must not expand into alumni directory
         access. Does not invent production role catalogues.
         """
-        if context.actor_id in NON_STAFF_ACTORS:
+        if actor_is_family(self.registry, context):
             raise ActionDenied("error.action_denied")
         self.access.check(
             context,

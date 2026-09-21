@@ -58,7 +58,7 @@ export function NoticeComposerPage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t("communications.notices_title")}</h1>
       <label>
         {t("communications.notice_title")}
@@ -134,6 +134,6 @@ export function NoticeComposerPage() {
           <p>{t(errorKey)}</p>
         </div>
       )}
-    </main>
+    </section>
   );
 }

@@ -128,7 +128,7 @@ export function AttendanceSessionPage() {
   const readOnly = session.state === "submitted";
 
   return (
-    <main>
+    <section>
       <p>
         <Link to="/attendance">{t("attendance.back")}</Link>
       </p>
@@ -180,6 +180,6 @@ export function AttendanceSessionPage() {
           {t("attendance.state.submitted")}
         </p>
       )}
-    </main>
+    </section>
   );
 }

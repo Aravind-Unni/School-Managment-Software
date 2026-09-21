@@ -36,8 +36,19 @@ def integration() -> dict[str, int]:
     from modules.access import seeds as access_seeds
 
     access_summary = access_seeds.baseline()
+    summary = {**access_summary, **registry_cast()}
+    grant_summary = _ensure_integrated_module_grants()
+    summary.update(grant_summary)
+    return summary
+
+
+def registry_cast() -> dict[str, int]:
+    """Load only the Registry side of the integrated cast (no Access rows).
+
+    Usable under the registry-only profile, where modules.access is not
+    installed. Idempotent via fixed UUIDs.
+    """
     summary = registry_seeds.bootstrap(fixtures.SCHOOL_A)
-    summary = {**access_summary, **summary}
     school_id = fixtures.SCHOOL_A
     now = registry_seeds.SEED_INSTANT
 
@@ -232,7 +243,6 @@ def integration() -> dict[str, int]:
             },
         )
 
-    grant_summary = _ensure_integrated_module_grants()
     summary.update(
         {
             "students": 2,
@@ -241,7 +251,6 @@ def integration() -> dict[str, int]:
             "staff": 1,
             "enrolments": 2,
             "teaching_assignments": 1,
-            **grant_summary,
         }
     )
     return summary

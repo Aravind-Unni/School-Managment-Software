@@ -48,7 +48,7 @@ export function AlumniDirectoryPage() {
   }, [load]);
 
   return (
-    <main>
+    <section>
       <h1>{t("alumni.directory_title")}</h1>
       <fieldset>
         <legend>{t("alumni.filters")}</legend>
@@ -107,6 +107,6 @@ export function AlumniDirectoryPage() {
           {t("ui.load_more")}
         </button>
       )}
-    </main>
+    </section>
   );
 }

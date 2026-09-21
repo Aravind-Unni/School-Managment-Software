@@ -120,6 +120,10 @@ class Job(models.Model):
     actor_id = models.UUIDField()
     kind = models.CharField(max_length=128)
     payload_ref = models.CharField(max_length=512)
+    #: Dotted path of the handler the worker runs, and the arguments it gets.
+    #: Empty for bookkeeping kinds that have no worker handler.
+    task_path = models.CharField(max_length=256, blank=True, default="")
+    payload = models.JSONField(default=dict, blank=True)
     state = models.CharField(max_length=16, choices=JobState.choices, default=JobState.QUEUED)
     progress = models.PositiveSmallIntegerField(default=0)
     error_code = models.CharField(max_length=128, null=True, blank=True)

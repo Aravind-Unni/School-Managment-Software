@@ -285,7 +285,13 @@ class RoleGrantsView(APIView):
 
 
 class AccountCollectionView(APIView):
-    """GET /accounts -- the protected business endpoint."""
+    """GET /accounts -- the protected business endpoint. POST creates one."""
+
+    def post(self, request: Request) -> Response:
+        """Create an account; see ``account_views.AccountCreateView``."""
+        from .account_views import AccountCreateView
+
+        return AccountCreateView().post(request)
 
     @extend_schema(
         operation_id="accounts_list",

@@ -8,12 +8,17 @@ from __future__ import annotations
 from dataclasses import dataclass
 from uuid import UUID, uuid4
 
+from django.conf import settings
+
 from contracts.events import AuditRecord, EventEnvelope
 
 from ..fixture_ids import JOB_KINDS_ALLOWLIST
 from ..models import AuditRecord as AuditRow
 from ..models import Job, JobState, OutboxEvent, OutboxState
 from .redaction import redact_mapping
+
+#: Actor recorded on jobs whose producer carried none (system work).
+SYSTEM_ACTOR_ID = UUID("00000000-0000-5000-8000-000000000001")
 
 
 @dataclass
@@ -73,8 +78,10 @@ class PlatformAdapter:
         kind = str(payload.get("kind") or task_path)
         if kind not in JOB_KINDS_ALLOWLIST and not kind.startswith("platform."):
             kind = task_path if task_path.startswith("platform.") else f"platform.{kind}"
-        school_id = UUID(str(payload["school_id"]))
-        actor_id = UUID(str(payload["actor_id"]))
+        # Not every producer carries identity in its payload (file processing,
+        # deliveries); the deployment's school and a system actor stand in.
+        school_id = UUID(str(payload.get("school_id") or settings.SCHOOL_ID))
+        actor_id = UUID(str(payload.get("actor_id") or SYSTEM_ACTOR_ID))
         idempotency_key = str(payload.get("idempotency_key") or uuid4())
         payload_ref = str(payload.get("payload_ref") or f"payloads/{idempotency_key}")
         now = self._now()
@@ -89,6 +96,8 @@ class PlatformAdapter:
             actor_id=actor_id,
             kind=kind,
             payload_ref=payload_ref,
+            task_path=task_path,
+            payload=dict(payload),
             state=JobState.QUEUED,
             progress=0,
             error_code=None,
@@ -97,6 +106,10 @@ class PlatformAdapter:
             created_at=now,
             updated_at=now,
         )
+        from .job_runner import dispatch_after_commit, resolve_handler
+
+        if resolve_handler(task_path) is not None:
+            dispatch_after_commit(job.id)
         return str(job.id)
 
     def audit_rows(self, *, school_id: UUID | None = None) -> list[dict[str, object]]:

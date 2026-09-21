@@ -25,7 +25,7 @@ export function FeeReceiptPage({ paymentId }: { paymentId?: string }) {
   }, [id, t, translate]);
 
   return (
-    <main>
+    <section>
       <h1>{t["fees.receipt_title"]}</h1>
       {error && <p role="alert">{error}</p>}
       {data && (
@@ -39,6 +39,6 @@ export function FeeReceiptPage({ paymentId }: { paymentId?: string }) {
           </p>
         </article>
       )}
-    </main>
+    </section>
   );
 }

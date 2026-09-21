@@ -18,7 +18,7 @@ from uuid import UUID
 from contracts.decisions import Decision, ReasonCode
 from contracts.scope import Relationship, ScopeFacts
 
-from ..permissions import CATALOGUE_BY_CODE, SELF_SERVICE_ACTIONS, is_known_action
+from ..permissions import SELF_SERVICE_ACTIONS, is_known_action, lookup_permission
 from ..scopes import ScopeType
 
 
@@ -172,5 +172,5 @@ def action_requires_recent_two_factor(action: str) -> bool:
     A property of the ACTION, so a call site cannot forget to demand step-up on a
     sensitive write.
     """
-    spec = CATALOGUE_BY_CODE.get(action)
+    spec = lookup_permission(action)
     return spec is not None and spec.requires_recent_two_factor

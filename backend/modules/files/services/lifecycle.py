@@ -480,8 +480,9 @@ class FilesLifecycle:
             self.process_file(file_id, profile=profile)
 
     def _put_url(self, row: UploadSession) -> str:
-        """Module-local PUT URL, or signed MinIO URL when S3 is configured."""
-        store = object_store()
-        if hasattr(store, "presigned_put"):
-            return store.presigned_put(row.quarantine_key, expires_in=UPLOAD_TTL_SECONDS)
+        """Return the API's own PUT URL; the API writes into private storage.
+
+        Never a presigned object-storage URL: that host is internal to the
+        server and unreachable from a parent's or teacher's browser.
+        """
         return f"/api/v1/quarantine/{row.id}?token={row.put_token}"

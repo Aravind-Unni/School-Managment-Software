@@ -28,7 +28,7 @@ export function DeliveryDashboardPage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t("communications.deliveries_title")}</h1>
       <label>
         {t("communications.delivery_id")}
@@ -74,6 +74,6 @@ export function DeliveryDashboardPage() {
           )}
         </section>
       )}
-    </main>
+    </section>
   );
 }

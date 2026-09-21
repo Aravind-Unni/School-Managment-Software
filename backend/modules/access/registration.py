@@ -27,6 +27,12 @@ REGISTRATION = ModuleRegistration(
             required_permission="auth.factor.manage_self",
         ),
         FrontendRoute(
+            path="/settings/accounts",
+            component="AccountsPage",
+            nav_label_key="nav.accounts",
+            required_permission="accounts.manage",
+        ),
+        FrontendRoute(
             path="/settings/roles",
             component="RoleEditorPage",
             nav_label_key="nav.roles",

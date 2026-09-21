@@ -50,6 +50,10 @@ class JobService:
         row.version += 1
         row.updated_at = now
         row.save(update_fields=["state", "progress", "error_code", "version", "updated_at"])
+        from .job_runner import dispatch_after_commit, resolve_handler
+
+        if resolve_handler(row.task_path) is not None:
+            dispatch_after_commit(row.id)
         self.platform.record_audit(
             AuditRecord(
                 audit_id=uuid4(),

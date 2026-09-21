@@ -22,10 +22,17 @@ from contracts.people import (
     StudentStatus,
     TeachingAssignment,
 )
+from contracts.ports_registry import SchoolProfileDTO, TermDTO
 from contracts.scope import Relationship, RelationshipFacts
 
 from .. import fixtures
 from .failures import FailureInjector
+
+#: contracts/M10 and M11 scenario "unrelated actor" id.
+SCENARIO_UNRELATED_PARENT = UUID("7b302c8c-0ec6-5c7f-d701-e4f998e15110")
+
+#: The term id the M05/M06 fixtures publish results under.
+FIXTURE_TERM_ID = UUID("f76bcdb0-b6b9-5a80-a449-a8a4e423716a")
 
 
 class FakeRegistry:
@@ -51,6 +58,107 @@ class FakeRegistry:
         self._failures = failures or FailureInjector()
         self._enrolment_overlay = enrolment_overlay
         self._section_membership_overlay = section_membership_overlay
+
+    def person_kind(self, context: RequestContext, person_id: UUID) -> str:
+        """Return the fixture person's kind, or raise ObjectInaccessible.
+
+        School A's synthetic cast only; School B people resolve as absent from
+        School A and vice versa, like the real adapter.
+        """
+        self._failures.maybe_fail("registry.person_kind")
+        kinds = {
+            fixtures.SCHOOL_A: {
+                fixtures.STUDENT_S1: "student",
+                fixtures.STUDENT_S2: "student",
+                fixtures.STUDENT_S3: "student",
+                fixtures.GUARDIAN_G1: "guardian",
+                fixtures.GUARDIAN_G2: "guardian",
+                fixtures.TEACHER_T1: "staff",
+                fixtures.TEACHER_T2: "staff",
+                fixtures.TEACHER_T3: "staff",
+                fixtures.PRINCIPAL_P1: "staff",
+                # The M10/M11 scenarios' "unrelated actor": a parent with no
+                # link to any fixture pupil. Real Access denies such an account
+                # staff actions by grant; this lets modules test the same.
+                SCENARIO_UNRELATED_PARENT: "guardian",
+            },
+            fixtures.SCHOOL_B: {
+                fixtures.STUDENT_S1_SCHOOL_B: "student",
+                fixtures.TEACHER_T1_SCHOOL_B: "staff",
+            },
+        }
+        kind = kinds.get(context.school_id, {}).get(person_id)
+        if kind is None:
+            raise ObjectInaccessible("error.object_inaccessible")
+        return kind
+
+    def current_term(self, context: RequestContext, on: date) -> TermDTO | None:
+        """Return the one fixture term when ``on`` falls inside it."""
+        self._failures.maybe_fail("registry.current_term")
+        if context.school_id not in (fixtures.SCHOOL_A, fixtures.SCHOOL_B):
+            return None
+        if not fixtures.TERM_START <= on <= fixtures.TERM_END:
+            return None
+        return TermDTO(
+            id=FIXTURE_TERM_ID,
+            year_id=fixtures.fixture_uuid("school_a.year"),
+            name="Term 1",
+            start=fixtures.TERM_START,
+            end=fixtures.TERM_END,
+        )
+
+    def active_student_ids(self, context: RequestContext, on: date) -> tuple[UUID, ...]:
+        """Return the fixture pupils of the caller's school."""
+        self._failures.maybe_fail("registry.active_student_ids")
+        if context.school_id == fixtures.SCHOOL_A:
+            return (fixtures.STUDENT_S1, fixtures.STUDENT_S2, fixtures.STUDENT_S3)
+        if context.school_id == fixtures.SCHOOL_B:
+            return (fixtures.STUDENT_S1_SCHOOL_B,)
+        return ()
+
+    def school_profile(self, context: RequestContext) -> SchoolProfileDTO | None:
+        """Return a synthetic school profile with the default CBSE grade bands."""
+        self._failures.maybe_fail("registry.school_profile")
+        return SchoolProfileDTO(
+            display_name="Synthetic School",
+            board="CBSE",
+            settings={
+                "grading_bands": [
+                    {"grade": grade, "min_percent": minimum}
+                    for grade, minimum in (
+                        ("A1", 91),
+                        ("A2", 81),
+                        ("B1", 71),
+                        ("B2", 61),
+                        ("C1", 51),
+                        ("C2", 41),
+                        ("D", 33),
+                        ("E", 0),
+                    )
+                ]
+            },
+        )
+
+    def subject_names(self, context: RequestContext) -> dict[UUID, str]:
+        """Return the fixture subjects' names."""
+        self._failures.maybe_fail("registry.subject_names")
+        return {
+            fixtures.SUBJECT_MATHS: "Mathematics",
+            fixtures.SUBJECT_MALAYALAM: "Malayalam",
+            fixtures.SUBJECT_ENGLISH: "English",
+        }
+
+    def section_label(self, context: RequestContext, section_id: UUID) -> str | None:
+        """Return the fixture section label."""
+        self._failures.maybe_fail("registry.section_label")
+        return {fixtures.CLASS_C1: "Std 5 - C1", fixtures.CLASS_C2: "Std 5 - C2"}.get(
+            section_id
+        )
+
+    def latest_standard(self, context: RequestContext, student_id: UUID) -> int | None:
+        """Return the fixture leaving standard (S1 graduated 12, S2 left in 10)."""
+        self._failures.maybe_fail("registry.latest_standard")
+        return {fixtures.STUDENT_S1: 12, fixtures.STUDENT_S2: 10}.get(student_id)
 
     def get_student(
         self,
@@ -137,8 +245,15 @@ class FakeRegistry:
 
         probe = replace(context, actor_id=actor_id)
         facts = self.relationship_facts(probe, student_id)
+        # Like the real adapter, report the pupil's section whatever the
+        # actor's relationship; consumers use it to find a pupil's class.
+        membership = self._section_membership_overlay or fixtures.SECTION_MEMBERSHIP
+        pupil_section = next(
+            (section for student, section in membership if student == student_id), None
+        )
         return replace(
             facts,
+            section_id=facts.section_id or pupil_section,
             school_id=_school_of(student_id),
             effective_date=effective_date,
             subject_ids=tuple(

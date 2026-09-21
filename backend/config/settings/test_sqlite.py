@@ -125,3 +125,19 @@ if _registration is not None and _registration.middleware:
 SCHOOL_PUBLIC_PATH_PREFIXES = (
     _registration.absolute_public_paths if _registration is not None else ()
 )
+
+#: Development and test profiles pin backup management to the M14 fixture's
+#: company-ops actor, so the ops-identity rule stays exercised by the suites.
+import json as _json
+import pathlib as _pathlib
+
+_M14_SCENARIO = (
+    _pathlib.Path(__file__).resolve().parents[3]
+    / "contracts"
+    / "M14"
+    / "fixtures"
+    / "scenario.json"
+)
+PLATFORM_OPS_ACTOR_IDS: tuple[str, ...] = (
+    _json.loads(_M14_SCENARIO.read_text())["school_a"]["company_ops_actor_id"],
+)

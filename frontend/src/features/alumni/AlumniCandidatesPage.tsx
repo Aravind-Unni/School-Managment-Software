@@ -58,7 +58,7 @@ export function AlumniCandidatesPage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t("alumni.candidates_title")}</h1>
       <label>
         {t("alumni.filter_state")}
@@ -116,6 +116,6 @@ export function AlumniCandidatesPage() {
           ))}
         </ul>
       )}
-    </main>
+    </section>
   );
 }

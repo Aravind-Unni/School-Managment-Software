@@ -16,45 +16,47 @@ import { HomePage } from "./HomePage";
 import "./shell.css";
 
 /** Product navigation groups — school staff should not see a flat dump. */
+const startsWithAny = (path: string, prefixes: readonly string[]) =>
+  prefixes.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+
 const NAV_GROUPS: readonly { readonly id: string; readonly label: string; readonly match: (path: string) => boolean }[] = [
   {
     id: "people",
     label: "People",
-    match: (path) => path.startsWith("/registry") || path.startsWith("/alumni"),
+    match: (path) => startsWithAny(path, ["/registry", "/alumni"]),
   },
   {
     id: "academics",
     label: "Academics",
     match: (path) =>
-      path.startsWith("/timetable") ||
-      path.startsWith("/attendance") ||
-      path.startsWith("/assessment") ||
-      path.startsWith("/performance"),
+      startsWithAny(path, ["/timetable", "/attendance", "/assessment", "/performance"]),
   },
   {
     id: "fees",
     label: "Fees & transport",
-    match: (path) => path.startsWith("/fees") || path.startsWith("/transport"),
+    match: (path) => startsWithAny(path, ["/fees", "/transport"]),
   },
   {
     id: "library",
     label: "Library",
-    match: (path) => path.startsWith("/library"),
+    match: (path) => startsWithAny(path, ["/library"]),
   },
   {
     id: "comms",
     label: "Communications",
-    match: (path) => path.startsWith("/communications") || path.startsWith("/files"),
+    match: (path) =>
+      startsWithAny(path, ["/communications", "/notices", "/templates", "/deliveries", "/files"]),
   },
   {
     id: "reports",
-    label: "Reports",
-    match: (path) => path.startsWith("/exchange") || path.startsWith("/reports"),
+    label: "Reports & data",
+    match: (path) =>
+      startsWithAny(path, ["/exchange", "/reports", "/report-cards", "/imports", "/exports"]),
   },
   {
     id: "admin",
     label: "Admin",
-    match: (path) => path.startsWith("/settings") || path.startsWith("/platform"),
+    match: (path) => startsWithAny(path, ["/settings", "/platform"]),
   },
 ];
 

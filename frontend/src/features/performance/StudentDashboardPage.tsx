@@ -70,7 +70,7 @@ export function StudentDashboardPage() {
   }, [studentId, t]);
 
   return (
-    <main>
+    <section>
       <h1>{t["performance.title"]}</h1>
       {students.length > 1 && (
         <label>
@@ -125,6 +125,6 @@ export function StudentDashboardPage() {
           ))}
         </ul>
       )}
-    </main>
+    </section>
   );
 }

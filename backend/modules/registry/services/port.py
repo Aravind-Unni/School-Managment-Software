@@ -10,6 +10,8 @@ from dataclasses import dataclass, replace
 from datetime import date
 from uuid import UUID
 
+from django.db.models import Q
+
 from contracts.errors import ObjectInaccessible
 from contracts.identity import RequestContext
 from contracts.people import (
@@ -20,9 +22,19 @@ from contracts.people import (
 from contracts.people import (
     TeachingAssignment as TeachingAssignmentDTO,
 )
+from contracts.ports_registry import SchoolProfileDTO, TermDTO
 from contracts.scope import Relationship, RelationshipFacts
 
-from ..models import Section, Student
+from ..models import (
+    Enrolment,
+    Guardian,
+    SchoolConfig,
+    Section,
+    StaffProfile,
+    Student,
+    Subject,
+    Term,
+)
 from ..models import TeachingAssignment as TeachingAssignmentRow
 from .effective import range_covers
 from .enrolments import (
@@ -56,6 +68,83 @@ class RegistryService:
             display_name=row.display_name,
             status=StudentStatus(row.status),
         )
+
+    def person_kind(self, context: RequestContext, person_id: UUID) -> str:
+        """Return the kind of Registry person, or raise ObjectInaccessible.
+
+        Archived people still resolve: an archived guardian's account is
+        deactivated by the school, not made unknowable here.
+        """
+        if Student.objects.filter(id=person_id, school_id=context.school_id).exists():
+            return "student"
+        if Guardian.objects.filter(id=person_id, school_id=context.school_id).exists():
+            return "guardian"
+        if StaffProfile.objects.filter(id=person_id, school_id=context.school_id).exists():
+            return "staff"
+        raise ObjectInaccessible("error.object_inaccessible")
+
+    def current_term(self, context: RequestContext, on: date) -> TermDTO | None:
+        """Return the unarchived term containing ``on``, earliest start first."""
+        row = (
+            Term.objects.filter(
+                school_id=context.school_id, archived=False, start__lte=on, end__gte=on
+            )
+            .order_by("start")
+            .first()
+        )
+        if row is None:
+            return None
+        return TermDTO(
+            id=row.id, year_id=row.year_id, name=row.name, start=row.start, end=row.end
+        )
+
+    def active_student_ids(self, context: RequestContext, on: date) -> tuple[UUID, ...]:
+        """Return pupils with an active enrolment covering ``on``, sorted for stability."""
+        rows = (
+            Enrolment.objects.filter(
+                school_id=context.school_id, state="active", from_date__lte=on
+            )
+            .filter(Q(to_date__isnull=True) | Q(to_date__gte=on))
+            .values_list("student_id", flat=True)
+            .distinct()
+        )
+        return tuple(sorted(set(rows), key=str))
+
+    def latest_standard(self, context: RequestContext, student_id: UUID) -> int | None:
+        """Return the standard number of the pupil's latest enrolment, if any."""
+        row = (
+            Enrolment.objects.filter(school_id=context.school_id, student_id=student_id)
+            .select_related("section__standard")
+            .order_by("-from_date", "-created_at")
+            .first()
+        )
+        return row.section.standard.number if row is not None else None
+
+    def school_profile(self, context: RequestContext) -> SchoolProfileDTO | None:
+        """Return the installed SchoolConfig as a DTO, or None."""
+        row = SchoolConfig.objects.filter(school_id=context.school_id).first()
+        if row is None:
+            return None
+        return SchoolProfileDTO(
+            display_name=row.display_name, board=row.board, settings=dict(row.settings or {})
+        )
+
+    def subject_names(self, context: RequestContext) -> dict[UUID, str]:
+        """Return {subject id: display name} for the school, archived included."""
+        return dict(
+            Subject.objects.filter(school_id=context.school_id).values_list(
+                "id", "display_name"
+            )
+        )
+
+    def section_label(self, context: RequestContext, section_id: UUID) -> str | None:
+        """Return "Std N - name" for a section of this school."""
+        row = (
+            Section.objects.filter(id=section_id, school_id=context.school_id)
+            .select_related("standard")
+            .first()
+        )
+        return f"Std {row.standard.number} - {row.name}" if row is not None else None
 
     def get_roster(
         self,

@@ -108,7 +108,7 @@ export function ImportCentrePage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t("exchange.imports_title")}</h1>
       <label>
         {t("exchange.dataset")}
@@ -175,6 +175,6 @@ export function ImportCentrePage() {
           </button>
         </div>
       )}
-    </main>
+    </section>
   );
 }

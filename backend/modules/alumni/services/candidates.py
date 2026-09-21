@@ -14,7 +14,6 @@ from contracts.identity import RequestContext
 from contracts.pagination import Page, clamp_page_size, decode_cursor, encode_cursor
 from contracts.values import school_date
 
-from ..fixture_ids import FIXTURE_LAST_STANDARD
 from ..models import (
     AlumniCandidate,
     AlumniProfile,
@@ -47,7 +46,7 @@ class CandidateService:
         """Create or return the candidate for (student, leaving_event).
 
         Idempotent on leaving_event_id within the school. Snapshot uses Registry
-        display/admission; last_standard/leaving_year from caller or fixture map
+        display/admission; last_standard/leaving_year from caller or Registry's latest enrolment
         / clock year. Does not auto-create a directory profile.
         """
         if outcome not in {LeavingOutcome.GRADUATE, LeavingOutcome.TRANSFER}:
@@ -62,7 +61,7 @@ class CandidateService:
 
         standard = last_standard
         if standard is None:
-            standard = FIXTURE_LAST_STANDARD.get(student_id)
+            standard = self.gate.registry.latest_standard(context, student_id)
         if standard is None:
             raise ValidationFailed("error.validation_failed")
         year = leaving_year if leaving_year is not None else school_date(self.clock.now()).year

@@ -61,10 +61,22 @@ class S3ObjectStore:
     def put(
         self, key: str, body: bytes, *, content_type: str = "application/octet-stream"
     ) -> None:
-        """Put object into the configured bucket."""
-        self._client().put_object(
-            Bucket=self.bucket, Key=key, Body=body, ContentType=content_type
-        )
+        """Put object into the configured bucket, creating the bucket if absent.
+
+        A fresh object store (new install, restored server, test stack) has no
+        bucket until something makes one; failing every upload for that is
+        worse than creating the private bucket here once.
+        """
+        from botocore.exceptions import ClientError
+
+        client = self._client()
+        try:
+            client.put_object(Bucket=self.bucket, Key=key, Body=body, ContentType=content_type)
+        except ClientError as exc:
+            if exc.response.get("Error", {}).get("Code") != "NoSuchBucket":
+                raise
+            client.create_bucket(Bucket=self.bucket)
+            client.put_object(Bucket=self.bucket, Key=key, Body=body, ContentType=content_type)
 
     def get(self, key: str) -> bytes:
         """Get object bytes."""

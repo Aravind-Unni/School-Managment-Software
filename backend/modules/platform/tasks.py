@@ -13,24 +13,30 @@ def dispatch_outbox() -> int:
 
 
 def monitor_backup_age() -> dict:
-    """Return backup age status without claiming production RPO verification.
+    """Return this deployment's newest-backup age against its policy threshold.
 
-    PENDING for full-scale RPO/RTO; this only surfaces fixture-policy age.
+    Reads the school from settings and the threshold from its PlatformPolicy
+    (falling back to the fixture default). Does not verify the backup restores.
     """
+    from uuid import UUID
+
     from django.conf import settings
     from django.utils import timezone
 
-    from .fixture_ids import BACKUP_AGE_ALERT_MINUTES, SCHOOL_A
-    from .models import BackupManifest
+    from .fixture_ids import BACKUP_AGE_ALERT_MINUTES
+    from .models import BackupManifest, PlatformPolicy
 
-    latest = BackupManifest.objects.filter(school_id=SCHOOL_A).order_by("-created_at").first()
+    school_id = UUID(str(settings.SCHOOL_ID))
+    policy = PlatformPolicy.objects.filter(school_id=school_id).first()
+    alert_minutes = policy.backup_age_alert_minutes if policy else BACKUP_AGE_ALERT_MINUTES
+    latest = BackupManifest.objects.filter(school_id=school_id).order_by("-created_at").first()
     if latest is None:
         return {"ok": False, "detail": "no_manifest"}
     age = timezone.now() - latest.created_at
     minutes = age.total_seconds() / 60.0
     return {
-        "ok": minutes <= BACKUP_AGE_ALERT_MINUTES,
+        "ok": minutes <= alert_minutes,
         "age_minutes": minutes,
-        "alert_minutes": BACKUP_AGE_ALERT_MINUTES,
+        "alert_minutes": alert_minutes,
         "clock": str(settings.SCHOOL_CLOCK.now()),
     }

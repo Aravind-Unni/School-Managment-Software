@@ -76,7 +76,7 @@ export function StudentDirectoryPage() {
     state.status !== "loading" && state.items.length === 0 && state.status !== "error";
 
   return (
-    <main>
+    <section>
       <h1>{t("registry.students_title")}</h1>
       <form onSubmit={onSearch}>
         <label>
@@ -134,6 +134,6 @@ export function StudentDirectoryPage() {
       {state.status === "loading" && state.items.length > 0 && (
         <p role="status">{t("ui.loading")}</p>
       )}
-    </main>
+    </section>
   );
 }

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 import uuid
+from datetime import date
 
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
@@ -16,7 +17,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from modules.access.models import Grant, Permission, Role, User, UserRole
-from modules.access.permissions import CATALOGUE
+from modules.access.permissions import full_catalogue
 from modules.access.scopes import ScopeType
 
 
@@ -55,7 +56,7 @@ class Command(BaseCommand):
         ns = school_id
 
         with transaction.atomic():
-            for spec in CATALOGUE:
+            for spec in full_catalogue():
                 Permission.objects.update_or_create(
                     code=spec.code,
                     defaults={
@@ -82,7 +83,14 @@ class Command(BaseCommand):
                 },
             )
             Grant.objects.filter(role=owner_role).delete()
-            owner_actions = tuple(spec.code for spec in CATALOGUE)
+            owner_scopes = {
+                spec.code: (
+                    ScopeType.SCHOOL
+                    if ScopeType.SCHOOL in spec.allowed_scopes
+                    else ScopeType.SELF
+                )
+                for spec in full_catalogue()
+            }
             Grant.objects.bulk_create(
                 [
                     Grant(
@@ -90,13 +98,13 @@ class Command(BaseCommand):
                         school_id=school_id,
                         role=owner_role,
                         action=action,
-                        scope_type=ScopeType.SCHOOL.value,
+                        scope_type=owner_scopes[action].value,
                         scope_id=None,
-                        valid_from=now.date(),
+                        valid_from=date(2000, 1, 1),
                         valid_to=None,
                         created_at=now,
                     )
-                    for action in owner_actions
+                    for action in owner_scopes
                 ]
             )
 

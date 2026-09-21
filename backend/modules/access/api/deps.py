@@ -78,11 +78,18 @@ def require_context(request) -> RequestContext:
 def remote_addr(request) -> str:
     """Return the client address for throttling.
 
-    Reads REMOTE_ADDR only. X-Forwarded-For is deliberately ignored: it is
-    client-controlled, so trusting it would let an attacker rotate the header and
-    defeat per-address throttling entirely. A deployment behind a proxy must
-    configure the proxy to set REMOTE_ADDR.
+    Reads REMOTE_ADDR by default. X-Forwarded-For is never read: it is
+    client-controlled, so trusting it would let an attacker rotate the header
+    and defeat per-address throttling. Only when the deployment declares
+    ``TRUST_X_REAL_IP`` -- the production stack, where the API is reachable
+    solely through its own nginx, which overwrites X-Real-IP -- is that header
+    used; otherwise every login would appear to come from nginx and one bad
+    actor could throttle the whole school.
     """
+    if getattr(settings, "TRUST_X_REAL_IP", False):
+        forwarded = (request.META.get("HTTP_X_REAL_IP", "") or "").strip()
+        if forwarded:
+            return forwarded
     return request.META.get("REMOTE_ADDR", "") or "unknown"
 
 

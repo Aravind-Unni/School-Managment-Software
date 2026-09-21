@@ -50,6 +50,18 @@ REGISTRATION = ModuleRegistration(
             required_permission="students.read",
         ),
         FrontendRoute(
+            path="/registry/admit",
+            component="AdmitStudentPage",
+            nav_label_key="nav.admit",
+            required_permission="registry.manage",
+        ),
+        FrontendRoute(
+            path="/registry/staff",
+            component="StaffAdminPage",
+            nav_label_key="nav.staff",
+            required_permission="registry.manage",
+        ),
+        FrontendRoute(
             path="/registry/students/:studentId",
             component="StudentProfilePage",
             nav_label_key=None,

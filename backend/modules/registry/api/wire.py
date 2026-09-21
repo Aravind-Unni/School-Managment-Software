@@ -29,6 +29,7 @@ def school_config_to_wire(row: SchoolConfig) -> dict[str, object]:
         "display_name": row.display_name,
         "board": row.board,
         "default_language": row.default_language,
+        "settings": dict(row.settings or {}),
     }
 
 

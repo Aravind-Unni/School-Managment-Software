@@ -42,7 +42,7 @@ export function ReportCentrePage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t("exchange.reports_title")}</h1>
       <label>
         {t("exchange.report_id")}
@@ -90,6 +90,6 @@ export function ReportCentrePage() {
           )}
         </section>
       )}
-    </main>
+    </section>
   );
 }

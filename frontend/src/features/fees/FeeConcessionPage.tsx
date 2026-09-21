@@ -36,7 +36,7 @@ export function FeeConcessionPage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t["fees.concession_title"]}</h1>
       <form
         onSubmit={(event) => {
@@ -65,6 +65,6 @@ export function FeeConcessionPage() {
         </button>
       </form>
       {status && <p role="status">{status}</p>}
-    </main>
+    </section>
   );
 }

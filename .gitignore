@@ -31,3 +31,7 @@ reports/
 
 # Generated per-module Compose files and port allocations
 dev/state/
+
+# Playwright output
+frontend/test-results/
+frontend/playwright-report/

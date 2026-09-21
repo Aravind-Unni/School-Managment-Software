@@ -111,6 +111,16 @@ def build_port_registry(registration=None) -> PortRegistry:
 # --- middleware and public paths from every approved registration ------------
 _APPROVED_REGISTRATIONS = _load_approved_registrations()
 
+
+#: Every installed module's permission codes, for M01's catalogue. M01's own
+#: codes are already in its closed catalogue and are skipped here.
+SCHOOL_MODULE_PERMISSION_CODES: tuple[str, ...] = tuple(
+    code
+    for _reg in _APPROVED_REGISTRATIONS
+    if _reg.id != "M01"
+    for code in (_reg.permission_codes or ())
+)
+
 _shared_mw = "shared.http.middleware.RequestContextMiddleware"
 _middleware = [m for m in MIDDLEWARE if m != _shared_mw]
 _index = _middleware.index("django.middleware.common.CommonMiddleware") + 1

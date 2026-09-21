@@ -17,10 +17,10 @@ from shared import fixtures
 
 @pytest.fixture
 def registry_cast(db):
-    """Install the integrated synthetic cast into the test database."""
-    from config.integration_seed import integration
+    """Install the Registry side of the integrated synthetic cast."""
+    from config.integration_seed import registry_cast
 
-    return integration()
+    return registry_cast()
 
 
 def _context(*, actor_id=fixtures.TEACHER_T1) -> RequestContext:

@@ -409,8 +409,7 @@ def test_report_card_binds_the_published_revision(client, baseline, as_persona):
 
 
 def test_malayalam_reaches_the_pdf_bytes(client, baseline):
-    """The rendered artifact carries Malayalam text, not a transliteration."""
-    from modules.exchange.fixture_ids import malayalam_name
+    """The rendered artifact carries Malayalam text and the pupil's Registry name."""
     from modules.exchange.models import ReportSnapshot
     from modules.exchange.services.blobs import artifact_key, artifact_store
 
@@ -419,7 +418,9 @@ def test_malayalam_reaches_the_pdf_bytes(client, baseline):
     body = artifact_store().get(artifact_key(snapshot.school_id, snapshot.id))
     assert body.startswith(b"%PDF-")
     assert MALAYALAM.encode("utf-8") in body
-    assert malayalam_name(fixtures.STUDENT_S1).encode("utf-8") in body
+    assert "വിദ്യാർത്ഥി".encode() in body
+    registry_name = fixtures.FIXTURE_LABELS.get(fixtures.STUDENT_S1, "Synthetic student")
+    assert registry_name.encode("utf-8") in body
 
 
 def test_historical_snapshot_is_unchanged_after_a_policy_edit(client, baseline, as_persona):

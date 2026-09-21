@@ -1,0 +1,19 @@
+# TLS front door for the school. Caddy gets and renews a Let's Encrypt
+# certificate for {$DOMAIN} automatically (ports 80 and 443 must reach this
+# server). With DOMAIN=localhost it uses a local self-signed certificate.
+
+{$DOMAIN} {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "same-origin"
+		X-Frame-Options "DENY"
+		Permissions-Policy "camera=(self), microphone=(), geolocation=()"
+		-Server
+	}
+	reverse_proxy web:80 {
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Real-IP {remote_host}
+	}
+}

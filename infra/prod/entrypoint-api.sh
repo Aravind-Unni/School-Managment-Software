@@ -1,5 +1,6 @@
 #!/bin/sh
-# Production API entrypoint: ensure object bucket, migrate, then gunicorn.
+# Production API entrypoint: ensure object bucket, migrate, apply the school
+# config file, then gunicorn.
 set -eu
 cd /app
 python - <<'PY'
@@ -23,6 +24,8 @@ except ClientError:
 print(f"object bucket ready: {bucket}")
 PY
 python backend/manage.py migrate --noinput
+# Apply the school's configuration file (idempotent; safe on every start).
+python backend/manage.py install_school
 exec gunicorn config.wsgi:application \
   --bind 0.0.0.0:8000 \
   --workers "${GUNICORN_WORKERS:-3}" \

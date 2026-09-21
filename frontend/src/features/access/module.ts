@@ -7,6 +7,7 @@
 
 import type { FeatureModule } from "@app/moduleRegistry";
 import { LoginPage } from "./LoginPage";
+import { AccountsPage } from "./AccountsPage";
 import { RoleEditorPage } from "./RoleEditorPage";
 import { SecuritySettingsPage } from "./SecuritySettingsPage";
 
@@ -31,6 +32,12 @@ export const accessModule: FeatureModule = {
       component: SecuritySettingsPage,
       navLabelKey: "nav.security",
       requiredPermission: ACCESS_PERMISSIONS.factorManageSelf,
+    },
+    {
+      path: "/settings/accounts",
+      component: AccountsPage,
+      navLabelKey: "nav.accounts",
+      requiredPermission: ACCESS_PERMISSIONS.accountsManage,
     },
     {
       path: "/settings/roles",

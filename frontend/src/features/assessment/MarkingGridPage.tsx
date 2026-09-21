@@ -233,7 +233,7 @@ export function MarkingGridPage() {
   }, [rows, selectedStudentId]);
 
   return (
-    <main>
+    <section>
       <h1>{t("assessment.marking.title")}</h1>
       <p>
         <Link to="/assessment/setup">{t("assessment.back")}</Link>
@@ -345,6 +345,6 @@ export function MarkingGridPage() {
           <Link to={`/assessment/${assessmentId}/publish`}>{t("assessment.publish.title")}</Link>
         </p>
       ) : null}
-    </main>
+    </section>
   );
 }

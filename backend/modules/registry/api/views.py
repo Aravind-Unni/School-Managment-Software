@@ -13,14 +13,16 @@ from __future__ import annotations
 
 from uuid import UUID
 
+from django.db import transaction
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .. import models
 from . import wire
-from .cursors import decode_cursor, encode_cursor, resolve_page_size
-from .deps import configuration_service, people_service
+from .deps import configuration_service, guardian_link_service, people_service
+from .listing import list_response
 from .serializers import (
     AcademicYearRequest,
     AcademicYearResponse,
@@ -103,6 +105,17 @@ class SchoolConfigView(APIView):
 class AcademicYearCollectionView(APIView):
     """POST an academic year."""
 
+    def get(self, request: Request) -> Response:
+        """Return one keyset page (``cursor``, ``page_size``)."""
+        return list_response(
+            request,
+            "AcademicYear",
+            wire.academic_year_to_wire,
+            action="students.read",
+            with_external_ids=False,
+            search_fields=(),
+        )
+
     @extend_schema(
         operation_id="create_academicyear",
         summary="Create an academic year",
@@ -123,6 +136,17 @@ class AcademicYearCollectionView(APIView):
 
 class TermCollectionView(APIView):
     """POST a term."""
+
+    def get(self, request: Request) -> Response:
+        """Return one keyset page (``cursor``, ``page_size``)."""
+        return list_response(
+            request,
+            "Term",
+            wire.term_to_wire,
+            action="students.read",
+            with_external_ids=False,
+            search_fields=(),
+        )
 
     @extend_schema(
         operation_id="create_term",
@@ -146,6 +170,17 @@ class TermCollectionView(APIView):
 class StandardCollectionView(APIView):
     """POST a class level."""
 
+    def get(self, request: Request) -> Response:
+        """Return one keyset page (``cursor``, ``page_size``)."""
+        return list_response(
+            request,
+            "Standard",
+            wire.standard_to_wire,
+            action="students.read",
+            with_external_ids=False,
+            search_fields=(),
+        )
+
     @extend_schema(
         operation_id="create_standard",
         summary="Create a standard",
@@ -163,6 +198,17 @@ class StandardCollectionView(APIView):
 
 class SectionCollectionView(APIView):
     """POST a section."""
+
+    def get(self, request: Request) -> Response:
+        """Return one keyset page (``cursor``, ``page_size``)."""
+        return list_response(
+            request,
+            "Section",
+            wire.section_to_wire,
+            action="students.read",
+            with_external_ids=False,
+            search_fields=(),
+        )
 
     @extend_schema(
         operation_id="create_section",
@@ -225,6 +271,17 @@ class SectionArchiveView(APIView):
 class SubjectCollectionView(APIView):
     """POST a school-authored subject."""
 
+    def get(self, request: Request) -> Response:
+        """Return one keyset page (``cursor``, ``page_size``)."""
+        return list_response(
+            request,
+            "Subject",
+            wire.subject_to_wire,
+            action="students.read",
+            with_external_ids=False,
+            search_fields=(),
+        )
+
     @extend_schema(
         operation_id="create_subject",
         summary="Create a subject",
@@ -261,21 +318,14 @@ class StudentCollectionView(APIView):
         responses={200: StudentRecordPageResponse, **COMMON_ERRORS},
     )
     def get(self, request: Request) -> Response:
-        """Return one page of students in stable id order."""
-        page_size = resolve_page_size(request.query_params.get("page_size"))
-        after_id = decode_cursor(request.query_params.get("cursor"))
-        service = people_service()
-        rows, has_more = service.list_students(
-            request.school_context, after_id=after_id, page_size=page_size
-        )
-        return Response(
-            {
-                "items": [
-                    wire.student_record_to_wire(row, service.external_ids_for(row.id))
-                    for row in rows
-                ],
-                "next_cursor": encode_cursor(rows[-1].id) if has_more and rows else None,
-            }
+        """Return one page of students in stable id order; ``query`` searches."""
+        return list_response(
+            request,
+            models.Student,
+            wire.student_record_to_wire,
+            action="students.read",
+            with_external_ids=True,
+            search_fields=("display_name", "admission_no"),
         )
 
     @extend_schema(
@@ -292,15 +342,28 @@ class StudentCollectionView(APIView):
         browser shape leaking into what other modules consume.
         """
         body = validated(CreateStudentRequest, request.data)
-        dto = people_service().admit_student(
-            request.school_context,
-            admission_no=body["admission_no"],
-            display_name=body["display_name"],
-            date_of_birth=body["profile"]["date_of_birth"],
-            preferred_language=body["profile"]["preferred_language"],
-            external_ids=tuple(body["external_ids"]),
-            acknowledgement=body["duplicate_review"],
-        )
+        # One transaction: an admission never survives without the links it named.
+        with transaction.atomic():
+            dto = people_service().admit_student(
+                request.school_context,
+                admission_no=body["admission_no"],
+                display_name=body["display_name"],
+                date_of_birth=body["profile"]["date_of_birth"],
+                preferred_language=body["profile"]["preferred_language"],
+                external_ids=tuple(body["external_ids"]),
+                acknowledgement=body["duplicate_review"],
+            )
+            # Links named in the admission are created with it, not silently dropped.
+            links = guardian_link_service()
+            for link in body["guardian_links"]:
+                links.create_link(
+                    request.school_context,
+                    student_id=dto.id,
+                    guardian_id=link["guardian_id"],
+                    visibility=link["visibility"],
+                    from_date=link["from_date"],
+                    to_date=link["to_date"],
+                )
         return Response(dto.to_wire(), status=201)
 
 
@@ -370,6 +433,17 @@ class DuplicateReviewView(APIView):
 class GuardianCollectionView(APIView):
     """POST a guardian record."""
 
+    def get(self, request: Request) -> Response:
+        """Return one keyset page (``cursor``, ``page_size``, ``query``)."""
+        return list_response(
+            request,
+            "Guardian",
+            wire.guardian_to_wire,
+            action="guardians.manage",
+            with_external_ids=True,
+            search_fields=("display_name", "phone", "email"),
+        )
+
     @extend_schema(
         operation_id="create_guardian",
         summary="Create a guardian",
@@ -394,6 +468,17 @@ class GuardianCollectionView(APIView):
 
 class StaffCollectionView(APIView):
     """POST a staff person record."""
+
+    def get(self, request: Request) -> Response:
+        """Return one keyset page (``cursor``, ``page_size``, ``query``)."""
+        return list_response(
+            request,
+            "StaffProfile",
+            wire.staff_to_wire,
+            action="students.read",
+            with_external_ids=True,
+            search_fields=("display_name",),
+        )
 
     @extend_schema(
         operation_id="create_staff",

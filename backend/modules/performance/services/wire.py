@@ -38,6 +38,7 @@ def projection_service() -> ProjectionService:
         attendance=ports.resolve("attendance"),
         clock=clock,
         platform=ports.resolve("platform"),
+        registry=ports.resolve("registry"),
     )
 
 

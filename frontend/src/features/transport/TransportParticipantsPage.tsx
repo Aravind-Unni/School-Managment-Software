@@ -40,7 +40,7 @@ export function TransportParticipantsPage() {
   }, [date, load]);
 
   return (
-    <main>
+    <section>
       <h1>{t("transport.participants_title")}</h1>
       <label>
         {t("transport.pick_date")}
@@ -84,6 +84,6 @@ export function TransportParticipantsPage() {
           </tbody>
         </table>
       )}
-    </main>
+    </section>
   );
 }

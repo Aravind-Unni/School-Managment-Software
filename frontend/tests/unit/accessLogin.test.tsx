@@ -4,6 +4,15 @@ import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LanguageProvider } from "@shared/i18n/LanguageContext";
 import { LoginPage } from "@features/access/LoginPage";
+import { SessionContext, type SessionState } from "@app/SessionContext";
+
+const anonymousSession: SessionState = {
+  status: "anonymous",
+  session: null,
+  actions: new Set(),
+  refresh: () => Promise.resolve(),
+  signOut: () => Promise.resolve(),
+};
 
 function jsonResponse(body: unknown, status = 200): Response {
   return {
@@ -16,9 +25,11 @@ function jsonResponse(body: unknown, status = 200): Response {
 function renderLogin() {
   return render(
     <MemoryRouter>
-      <LanguageProvider>
-        <LoginPage />
-      </LanguageProvider>
+      <SessionContext.Provider value={anonymousSession}>
+        <LanguageProvider>
+          <LoginPage />
+        </LanguageProvider>
+      </SessionContext.Provider>
     </MemoryRouter>,
   );
 }
@@ -78,7 +89,8 @@ describe("M01 login flow", () => {
     await submitPassword();
     // The manual key is the accessible path: setup must not require a camera.
     await waitFor(() =>
-      expect(screen.getByTestId("manual-secret")).toHaveTextContent(
+      // Displayed in groups of four for typing; the characters must be intact.
+      expect(screen.getByTestId("manual-secret").textContent?.replace(/\s+/g, "")).toBe(
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567",
       ),
     );

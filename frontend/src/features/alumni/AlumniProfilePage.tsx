@@ -76,7 +76,7 @@ export function AlumniProfilePage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t("alumni.profile_title")}</h1>
       <p>
         <Link to="/alumni">{t("alumni.back_directory")}</Link>
@@ -130,6 +130,6 @@ export function AlumniProfilePage() {
       {notice !== null && (
         <p role="status">{notice.startsWith("alumni.") || notice.startsWith("error.") ? t(notice) : notice}</p>
       )}
-    </main>
+    </section>
   );
 }

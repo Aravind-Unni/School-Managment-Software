@@ -20,13 +20,15 @@ from contracts.errors import ObjectInaccessible, StateConflict, ValidationFailed
 from contracts.events import AuditRecord, EventEnvelope
 from contracts.exchange import ArtifactAccessDTO, ReportJobStartDTO
 from contracts.identity import AuthLevel, RequestContext
+from contracts.values import school_date
 from shared.fakes.platform import EagerModeNotAsserted
 
-from ..fixture_ids import MALAYALAM_LANGUAGE_WORD, malayalam_name
+from ..fixture_ids import MALAYALAM_LANGUAGE_WORD
 from ..models import JobState, ReportCardJob, ReportSnapshot, SnapshotState, Supersession
 from .authority import AuthorityGate
 from .blobs import artifact_key, artifact_store, digest_of
 from .pdf_render import render_pdf
+from .reportcard_layout import report_card_lines, subject_lines
 from .wire import report_card_job_to_wire, report_snapshot_to_wire
 
 REPORT_CARD_TASK = "modules.exchange.tasks.process_report_card"
@@ -318,7 +320,7 @@ class ReportCardService:
                 if item.get("policy_version")
             }
         )
-        body = self._render(locale, student_id, items, template_version)
+        body = self._render(context, locale, student_id, items, template_version)
         digest = digest_of(body)
         snapshot_id = uuid4()
         key = artifact_key(school_id, snapshot_id)
@@ -346,29 +348,41 @@ class ReportCardService:
         )
 
     def _render(
-        self, locale: str, student_id, items: list[dict], template_version: str
+        self, context, locale: str, student_id, items: list[dict], template_version: str
     ) -> bytes:
         """Return the report-card PDF bytes for one pupil.
 
-        In ``ml`` the pupil's Malayalam name and the Malayalam word for the
-        language are both written, so the acceptance check can prove Malayalam
-        text reached the artifact rather than a transliteration. No grade
-        letter is printed: the school's grade policy has not been supplied.
+        Name, admission number, class, subject names, school name and grade
+        bands all come from Registry; marks from the published results. A
+        Malayalam card prints Malayalam labels (see pdf_render for the font
+        limitation).
         """
-        malayalam = locale == "ml"
-        heading = "പുരോഗതി കാർഡ്" if malayalam else "Report card"
-        name = malayalam_name(student_id) if malayalam else str(student_id)
-        lines = [
-            f"{'വിദ്യാർത്ഥി' if malayalam else 'Student'}: {name}",
-            f"{'ഭാഷ' if malayalam else 'Language'}: "
-            f"{MALAYALAM_LANGUAGE_WORD if malayalam else 'English'}",
-            f"template: {template_version}",
-        ]
-        for item in items:
-            lines.append(
-                f"{item.get('subject_id', '')}: {item.get('marks_obtained', '')} "
-                f"(rev {item.get('result_revision_id', '')})"
+        registry = self.gate.registry
+        student = registry.get_student(context, student_id)
+        profile = registry.school_profile(context)
+        try:
+            facts = registry.get_relationships(
+                context, context.actor_id, student_id, school_date(self.clock.now())
             )
+            class_label = (
+                registry.section_label(context, facts.section_id) if facts.section_id else None
+            )
+        except ObjectInaccessible:
+            class_label = None
+        names = {str(key): value for key, value in registry.subject_names(context).items()}
+        malayalam = locale == "ml"
+        lines = report_card_lines(
+            locale=locale,
+            school_name=profile.display_name if profile else "",
+            student_name=student.display_name,
+            admission_no=student.admission_no,
+            class_label=class_label,
+            subjects=subject_lines(items, names),
+            bands=list((profile.settings if profile else {}).get("grading_bands") or []),
+            language_word=MALAYALAM_LANGUAGE_WORD if malayalam else "English",
+            template_version=template_version,
+        )
+        heading = "പുരോഗതി കാർഡ്" if malayalam else "Report card"
         return render_pdf(title=heading, lines=lines, locale=locale)
 
     # --- helpers -------------------------------------------------------------

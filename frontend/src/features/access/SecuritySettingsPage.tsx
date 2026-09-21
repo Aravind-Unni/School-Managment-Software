@@ -1,5 +1,5 @@
 /**
- * Security settings: the caller's own sessions, and factor status.
+ * Security settings: change password, the caller's own sessions, factor status.
  *
  * Shows only the CALLER's sessions. There is deliberately no way to view another
  * account's factor or sessions from here, because an administrator must never see
@@ -8,6 +8,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import * as api from "./api";
+import { ChangePasswordForm } from "./ChangePasswordForm";
 import { Empty, Failure, Loading, toMessage } from "./Feedback";
 import { useAccessMessages } from "./useMessages";
 
@@ -59,6 +60,7 @@ export function SecuritySettingsPage() {
   return (
     <section aria-labelledby="security-heading">
       <h2 id="security-heading">{t("access.security.title")}</h2>
+      <ChangePasswordForm />
       <h3>{t("access.sessions.title")}</h3>
       {live.length === 0 ? (
         <Empty />

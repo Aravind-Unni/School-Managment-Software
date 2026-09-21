@@ -28,7 +28,7 @@ REGISTRATION = ModuleRegistration(
             required_permission="files.read",
         ),
     ),
-    consumers=("access", "platform", "clock"),
+    consumers=("access", "registry", "platform", "clock"),
     middleware=(),
     public_paths=("quarantine/", "file-bytes/"),
     scheduled_jobs=(

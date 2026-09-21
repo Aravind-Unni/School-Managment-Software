@@ -46,7 +46,7 @@ export function TemplateEditorPage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t("communications.templates_title")}</h1>
       <p>{t("communications.templates_enqueue_help")}</p>
       <label>
@@ -94,6 +94,6 @@ export function TemplateEditorPage() {
           <p>{t(errorKey)}</p>
         </div>
       )}
-    </main>
+    </section>
   );
 }

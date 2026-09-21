@@ -10,10 +10,10 @@ export function PublishedResultPage() {
   const { resultId } = useParams<{ resultId: string }>();
 
   return (
-    <main>
+    <section>
       <h1>{t("assessment.published.title")}</h1>
       <p>{t("assessment.grade_pending")}</p>
       {resultId ? <p data-testid="result-id">{resultId}</p> : null}
-    </main>
+    </section>
   );
 }

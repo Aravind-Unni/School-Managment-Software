@@ -19,8 +19,8 @@ from contracts.evidence import ResourceGrant
 from contracts.identity import RequestContext
 from contracts.scope import ScopeFacts
 from contracts.values import school_date
+from shared.people import actor_is_family
 
-from ..fixture_ids import NON_STAFF_ACTORS
 from ..models import ExchangePolicy
 
 #: Message key for a download refused because the relationship no longer reads.
@@ -58,7 +58,7 @@ class AuthorityGate:
         so a guardian cannot reach a bulk endpoint even if a rule were declared
         too widely by mistake.
         """
-        if context.actor_id in NON_STAFF_ACTORS:
+        if actor_is_family(self.registry, context):
             raise ActionDenied("error.action_denied")
         self.access.check(
             context,

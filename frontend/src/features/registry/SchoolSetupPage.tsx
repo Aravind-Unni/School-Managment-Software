@@ -33,7 +33,7 @@ export function SchoolSetupPage() {
   }, [load]);
 
   return (
-    <main>
+    <section>
       <h1>{t("registry.setup_title")}</h1>
       {state.status === "loading" && <p role="status">{t("ui.loading")}</p>}
       {state.status === "error" && (
@@ -60,6 +60,6 @@ export function SchoolSetupPage() {
           </div>
         </dl>
       )}
-    </main>
+    </section>
   );
 }

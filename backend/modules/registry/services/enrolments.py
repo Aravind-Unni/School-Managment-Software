@@ -27,6 +27,7 @@ from ..models import (
 )
 from .configuration import require_ordered_dates
 from .effective import day_before, range_covers, ranges_overlap
+from .subject_defaults import end_open_subject_enrolments, enrol_in_compulsory_subjects
 from .writes import fetch_in_school, require_expected_version, stamp_new, stamp_update
 
 
@@ -80,8 +81,10 @@ class EnrolmentService:
             to_date=to_date,
             state="active",
         )
-        stamp_new(row, now=now)
-        row.save()
+        with transaction.atomic():
+            stamp_new(row, now=now)
+            row.save()
+            enrol_in_compulsory_subjects(row, from_date=from_date, to_date=to_date, now=now)
         return row
 
     def transfer_enrolment(
@@ -117,6 +120,9 @@ class EnrolmentService:
             source.to_date = day_before(effective_date)
             stamp_update(source, now=self.clock.now())
             source.save()
+            end_open_subject_enrolments(
+                source, last_day=day_before(effective_date), now=self.clock.now()
+            )
             new_row = Enrolment(
                 school_id=context.school_id,
                 student_id=source.student_id,
@@ -129,6 +135,12 @@ class EnrolmentService:
             )
             stamp_new(new_row, now=self.clock.now())
             new_row.save()
+            enrol_in_compulsory_subjects(
+                new_row,
+                from_date=effective_date,
+                to_date=remaining_to_date,
+                now=self.clock.now(),
+            )
         return new_row
 
     def list_enrolments(

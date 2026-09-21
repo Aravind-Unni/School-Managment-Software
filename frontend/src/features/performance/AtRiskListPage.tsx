@@ -47,7 +47,7 @@ export function AtRiskListPage() {
   }, [t]);
 
   return (
-    <main>
+    <section>
       <h1>{t["performance.at_risk_title"]}</h1>
       {loading && <p role="status">{t["performance.loading"]}</p>}
       {error && <p role="alert">{error}</p>}
@@ -59,6 +59,6 @@ export function AtRiskListPage() {
           </li>
         ))}
       </ul>
-    </main>
+    </section>
   );
 }

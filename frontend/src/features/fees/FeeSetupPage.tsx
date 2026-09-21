@@ -53,7 +53,7 @@ export function FeeSetupPage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{labels["fees.setup_title"]}</h1>
       <p>{labels["fees.setup_no_list"]}</p>
       {!plan && !errorKey && <p>{t("ui.empty")}</p>}
@@ -136,6 +136,6 @@ export function FeeSetupPage() {
           </table>
         </section>
       )}
-    </main>
+    </section>
   );
 }

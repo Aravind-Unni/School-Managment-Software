@@ -46,7 +46,7 @@ export function AuditViewerPage() {
   }, [load]);
 
   return (
-    <main>
+    <section>
       <h1>{t("platform.audit_title")}</h1>
       <label>
         {t("platform.audit_action_filter")}
@@ -81,6 +81,6 @@ export function AuditViewerPage() {
           {t("ui.load_more")}
         </button>
       )}
-    </main>
+    </section>
   );
 }

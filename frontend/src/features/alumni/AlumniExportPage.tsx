@@ -51,7 +51,7 @@ export function AlumniExportPage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t("alumni.export_title")}</h1>
       <fieldset>
         <legend>{t("alumni.export_filters")}</legend>
@@ -97,6 +97,6 @@ export function AlumniExportPage() {
           {t("alumni.export_queued")}: {job.job_id} · {job.state}
         </p>
       )}
-    </main>
+    </section>
   );
 }

@@ -170,20 +170,32 @@ class RetentionHoldView(APIView):
 
 
 class FileBytesView(APIView):
-    """GET /files/{id}/bytes — memory-store canonical read (grant in query)."""
+    """GET /file-bytes/{id}?token=... -- serve one file version for a signed link.
+
+    No session is needed: the token IS the authorisation, minted by
+    FilesPort.issue_read after the Access check, bound to this file and
+    version, and valid for the policy's signed-read lifetime only.
+    """
 
     authentication_classes: ClassVar[list] = []
     permission_classes: ClassVar[list] = []
 
     @extend_schema(operation_id="get_file_bytes", responses={200: bytes, **COMMON_ERRORS})
     def get(self, request: Request, file_id: UUID) -> Response:
-        """Serve canonical bytes for a short-lived grant query param."""
-        from ..models import Derivative
+        """Serve canonical bytes when the token verifies; 404 otherwise."""
+        from ..models import Derivative, File, FilesPolicy
+        from ..services import read_tokens
         from ..services.storage import object_store
 
-        version = int(request.GET.get("version", "0"))
-        grant = request.GET.get("grant", "")
-        if not grant or version < 1:
+        row = File.objects.filter(id=file_id).first()
+        if row is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        policy = FilesPolicy.objects.filter(school_id=row.school_id).first()
+        lifetime = policy.signed_read_seconds if policy else 60
+        version = read_tokens.verify(
+            request.GET.get("token", ""), file_id=file_id, max_age_seconds=lifetime
+        )
+        if version is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         derivative = Derivative.objects.filter(
             file_id=file_id, kind="canonical", version=version
@@ -191,4 +203,7 @@ class FileBytesView(APIView):
         if derivative is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
         body = object_store().get(derivative.storage_key)
-        return HttpResponse(body, content_type=derivative.mime)
+        response = HttpResponse(body, content_type=derivative.mime)
+        response["Cache-Control"] = "private, no-store"
+        response["X-Content-Type-Options"] = "nosniff"
+        return response

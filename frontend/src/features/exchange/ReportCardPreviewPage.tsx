@@ -63,7 +63,7 @@ export function ReportCardPreviewPage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t("exchange.report_cards_title")}</h1>
       <label>
         {t("exchange.publication_id")}
@@ -116,6 +116,6 @@ export function ReportCardPreviewPage() {
           <p>{t(errorKey)}</p>
         </div>
       )}
-    </main>
+    </section>
   );
 }

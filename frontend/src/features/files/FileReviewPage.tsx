@@ -55,7 +55,7 @@ export function FileReviewPage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t("files.review_title")}</h1>
       <label>
         {t("files.file_id")}
@@ -123,6 +123,6 @@ export function FileReviewPage() {
       {notice !== null && (
         <p role="status">{notice.startsWith("files.") || notice.startsWith("error.") ? t(notice) : notice}</p>
       )}
-    </main>
+    </section>
   );
 }

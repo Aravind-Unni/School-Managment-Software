@@ -10,17 +10,9 @@ from contracts.errors import ActionDenied, ObjectInaccessible
 from contracts.identity import RequestContext
 from contracts.scope import Relationship, ScopeFacts
 from contracts.values import school_date
-from shared import fixtures
+from shared.people import actor_kind
 
 OWN_RELATIONSHIPS = frozenset({Relationship.SELF, Relationship.GUARDIAN})
-FIXTURE_STUDENTS = frozenset(
-    {
-        fixtures.STUDENT_S1,
-        fixtures.STUDENT_S2,
-        fixtures.STUDENT_S3,
-        fixtures.STUDENT_S1_SCHOOL_B,
-    }
-)
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,11 +66,11 @@ class AuthorityGate:
     ) -> None:
         """Allow staff circulate/overdue, or self/guardian for person_id.
 
-        Fixture student actors are never treated as staff even though FakeAccess
-        circulate rules are school-scoped. Unrelated actors get 404.
+        Student actors are never treated as staff, whatever their grants say.
+        Unrelated actors get 404.
         """
         on = self.effective_date()
-        actor_is_student = context.actor_id in FIXTURE_STUDENTS
+        actor_is_student = actor_kind(self.registry, context) == "student"
         if not actor_is_student and (
             self._allowed(context, "library.issue")
             or self._allowed(context, "library.read_overdues")

@@ -94,10 +94,83 @@ SELF_SERVICE_ACTIONS: frozenset[str] = frozenset(
 )
 
 
+#: Module actions costly enough to misuse that they demand a freshly asserted
+#: second factor, whichever role holds them. Only enforced where the caller uses
+#: ``require_action``; modules with their own step-up keep it.
+SENSITIVE_MODULE_ACTIONS: frozenset[str] = frozenset(
+    {
+        "fees.refund",
+        "fees.reverse_payment",
+        "results.reopen",
+        "year.close",
+        "backups.manage",
+    }
+)
+
+#: Every scope kind; a module action may be granted school-wide, to one section
+#: or subject, or to the grantee's own records (guardian/student self-service).
+MODULE_ACTION_SCOPES: tuple[ScopeType, ...] = (
+    ScopeType.SCHOOL,
+    ScopeType.SECTION,
+    ScopeType.SUBJECT,
+    ScopeType.SELF,
+)
+
+
+def installed_module_actions() -> frozenset[str]:
+    """Return the permission codes declared by every business module installed.
+
+    The host settings collect them from each approved ModuleRegistration into
+    ``SCHOOL_MODULE_PERMISSION_CODES``, so M01 never imports another module.
+    Assumes nothing about Django being configured: with no settings (the
+    contract suite, arch_check) the answer is empty, i.e. deny by default.
+    Does not handle: modules added at runtime; the set is fixed per process.
+    """
+    from django.conf import settings
+
+    if not settings.configured:
+        return frozenset()
+    return frozenset(getattr(settings, "SCHOOL_MODULE_PERMISSION_CODES", ()))
+
+
+def lookup_permission(action: str) -> PermissionSpec | None:
+    """Return the spec for an M01 action or an installed module action, or None.
+
+    Module actions have no hand-written spec; they get one derived here with
+    every scope allowed and step-up only for SENSITIVE_MODULE_ACTIONS.
+    Does not handle: public or self-service actions, which are not grantable.
+    """
+    spec = CATALOGUE_BY_CODE.get(action)
+    if spec is not None:
+        return spec
+    if action in installed_module_actions():
+        return PermissionSpec(
+            code=action,
+            description=f"Module action {action}.",
+            requires_recent_two_factor=action in SENSITIVE_MODULE_ACTIONS,
+            allowed_scopes=MODULE_ACTION_SCOPES,
+        )
+    return None
+
+
+def full_catalogue() -> tuple[PermissionSpec, ...]:
+    """Return M01's catalogue followed by every installed module action, sorted.
+
+    What the owner is granted at install and what a role editor may offer.
+    Does not handle: filtering by what a particular actor may delegate.
+    """
+    module_specs = tuple(
+        spec
+        for spec in (lookup_permission(code) for code in sorted(installed_module_actions()))
+        if spec is not None and spec.code not in CATALOGUE_BY_CODE
+    )
+    return CATALOGUE + module_specs
+
+
 def is_known_action(action: str) -> bool:
-    """Return whether the action is in the catalogue or explicitly unpermissioned."""
+    """Return whether the action is grantable here or explicitly unpermissioned."""
     return (
-        action in CATALOGUE_BY_CODE
+        lookup_permission(action) is not None
         or action in PUBLIC_ACTIONS
         or action in SELF_SERVICE_ACTIONS
     )

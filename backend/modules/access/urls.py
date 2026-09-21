@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from django.urls import path
 
-from .api import admin_views, auth_views
+from .api import account_views, admin_views, auth_views
 
 app_name = "access"
 
@@ -48,4 +48,32 @@ urlpatterns = [
     ),
     # accounts/
     path("accounts", admin_views.AccountCollectionView.as_view(), name="account-list"),
+    path(
+        "accounts/<uuid:account_id>",
+        account_views.AccountDetailView.as_view(),
+        name="account-detail",
+    ),
+    path(
+        "accounts/<uuid:account_id>/roles",
+        account_views.AccountRolesView.as_view(),
+        name="account-roles",
+    ),
+    path(
+        "accounts/<uuid:account_id>/activate",
+        account_views.AccountActivationView.as_view(),
+        name="account-activate",
+    ),
+    path(
+        "accounts/<uuid:account_id>/deactivate",
+        account_views.AccountDeactivateView.as_view(),
+        name="account-deactivate",
+    ),
+    path(
+        "accounts/<uuid:account_id>/reset-password",
+        account_views.AccountPasswordResetView.as_view(),
+        name="account-reset-password",
+    ),
+    path(
+        "auth/password", account_views.ChangeOwnPasswordView.as_view(), name="password-change"
+    ),
 ]

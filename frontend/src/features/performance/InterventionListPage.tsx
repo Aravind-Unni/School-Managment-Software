@@ -70,7 +70,7 @@ export function InterventionListPage() {
   }, [studentId, t]);
 
   return (
-    <main>
+    <section>
       <h1>{t["performance.interventions_title"]}</h1>
       {students.length > 0 && (
         <label>
@@ -94,6 +94,6 @@ export function InterventionListPage() {
           </li>
         ))}
       </ul>
-    </main>
+    </section>
   );
 }

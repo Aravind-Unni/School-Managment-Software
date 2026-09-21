@@ -67,7 +67,7 @@ export function PublishPreviewPage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t("assessment.publish.title")}</h1>
       <p>
         <Link to={assessmentId ? `/assessment/${assessmentId}/marking` : "/assessment/setup"}>
@@ -136,6 +136,6 @@ export function PublishPreviewPage() {
           <Link to={`/assessment/${assessmentId}/marking`}>{t("assessment.marking.title")}</Link>
         </p>
       )}
-    </main>
+    </section>
   );
 }

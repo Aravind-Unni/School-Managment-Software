@@ -32,7 +32,7 @@ export function BackupReportsPage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t("platform.backups_title")}</h1>
       <p>{t("platform.backups_help")}</p>
       <label>
@@ -63,6 +63,6 @@ export function BackupReportsPage() {
           <p>{t(errorKey)}</p>
         </div>
       )}
-    </main>
+    </section>
   );
 }

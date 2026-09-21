@@ -45,7 +45,7 @@ export function AttendanceTodayPage() {
   }, [date, load]);
 
   return (
-    <main>
+    <section>
       <h1>{t("attendance.title")}</h1>
       <label>
         {t("attendance.pick_date")}
@@ -89,6 +89,6 @@ export function AttendanceTodayPage() {
           ))}
         </ul>
       )}
-    </main>
+    </section>
   );
 }

@@ -201,6 +201,7 @@ class SchoolConfigResponse(ClosedSerializer):
     display_name = serializers.CharField()
     board = serializers.CharField()
     default_language = serializers.CharField()
+    settings = serializers.DictField(required=False)
 
 
 class AcademicYearResponse(ClosedSerializer):

@@ -38,7 +38,7 @@ export function FeeCollectionPage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t["fees.collect_title"]}</h1>
       <form
         onSubmit={(event) => {
@@ -81,6 +81,6 @@ export function FeeCollectionPage() {
           {receipt.balance.outstanding_paise}
         </p>
       )}
-    </main>
+    </section>
   );
 }

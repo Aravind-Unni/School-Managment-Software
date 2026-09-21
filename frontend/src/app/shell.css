@@ -210,3 +210,124 @@ table.data td {
   display: block;
   image-rendering: pixelated;
 }
+
+/* --- forms and admin pages ------------------------------------------------ */
+
+main {
+  max-width: 72rem;
+}
+
+fieldset {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.75rem 1rem 0.25rem;
+  margin: 0 0 1rem;
+  background: var(--card);
+}
+
+legend {
+  padding: 0 0.35rem;
+  font-weight: 600;
+}
+
+.stack {
+  max-width: 34rem;
+}
+
+label.inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.5rem;
+}
+
+.inline-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.two-column {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 1rem 2rem;
+}
+
+.table-scroll {
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+}
+
+.row-actions {
+  white-space: nowrap;
+}
+
+.row-actions button {
+  margin: 0 0.25rem 0.25rem 0;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.9rem;
+}
+
+.plain-list {
+  columns: 16rem;
+  padding-left: 1.1rem;
+}
+
+.problem ul {
+  margin: 0.25rem 0 0;
+}
+
+.problem .request-id {
+  margin: 0.25rem 0 0;
+  color: #5c564c;
+}
+
+.credential-slip {
+  margin: 1rem 0;
+  padding: 1rem 1.25rem;
+  border: 2px dashed var(--accent);
+  border-radius: 6px;
+  background: #fff;
+  max-width: 28rem;
+}
+
+.credential-slip dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 1rem;
+  margin: 0 0 0.5rem;
+}
+
+.credential-slip dt {
+  font-weight: 600;
+}
+
+.credential-slip dd {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+/* Printing a sign-in slip prints just the slip. */
+@media print {
+  header,
+  .product-nav,
+  button,
+  form {
+    display: none !important;
+  }
+
+  .credential-slip {
+    border: 1px solid #000;
+  }
+}
+
+@media (max-width: 40rem) {
+  main {
+    padding: 1rem 0.75rem 2rem;
+  }
+
+  label {
+    max-width: none;
+  }
+}

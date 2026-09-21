@@ -21,7 +21,9 @@ def _ports():
 def gate() -> AuthorityGate:
     """Build Access gate."""
     ports, clock = _ports()
-    return AuthorityGate(access=ports.resolve("access"), clock=clock)
+    return AuthorityGate(
+        access=ports.resolve("access"), clock=clock, registry=ports.resolve("registry")
+    )
 
 
 def lifecycle_service() -> FilesLifecycle:

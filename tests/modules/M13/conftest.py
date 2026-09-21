@@ -84,3 +84,25 @@ def baseline(db, clock):
     from modules.exchange.seeds import seed_baseline
 
     return seed_baseline()
+
+
+@pytest.fixture(autouse=True)
+def _inline_platform(db):
+    """Run enqueued work inline, which is what these assertions describe.
+
+    The standalone harness sets WORKER_AVAILABLE for modules that declare a
+    worker, but the pytest process shares no database with that worker, so a
+    queued job could never complete here.
+    """
+    from django.urls import get_resolver
+
+    from shared.ports import runtime
+
+    get_resolver()
+    platform = runtime.get_registry().resolve("platform")
+    previous = getattr(platform, "_worker_available", None)
+    if previous is not None:
+        platform._worker_available = False
+    yield
+    if previous is not None:
+        platform._worker_available = previous

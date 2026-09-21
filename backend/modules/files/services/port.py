@@ -15,6 +15,7 @@ from contracts.files import ArtifactRef, FileDTO, FileEvidenceRef, ReadUrlDTO, U
 from contracts.identity import RequestContext
 
 from ..models import Derivative, EvidencePin, File, FileState
+from . import read_tokens
 from .authority import AuthorityGate
 from .constants import ANSWER_SHEET, DEFAULT_MAX_BYTES, PURPOSE_MIMES
 from .lifecycle import FilesLifecycle
@@ -153,11 +154,9 @@ class FilesService:
 
         policy = FilesPolicy.objects.filter(school_id=row.school_id).first()
         seconds = policy.signed_read_seconds if policy else 60
-        store = object_store()
-        if hasattr(store, "presigned_get"):
-            url = store.presigned_get(derivative.storage_key, expires_in=seconds)
-        else:
-            url = f"/api/v1/file-bytes/{row.id}?version={version}&grant={grant.grant_id}"
+        # Always through the API: object storage is private to the server.
+        token = read_tokens.mint(row.id, version)
+        url = f"/api/v1/file-bytes/{row.id}?token={token}"
         return ReadUrlDTO(read_url=url, expires_at=now + timedelta(seconds=seconds))
 
     def store_artifact(

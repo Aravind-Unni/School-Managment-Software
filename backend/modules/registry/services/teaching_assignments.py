@@ -15,6 +15,7 @@ from django.db import transaction
 from contracts.errors import StateConflict, ValidationFailed
 from contracts.identity import RequestContext
 from contracts.scope import ScopeFacts
+from contracts.values import school_date
 
 from ..models import (
     AcademicYear,
@@ -26,6 +27,7 @@ from ..models import (
 )
 from .configuration import require_ordered_dates
 from .effective import range_covers
+from .subject_defaults import enrol_section_pupils_in_offering
 from .writes import fetch_in_school, require_expected_version, stamp_new, stamp_update
 
 
@@ -167,6 +169,8 @@ class TeachingAssignmentService:
             if isinstance(exc, IntegrityError):
                 raise StateConflict("registry.error.referenced_record") from exc
             raise
+        # Pupils already in the section take a new compulsory subject from today.
+        enrol_section_pupils_in_offering(row, on=school_date(now), now=now)
         return row
 
     def list_subject_offerings(

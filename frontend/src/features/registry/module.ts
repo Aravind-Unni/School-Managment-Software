@@ -5,7 +5,9 @@
  */
 
 import type { FeatureModule } from "@app/moduleRegistry";
+import { AdmitStudentPage } from "./AdmitStudentPage";
 import { SchoolSetupPage } from "./SchoolSetupPage";
+import { StaffAdminPage } from "./StaffAdminPage";
 import { StudentDirectoryPage } from "./StudentDirectoryPage";
 import { StudentProfilePage } from "./StudentProfilePage";
 
@@ -31,6 +33,18 @@ export const registryModule: FeatureModule = {
       component: StudentDirectoryPage,
       navLabelKey: "nav.students",
       requiredPermission: REGISTRY_PERMISSIONS.studentsRead,
+    },
+    {
+      path: "/registry/admit",
+      component: AdmitStudentPage,
+      navLabelKey: "nav.admit",
+      requiredPermission: REGISTRY_PERMISSIONS.manage,
+    },
+    {
+      path: "/registry/staff",
+      component: StaffAdminPage,
+      navLabelKey: "nav.staff",
+      requiredPermission: REGISTRY_PERMISSIONS.manage,
     },
     {
       path: "/registry/students/:studentId",

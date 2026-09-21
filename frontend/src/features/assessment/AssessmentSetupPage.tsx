@@ -57,7 +57,7 @@ export function AssessmentSetupPage() {
         setYears(yearRows.map((row) => ({ id: row.id, name: row.name })));
         setTerms(termRows.map((row) => ({ id: row.id, name: row.name, year_id: row.year_id })));
         setSections(sectionRows.map((row) => ({ id: row.id, name: row.name })));
-        setSubjects(subjectRows.map((row) => ({ id: row.id, name: row.name })));
+        setSubjects(subjectRows.map((row) => ({ id: row.id, name: row.display_name })));
         if (yearRows[0]) setYearId(yearRows[0].id);
         if (termRows[0]) setTermId(termRows[0].id);
         if (sectionRows[0]) setSectionId(sectionRows[0].id);
@@ -100,7 +100,7 @@ export function AssessmentSetupPage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t("assessment.setup.title")}</h1>
       {loadingRefs && <p role="status">{t("ui.loading")}</p>}
       {errorKey && <p role="alert">{t(errorKey)}</p>}
@@ -156,6 +156,6 @@ export function AssessmentSetupPage() {
           </button>
         </form>
       )}
-    </main>
+    </section>
   );
 }

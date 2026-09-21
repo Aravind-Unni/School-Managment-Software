@@ -51,6 +51,9 @@ class SchoolConfig(models.Model):
     display_name = models.CharField(max_length=200)
     board = models.CharField(max_length=16, default="CBSE")
     default_language = models.CharField(max_length=2, choices=LANGUAGES, default="en")
+    #: School-wide settings written by ``install_school`` from the school's
+    #: config file: timezone, currency, working days, grading bands.
+    settings = models.JSONField(default=dict, blank=True)
     version = models.IntegerField(default=1)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()

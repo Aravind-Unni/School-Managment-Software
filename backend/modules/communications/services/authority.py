@@ -10,8 +10,8 @@ from contracts.errors import ActionDenied, ObjectInaccessible
 from contracts.identity import RequestContext
 from contracts.scope import ScopeFacts
 from contracts.values import school_date
+from shared.people import actor_is_family
 
-from ..fixture_ids import NON_STAFF_ACTORS
 from ..models import CommunicationsPolicy
 
 
@@ -28,8 +28,8 @@ class AuthorityGate:
         return school_date(self.clock.now())
 
     def require_action(self, context: RequestContext, action: str) -> None:
-        """Authorise a school-scoped action; deny known non-staff fixture actors."""
-        if context.actor_id in NON_STAFF_ACTORS:
+        """Authorise a school-scoped action; deny guardians and students."""
+        if actor_is_family(self.registry, context):
             raise ActionDenied("error.action_denied")
         self.access.check(
             context,

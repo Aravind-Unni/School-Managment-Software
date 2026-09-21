@@ -27,7 +27,7 @@ from contracts.errors import (
     VersionConflict,
 )
 
-from ..permissions import CATALOGUE_BY_CODE
+from ..permissions import lookup_permission
 from ..scopes import ScopeType
 from .policy import GrantFact
 
@@ -66,7 +66,7 @@ def validate_grant_shape(grants: tuple[GrantInput, ...]) -> None:
     """
     problems: list[FieldError] = []
     for index, grant in enumerate(grants):
-        spec = CATALOGUE_BY_CODE.get(grant.action)
+        spec = lookup_permission(grant.action)
         if spec is None:
             problems.append(FieldError(f"grants[{index}].action", "error.unknown_permission"))
             continue

@@ -568,6 +568,8 @@ def test_a_historical_session_still_resolves_after_a_revision(
     assert authority.date == date(2026, 7, 8)
     assert authority.eligible_for_attendance is True
     assert (
-        api.get(f"/timetable-sessions/{historical['timetable_session_id']}").json()["timetable_id"]
+        api.get(f"/timetable-sessions/{historical['timetable_session_id']}").json()[
+            "timetable_id"
+        ]
         == published["id"]
     )

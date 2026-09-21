@@ -40,7 +40,7 @@ export function LibraryOverduesPage() {
   }, [asOf, load]);
 
   return (
-    <main>
+    <section>
       <h1>{t("library.overdues_title")}</h1>
       <label>
         {t("library.as_of")}
@@ -82,6 +82,6 @@ export function LibraryOverduesPage() {
           </tbody>
         </table>
       )}
-    </main>
+    </section>
   );
 }

@@ -39,9 +39,12 @@ describe("module registry", () => {
     expect(routes.map((route) => route.navLabelKey)).toEqual([
       "nav.demo",
       "nav.security",
+      "nav.accounts",
       "nav.roles",
       "nav.registry_setup",
       "nav.students",
+      "nav.admit",
+      "nav.staff",
       "nav.timetable_editor",
       "nav.timetable_substitutions",
       "nav.timetable_class",

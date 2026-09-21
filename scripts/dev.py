@@ -230,7 +230,8 @@ def environment_for(
         merged["OBJECT_STORAGE_ENDPOINT"] = compose.object_storage_endpoint(allocated)
         merged["OBJECT_STORAGE_BUCKET"] = names.bucket
         merged["OBJECT_STORAGE_ACCESS_KEY"] = compose.LOCAL_MINIO_USER
-        merged["OBJECT_STORAGE_SECRET_KEY"] = local["OBJECT_STORAGE_SECRET_KEY"]
+        # Must match the MinIO container, which runs with the fixed local password.
+        merged["OBJECT_STORAGE_SECRET_KEY"] = compose.LOCAL_MINIO_PASSWORD
     return merged
 
 

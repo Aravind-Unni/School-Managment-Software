@@ -58,7 +58,6 @@ INSTALLED_APPS = list(INSTALLED_APPS) + [
 
 DEV_PERSONA = None
 DEV_PERSONA_MODE = "off"
-DEV_PERSONA_TRUSTED_NETWORKS: tuple[str, ...] = ()
 DEMO_FIXTURES_ENABLED = False
 
 TOTP_ENCRYPTION_KEY = env.require("TOTP_ENCRYPTION_KEY")
@@ -130,6 +129,16 @@ def build_port_registry(registration=None) -> PortRegistry:
 
 _APPROVED_REGISTRATIONS = _load_approved_registrations()
 
+
+#: Every installed module's permission codes, for M01's catalogue. M01's own
+#: codes are already in its closed catalogue and are skipped here.
+SCHOOL_MODULE_PERMISSION_CODES: tuple[str, ...] = tuple(
+    code
+    for _reg in _APPROVED_REGISTRATIONS
+    if _reg.id != "M01"
+    for code in (_reg.permission_codes or ())
+)
+
 _shared_mw = "shared.http.middleware.RequestContextMiddleware"
 _middleware = [m for m in MIDDLEWARE if m != _shared_mw]
 _index = _middleware.index("django.middleware.common.CommonMiddleware") + 1
@@ -145,3 +154,15 @@ MIDDLEWARE = [
     *_middleware[_index:],
 ]
 SCHOOL_PUBLIC_PATH_PREFIXES = tuple(_public)
+
+#: Optional: restrict backup management to these account ids (comma-separated)
+#: on top of the backups.manage grant. Empty means the grant plus fresh 2FA.
+PLATFORM_OPS_ACTOR_IDS: tuple[str, ...] = tuple(
+    part.strip()
+    for part in (env.optional("PLATFORM_OPS_ACTOR_IDS", "") or "").split(",")
+    if part.strip()
+)
+
+#: The API container publishes no port; only this stack's nginx reaches it and
+#: nginx overwrites X-Real-IP, so the header is the real client address.
+TRUST_X_REAL_IP = env.flag("TRUST_X_REAL_IP", default=True)

@@ -207,7 +207,7 @@ def test_orphan_cleanup(client, baseline, clock):
     """Expired open upload is abandoned and quarantine object removed."""
     from modules.files.api import deps
     from modules.files.models import UploadSession, UploadSessionState
-    from modules.files.services.storage import memory_store
+    from modules.files.services.storage import object_store
 
     begin = client.post(
         "/api/v1/uploads",
@@ -224,13 +224,13 @@ def test_orphan_cleanup(client, baseline, clock):
     assert begin.status_code == 201
     session_id = UUID(begin.json()["id"])
     row = UploadSession.objects.get(id=session_id)
-    memory_store().put(row.quarantine_key, b"pending")
+    object_store().put(row.quarantine_key, b"pending")
     clock.set(clock.now() + timedelta(hours=1))
     count = deps.retention_service().cleanup_orphans()
     assert count >= 1
     row.refresh_from_db()
     assert row.state == UploadSessionState.ABANDONED
-    assert not memory_store().exists(row.quarantine_key)
+    assert not object_store().exists(row.quarantine_key)
 
 
 def test_two_school_isolation(baseline):
@@ -343,7 +343,7 @@ def test_purge_succeeds_when_economical_ready(baseline, clock):
     from modules.files.api import deps
     from modules.files.models import Derivative, File, SourceObject
     from modules.files.services.backup import backup_verifier
-    from modules.files.services.storage import memory_store
+    from modules.files.services.storage import object_store
 
     row = File.objects.get(id=UUID(baseline["file_accepted"]))
     backup_verifier().set_source(row.source_id, verified=True)
@@ -354,7 +354,7 @@ def test_purge_succeeds_when_economical_ready(baseline, clock):
     source.refresh_from_db()
     assert source.purged_at is not None
     if canonical is not None:
-        assert memory_store().exists(canonical.storage_key)
+        assert object_store().exists(canonical.storage_key)
 
 
 def test_upload_round_trip(client, baseline):

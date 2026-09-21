@@ -16,7 +16,7 @@ import {
 import * as accessApi from "@features/access/api";
 import type { Authenticated } from "@features/access/api";
 
-interface SessionState {
+export interface SessionState {
   readonly status: "loading" | "anonymous" | "authenticated";
   readonly session: Authenticated | null;
   readonly actions: ReadonlySet<string>;
@@ -24,7 +24,8 @@ interface SessionState {
   readonly signOut: () => Promise<void>;
 }
 
-const SessionContext = createContext<SessionState | null>(null);
+/** Exported so tests can supply a fixed session without network bootstrap. */
+export const SessionContext = createContext<SessionState | null>(null);
 
 /** Provide session state to the shell and pages. */
 export function SessionProvider({ children }: { readonly children: ReactNode }) {

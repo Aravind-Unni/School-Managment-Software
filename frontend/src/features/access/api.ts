@@ -159,3 +159,96 @@ export async function replaceGrants(
 export async function listAccounts(cursor?: string): Promise<Collection<Account>> {
   return call<Collection<Account>>("/accounts", { query: cursor ? { cursor } : {} });
 }
+
+/** An account as returned by the account-administration endpoints. */
+export interface ManagedAccount {
+  readonly id: string;
+  readonly login_name: string;
+  readonly display_name: string;
+  readonly person_id: string | null;
+  readonly active: boolean;
+  readonly version: number;
+  readonly role_ids: readonly string[];
+  readonly has_active_factor: boolean;
+  readonly two_factor_required: boolean;
+  /** Present only on create and password reset, and only that once. */
+  readonly temporary_password?: string | null;
+}
+
+/** Every role in the school (small collection). */
+export async function listAllRoles(): Promise<Role[]> {
+  const roles: Role[] = [];
+  let cursor: string | undefined;
+  do {
+    const page = await listRoles(cursor);
+    roles.push(...page.items);
+    cursor = page.next_cursor ?? undefined;
+  } while (cursor !== undefined);
+  return roles;
+}
+
+/** Create a login; returns a one-time temporary password when none was given. */
+export async function createAccount(input: {
+  readonly loginName: string;
+  readonly displayName: string;
+  readonly personId: string | null;
+  readonly roleIds: readonly string[];
+}): Promise<ManagedAccount> {
+  return call<ManagedAccount>("/accounts", {
+    method: "POST",
+    body: {
+      login_name: input.loginName,
+      display_name: input.displayName,
+      person_id: input.personId,
+      role_ids: input.roleIds,
+    },
+  });
+}
+
+/** Replace an account's roles. Signs the account out everywhere. */
+export async function replaceAccountRoles(
+  accountId: string,
+  input: { readonly roleIds: readonly string[]; readonly expectedVersion: number },
+): Promise<ManagedAccount> {
+  return call<ManagedAccount>(`/accounts/${accountId}/roles`, {
+    method: "PUT",
+    body: { role_ids: input.roleIds, expected_version: input.expectedVersion },
+  });
+}
+
+/** Activate or deactivate an account. */
+export async function setAccountActive(
+  accountId: string,
+  input: { readonly active: boolean; readonly expectedVersion: number },
+): Promise<ManagedAccount> {
+  return call<ManagedAccount>(
+    `/accounts/${accountId}/${input.active ? "activate" : "deactivate"}`,
+    { method: "POST", body: { expected_version: input.expectedVersion } },
+  );
+}
+
+/** Issue a new temporary password for an account. */
+export async function resetAccountPassword(accountId: string): Promise<ManagedAccount> {
+  return call<ManagedAccount>(`/accounts/${accountId}/reset-password`, { method: "POST" });
+}
+
+/** Change one's own password. Other sessions are signed out. */
+export async function changeOwnPassword(input: {
+  readonly currentPassword: string;
+  readonly newPassword: string;
+}): Promise<void> {
+  await call<unknown>("/auth/password", {
+    method: "POST",
+    body: { current_password: input.currentPassword, new_password: input.newPassword },
+  });
+}
+
+/** Suggest a login name from a display name: "Anita Nair" -> "anita.nair". */
+export function suggestLoginName(displayName: string): string {
+  return displayName
+    .normalize("NFKD")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ".")
+    .replace(/^\.+|\.+$/g, "")
+    .slice(0, 40);
+}

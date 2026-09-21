@@ -39,7 +39,7 @@ export function StudentProfilePage() {
   }, [load, studentId]);
 
   return (
-    <main>
+    <section>
       <p>
         <Link to="/registry/students">{t("registry.back_to_directory")}</Link>
       </p>
@@ -94,6 +94,6 @@ export function StudentProfilePage() {
           )}
         </>
       )}
-    </main>
+    </section>
   );
 }

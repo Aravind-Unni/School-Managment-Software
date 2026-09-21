@@ -75,7 +75,7 @@ export function LibraryDeskPage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t("library.desk_title")}</h1>
       <section>
         <h2>{t("library.issue_heading")}</h2>
@@ -152,6 +152,6 @@ export function LibraryDeskPage() {
           </p>
         )}
       </section>
-    </main>
+    </section>
   );
 }

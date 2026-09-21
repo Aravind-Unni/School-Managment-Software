@@ -80,7 +80,7 @@ export function ExportCentrePage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t("exchange.exports_title")}</h1>
       <label>
         {t("exchange.dataset")}
@@ -140,6 +140,6 @@ export function ExportCentrePage() {
           <p>{t(errorKey)}</p>
         </div>
       )}
-    </main>
+    </section>
   );
 }

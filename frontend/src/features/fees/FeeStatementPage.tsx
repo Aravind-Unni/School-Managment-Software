@@ -36,7 +36,7 @@ export function FeeStatementPage() {
   }, [t, translate]);
 
   return (
-    <main>
+    <section>
       <h1>{t["fees.statement_title"]}</h1>
       {loading && <p role="status">{t["fees.loading"]}</p>}
       {error && <p role="alert">{error}</p>}
@@ -68,6 +68,6 @@ export function FeeStatementPage() {
           </table>
         </section>
       )}
-    </main>
+    </section>
   );
 }

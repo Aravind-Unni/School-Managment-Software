@@ -24,8 +24,9 @@ COPY --chown=school:school contracts /app/contracts
 COPY --chown=school:school pyproject.toml /app/
 COPY --chown=school:school infra/prod/entrypoint-api.sh /app/entrypoint-api.sh
 COPY --chown=school:school infra/prod/entrypoint-worker.sh /app/entrypoint-worker.sh
+COPY --chown=school:school infra/prod/entrypoint-scheduler.sh /app/entrypoint-scheduler.sh
 
-RUN chmod +x /app/entrypoint-api.sh /app/entrypoint-worker.sh
+RUN chmod +x /app/entrypoint-api.sh /app/entrypoint-worker.sh /app/entrypoint-scheduler.sh
 
 USER school
 EXPOSE 8000

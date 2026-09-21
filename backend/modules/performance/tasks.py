@@ -7,38 +7,48 @@ from uuid import UUID
 from celery import shared_task
 from django.conf import settings
 
+from contracts.errors import ObjectInaccessible
 from contracts.identity import AuthLevel, RequestContext
-from shared import fixtures
+from contracts.values import school_date
+from shared.ports import runtime
 
 from .services.wire import projection_service, warning_service
+
+#: Actor recorded on projections the nightly job computes. Not an account.
+SYSTEM_ACTOR_ID = UUID("00000000-0000-5000-8000-00000000c0de")
 
 
 @shared_task(name="modules.performance.tasks.rebuild_projections")
 def rebuild_projections(school_id: str, student_ids: list[str] | None = None) -> int:
-    """Full rebuild for listed pupils (or baseline S1/S2). Returns count.
+    """Rebuild projections and evaluate warnings for listed pupils, or all current ones.
 
-    Assumes Assessment and Attendance ports are bound. Does not claim crash/retry
-    coverage when invoked synchronously in tests.
+    Runs as the system (no human actor), so it only computes; it never grants
+    anyone access. Assumes Assessment, Attendance and Registry ports are bound.
     """
     school = UUID(school_id)
-    ids = [
-        UUID(s) for s in (student_ids or [str(fixtures.STUDENT_S1), str(fixtures.STUDENT_S2)])
-    ]
     ctx = RequestContext(
-        actor_id=fixtures.TEACHER_T1,
+        actor_id=SYSTEM_ACTOR_ID,
         school_id=school,
         request_id="performance-rebuild",
         auth_level=AuthLevel.TWO_FACTOR,
         auth_time=settings.SCHOOL_CLOCK.now(),
     )
+    if student_ids:
+        ids = [UUID(s) for s in student_ids]
+    else:
+        registry = runtime.get_registry().resolve("registry")
+        ids = list(registry.active_student_ids(ctx, school_date(settings.SCHOOL_CLOCK.now())))
     count = projection_service().rebuild_school(ctx, ids)
     warnings = warning_service()
     for student_id in ids:
-        warnings.evaluate_student(ctx, student_id)
+        try:
+            warnings.evaluate_student(ctx, student_id)
+        except ObjectInaccessible:
+            continue
     return count
 
 
 @shared_task(name="modules.performance.tasks.reconcile_projections")
 def reconcile_projections() -> int:
-    """Daily reconcile for School A baseline pupils."""
-    return rebuild_projections(str(fixtures.SCHOOL_A))
+    """Nightly reconcile for every current pupil of this deployment's school."""
+    return rebuild_projections(str(settings.SCHOOL_ID))

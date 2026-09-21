@@ -59,7 +59,7 @@ export function LibraryCataloguePage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t("library.catalogue_title")}</h1>
       <form
         onSubmit={(event) => {
@@ -106,6 +106,6 @@ export function LibraryCataloguePage() {
           {t("library.availability")}: {availability.available} / {availability.total}
         </p>
       )}
-    </main>
+    </section>
   );
 }

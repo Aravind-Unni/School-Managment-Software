@@ -4,11 +4,15 @@ from __future__ import annotations
 
 from uuid import UUID
 
+from django.conf import settings
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from contracts.errors import ObjectInaccessible
+from shared.ports import runtime
 
 from . import deps
 from .serializers import (
@@ -129,8 +133,8 @@ class RebuildView(APIView):
 
     @extend_schema(operation_id="rebuild_projections", responses={202: dict, **COMMON_ERRORS})
     def post(self, request: Request) -> Response:
-        """Rebuild projections for baseline pupils (synchronous for reliability)."""
-        from shared import fixtures
+        """Rebuild projections for every current pupil (synchronous)."""
+        from contracts.values import school_date
 
         from ..services.wire import gate
 
@@ -138,12 +142,16 @@ class RebuildView(APIView):
         ctx = request.school_context
         proj = deps.projection_service()
         warn = deps.warning_service()
-        ids = [fixtures.STUDENT_S1, fixtures.STUDENT_S2]
+        registry = runtime.get_registry().resolve("registry")
+        ids = list(registry.active_student_ids(ctx, school_date(settings.SCHOOL_CLOCK.now())))
         count = proj.rebuild_school(ctx, ids)
         for student_id in ids:
-            warn.evaluate_student(ctx, student_id)
+            try:
+                warn.evaluate_student(ctx, student_id)
+            except ObjectInaccessible:
+                continue
         return Response(
-            {"job_id": str(fixtures.SCHOOL_A), "state": "completed", "count": count},
+            {"job_id": str(ctx.school_id), "state": "completed", "count": count},
             status=status.HTTP_202_ACCEPTED,
         )
 

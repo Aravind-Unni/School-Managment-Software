@@ -41,6 +41,7 @@ def exception_handler(exc: Exception, context: dict | None = None) -> Response |
       * ContractError subclasses -> their declared code and HTTP status
       * SpoofedIdentityHeader    -> 400, naming the offending header
       * DRF ValidationError      -> 422 with field_errors
+      * other DRF API exceptions -> their own HTTP status (405, 415, 400, ...)
     Anything else returns None so Django's own 500 handling applies; we do not
     dress an unknown crash up as a business error.
     """
@@ -89,6 +90,28 @@ def exception_handler(exc: Exception, context: dict | None = None) -> Response |
             field_errors=field_errors,
         )
         return Response(envelope.to_wire(), status=422)
+
+    from rest_framework import exceptions as drf
+
+    # Framework-level refusals keep their real HTTP status (405, 415, 400...)
+    # rather than surfacing as a 500 that looks like a crash.
+    framework = (
+        (drf.MethodNotAllowed, ErrorCode.VALIDATION_FAILED, "error.method_not_allowed"),
+        (drf.UnsupportedMediaType, ErrorCode.VALIDATION_FAILED, "error.unsupported_media_type"),
+        (drf.ParseError, ErrorCode.VALIDATION_FAILED, "error.malformed_request"),
+        (drf.NotAcceptable, ErrorCode.VALIDATION_FAILED, "error.not_acceptable"),
+        (drf.NotFound, ErrorCode.OBJECT_INACCESSIBLE, "error.object_inaccessible"),
+        (drf.NotAuthenticated, ErrorCode.UNAUTHENTICATED, "error.unauthenticated"),
+        (drf.AuthenticationFailed, ErrorCode.UNAUTHENTICATED, "error.unauthenticated"),
+        (drf.PermissionDenied, ErrorCode.ACTION_DENIED, "error.action_denied"),
+        (drf.Throttled, ErrorCode.RATE_LIMITED, "error.rate_limited"),
+    )
+    for exception_class, code, message_key in framework:
+        if isinstance(exc, exception_class):
+            envelope = ErrorEnvelope(
+                code=code, message_key=message_key, request_id=request_id, field_errors=()
+            )
+            return Response(envelope.to_wire(), status=exc.status_code)
 
     return None
 

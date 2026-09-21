@@ -1,0 +1,305 @@
+# School configuration — DEFAULTS.
+#
+# Every school-specific value lives here. To customise a deployment, copy the
+# parts you want to change into infra/prod/school.toml (any key you leave out
+# keeps the default below) and run:
+#
+#     docker compose ... exec api python backend/manage.py install_school
+#
+# install_school is idempotent: re-run it after every edit. It never deletes
+# students, marks, payments or anything a person entered; it only creates or
+# updates the configuration rows described here. Values marked REVIEW are
+# sensible starting points that the school should confirm.
+
+[school]
+name = "Our School"                 # REVIEW: shown on every page and report card
+board = "CBSE"
+default_language = "en"             # "en" or "ml"
+timezone = "Asia/Kolkata"
+currency = "INR"
+
+[academic_year]
+name = "2026-2027"                  # REVIEW
+start = 2026-06-01                  # inclusive
+end = 2027-03-31                    # inclusive
+activate = true                     # make this the current year
+
+[[academic_year.terms]]
+name = "Term 1"                     # REVIEW
+start = 2026-06-01
+end = 2026-09-30
+
+[[academic_year.terms]]
+name = "Term 2"
+start = 2026-10-01
+end = 2027-03-31
+
+[structure]
+standards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+default_sections = ["A"]            # REVIEW: sections created for every standard
+
+# Per-standard override of sections, e.g. three divisions in Standard 1:
+# [structure.sections]
+# 1 = ["A", "B", "C"]
+[structure.sections]
+
+# Subjects and the standards that study them. `code` must be unique.
+[[subjects]]
+code = "ENG"
+name = "English"
+standards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+[[subjects]]
+code = "MAL"
+name = "Malayalam"
+standards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+[[subjects]]
+code = "HIN"
+name = "Hindi"
+standards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+[[subjects]]
+code = "MATH"
+name = "Mathematics"
+standards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+[[subjects]]
+code = "EVS"
+name = "Environmental Studies"
+standards = [1, 2, 3, 4, 5]
+
+[[subjects]]
+code = "SCI"
+name = "Science"
+standards = [6, 7, 8, 9, 10]
+
+[[subjects]]
+code = "SST"
+name = "Social Science"
+standards = [6, 7, 8, 9, 10]
+
+[[subjects]]
+code = "COMP"
+name = "Computer Science"
+standards = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+[[subjects]]
+code = "PHY"
+name = "Physics"
+standards = [11, 12]
+
+[[subjects]]
+code = "CHEM"
+name = "Chemistry"
+standards = [11, 12]
+
+[[subjects]]
+code = "BIO"
+name = "Biology"
+standards = [11, 12]
+
+[[subjects]]
+code = "PE"
+name = "Physical Education"
+standards = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+[timetable]
+# ISO weekdays: 1 = Monday ... 7 = Sunday.
+working_days = [1, 2, 3, 4, 5, 6]   # REVIEW: Monday to Saturday
+
+# The bell schedule. Used to create the first draft timetable, which the
+# school then fills in class by class. Breaks are simply gaps between periods.
+[[timetable.periods]]
+code = "P1"
+start = "09:00"
+end = "09:45"
+
+[[timetable.periods]]
+code = "P2"
+start = "09:45"
+end = "10:30"
+
+[[timetable.periods]]
+code = "P3"
+start = "10:45"
+end = "11:30"
+
+[[timetable.periods]]
+code = "P4"
+start = "11:30"
+end = "12:15"
+
+[[timetable.periods]]
+code = "P5"
+start = "13:00"
+end = "13:45"
+
+[[timetable.periods]]
+code = "P6"
+start = "13:45"
+end = "14:30"
+
+[[timetable.periods]]
+code = "P7"
+start = "14:45"
+end = "15:30"
+
+# Grade bands, highest first. A score gets the first band whose min_percent it
+# reaches. Default is the CBSE eight-point scale.
+[[grading.bands]]
+grade = "A1"
+min_percent = 91
+
+[[grading.bands]]
+grade = "A2"
+min_percent = 81
+
+[[grading.bands]]
+grade = "B1"
+min_percent = 71
+
+[[grading.bands]]
+grade = "B2"
+min_percent = 61
+
+[[grading.bands]]
+grade = "C1"
+min_percent = 51
+
+[[grading.bands]]
+grade = "C2"
+min_percent = 41
+
+[[grading.bands]]
+grade = "D"
+min_percent = 33
+
+[[grading.bands]]
+grade = "E"
+min_percent = 0
+
+[attendance]
+# A student below this percentage over the term raises a warning for staff.
+low_attendance_percent = 75         # REVIEW
+low_attendance_minimum_days = 10
+# Missing-work warning: raised after this many unsubmitted assessments.
+missing_work_count = 2
+
+[library]
+max_active_loans_per_borrower = 3   # REVIEW
+max_renewals_per_loan = 2
+
+[files]
+# Uploaded answer-sheet scans and documents.
+max_megabytes_per_page = 12
+max_pages_per_batch = 40
+image_long_edge_px = 2400
+grace_days = 7
+
+[communications]
+# Only in-app notices are enabled until an SMS provider is contracted.
+channels_enabled = ["in_app"]
+
+[alumni]
+alumni_login_enabled = false
+include_transfers_as_alumni = false
+exportable_fields = ["display_name", "leaving_year", "last_standard"]
+
+[exchange]
+# Imports of students/staff from spreadsheets.
+commit_requires_2fa = true
+commit_chunk_rows = 200
+
+[platform]
+# Alert when the newest verified backup is older than this.
+backup_age_alert_minutes = 1560     # 26 hours: nightly backups plus slack
+
+# ----------------------------------------------------------------------------
+# Roles. Each is created (or its grants replaced) by install_school.
+# An action written "code@self" is limited to the account's own records, or
+# for a guardian, their own children as recorded in the registry.
+# The Owner role is created by bootstrap_owner and always holds everything.
+# ----------------------------------------------------------------------------
+
+[roles.administrator]
+name = "Administrator"
+requires_two_factor = true
+grants = [
+  "accounts.manage", "auth.factor.manage_self@self", "auth.factor.reset_other",
+  "registry.manage", "students.read", "students.update", "guardians.manage",
+  "staff.assign", "students.promote", "students.withdraw",
+  "timetable.read", "timetable.read_section", "timetable.read_teacher",
+  "timetable.read_student", "timetable.edit", "timetable.publish", "timetable.substitute",
+  "attendance.read", "attendance.correct",
+  "assessment.manage", "results.approve", "results.publish", "evidence.view",
+  "performance.read", "warnings.manage", "interventions.manage", "meetings.record",
+  "fees.read",
+  "transport.read", "library.read_overdues",
+  "alumni.review", "alumni.read",
+  "notices.create", "notices.publish", "messages.send", "messages.read_status",
+  "files.upload", "files.read", "files.review_quality",
+  "imports.validate", "imports.commit", "reports.read", "reports.export",
+  "reportcards.generate",
+  "platform.read_health", "jobs.read", "audit.read",
+]
+
+[roles.teacher]
+name = "Teacher"
+requires_two_factor = true
+grants = [
+  "auth.factor.manage_self@self",
+  "students.read",
+  "timetable.read", "timetable.read_section", "timetable.read_teacher",
+  "attendance.read", "attendance.mark", "attendance.submit", "attendance.correct",
+  "assessment.manage", "marks.edit", "marks.submit", "evidence.view",
+  "performance.read", "warnings.manage", "interventions.manage", "meetings.record",
+  "notices.create", "files.upload", "files.read",
+  "library.read_own@self",
+]
+
+[roles.accountant]
+name = "Accountant"
+requires_two_factor = true
+grants = [
+  "auth.factor.manage_self@self", "students.read",
+  "fees.configure", "fees.read", "fees.record_payment", "fees.concede",
+  "fees.reverse_payment", "fees.refund",
+  "transport.read", "transport.bill", "reports.read", "reports.export",
+]
+
+[roles.librarian]
+name = "Librarian"
+requires_two_factor = true
+grants = [
+  "auth.factor.manage_self@self", "students.read",
+  "library.catalogue.manage", "library.issue", "library.return", "library.renew",
+  "library.read_overdues",
+]
+
+[roles.transport]
+name = "Transport Manager"
+requires_two_factor = true
+grants = [
+  "auth.factor.manage_self@self", "students.read",
+  "transport.manage", "transport.read",
+]
+
+[roles.guardian]
+name = "Parent / Guardian"
+requires_two_factor = false
+grants = [
+  "auth.factor.manage_self@self",
+  "students.read@self", "timetable.read_student@self", "attendance.read@self",
+  "evidence.view@self", "performance.read@self", "fees.read@self",
+  "transport.read@self", "library.read_own@self", "files.read@self",
+]
+
+[roles.student]
+name = "Student"
+requires_two_factor = false
+grants = [
+  "auth.factor.manage_self@self",
+  "students.read@self", "timetable.read_student@self", "attendance.read@self",
+  "evidence.view@self", "performance.read@self", "library.read_own@self",
+]

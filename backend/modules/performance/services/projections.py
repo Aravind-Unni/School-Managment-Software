@@ -7,13 +7,13 @@ from uuid import UUID, uuid4
 
 from django.db import transaction
 
+from contracts.errors import ObjectInaccessible
 from contracts.identity import RequestContext
-from shared import fixtures
+from contracts.values import school_date
 
 from ..models import MetricDefinition, MetricStatus, Projection
 from .metrics import attendance_metric_status, simple_mean_percent
 
-TERM_ID = UUID("f76bcdb0-b6b9-5a80-a449-a8a4e423716a")
 WINDOW_TERM = "term"
 
 
@@ -25,6 +25,8 @@ class ProjectionService:
     attendance: object
     clock: object
     platform: object
+    #: RegistryPort; supplies the current term and the list of pupils.
+    registry: object = None
 
     def rebuild_student(
         self,
@@ -47,8 +49,16 @@ class ProjectionService:
         def_version = definition.version if definition else 1
         denominator = definition.denominator if definition else "100"
 
-        results_page = self.assessment.get_published_results(context, student_id, TERM_ID, None)
-        items = list(results_page.get("items") or [])
+        today = school_date(now)
+        term = self.registry.current_term(context, today) if self.registry else None
+        if term is not None:
+            results_page = self.assessment.get_published_results(
+                context, student_id, term.id, None
+            )
+            items = list(results_page.get("items") or [])
+        else:
+            # Between terms there is no term window to measure.
+            items = []
         score_tuples = [
             (str(row["score"]), str(row["max_score"]), str(row["policy_version"]))
             for row in items
@@ -56,8 +66,8 @@ class ProjectionService:
         ]
         mean_value, mean_status = simple_mean_percent(score_tuples)
 
-        from_date = fixtures.TERM_START
-        to_date = fixtures.TERM_SAMPLE_DATE
+        from_date = term.start if term is not None else today
+        to_date = min(today, term.end) if term is not None else today
         attendance = self.attendance.get_summary(
             context, student_id, from_date, to_date, subject_id
         )
@@ -137,9 +147,17 @@ class ProjectionService:
         return projection
 
     def rebuild_school(self, context: RequestContext, student_ids: list[UUID]) -> int:
-        """Rebuild projections for every listed pupil. Returns count."""
+        """Rebuild projections for every listed pupil. Returns how many succeeded.
+
+        A pupil the caller cannot see (another school, or a relationship the
+        upstream port refuses) is skipped, so one record does not abort a
+        school-wide nightly rebuild.
+        """
         count = 0
         for student_id in student_ids:
-            self.rebuild_student(context, student_id)
+            try:
+                self.rebuild_student(context, student_id)
+            except ObjectInaccessible:
+                continue
             count += 1
         return count

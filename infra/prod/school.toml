@@ -1,0 +1,35 @@
+# This school's configuration. Anything not written here keeps the default in
+# backend/config/school_defaults.toml (read that file to see every option).
+#
+# After editing, restart the API to apply:
+#   docker compose -f infra/prod/compose.yml --env-file infra/prod/.env restart api
+#
+# Roles listed here are managed by this file: edits made to those roles in the
+# product are replaced on the next restart. Add new roles here, not in the UI.
+
+[school]
+name = "Our School"
+default_language = "en"
+
+[academic_year]
+name = "2026-2027"
+start = 2026-06-01
+end = 2027-03-31
+
+[[academic_year.terms]]
+name = "Term 1"
+start = 2026-06-01
+end = 2026-09-30
+
+[[academic_year.terms]]
+name = "Term 2"
+start = 2026-10-01
+end = 2027-03-31
+
+[structure]
+default_sections = ["A"]
+
+# Example: three divisions of Standard 1 and two of Standard 11.
+# [structure.sections]
+# 1 = ["A", "B", "C"]
+# 11 = ["Science", "Commerce"]

@@ -65,7 +65,7 @@ export function TransportBillingPage() {
   }
 
   return (
-    <main>
+    <section>
       <h1>{t("transport.billing_title")}</h1>
       <label>
         {t("transport.billing_period")}
@@ -124,6 +124,6 @@ export function TransportBillingPage() {
           {t("transport.preview_eligible")} {runResult.preview.eligible_count}
         </p>
       )}
-    </main>
+    </section>
   );
 }
