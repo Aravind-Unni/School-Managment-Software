@@ -6,10 +6,8 @@
  * still authorises every action. Does not handle: dashboards with live counts.
  */
 
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@shared/i18n/LanguageContext";
-import { getSchoolConfig } from "@features/registry/api";
 import { can, useSession } from "./SessionContext";
 import { REGISTERED_MODULES } from "./registeredModules";
 import { navigationRoutes, type FeatureRoute } from "./moduleRegistry";
@@ -34,6 +32,7 @@ const TEACHER_PATHS = [
   "/notices",
 ];
 const FAMILY_PATHS = [
+  "/registry/overview",
   "/timetable/student",
   "/performance",
   "/fees/statement",
@@ -51,14 +50,7 @@ function pick(routes: readonly FeatureRoute[], paths: readonly string[]): Featur
 export function HomePage() {
   const { t } = useLanguage();
   const { status, session, actions } = useSession();
-  const [schoolName, setSchoolName] = useState<string | null>(null);
-
-  useEffect(() => {
-    getSchoolConfig().then(
-      (config) => setSchoolName(config.display_name),
-      () => setSchoolName(null),
-    );
-  }, []);
+  const schoolName = session?.school_name ?? null;
 
   if (status !== "authenticated" || session === null) {
     return null;

@@ -33,6 +33,7 @@ from .serializers import (
     UpdateTeacherUnavailableRequest,
 )
 from .views import COMMON_ERRORS, CURSOR_PARAMS, validated
+from .views_schedules import with_names
 
 DATE_RANGE_PARAMS = [
     OpenApiParameter("from_date", str, OpenApiParameter.QUERY),
@@ -318,4 +319,4 @@ class SessionCancellationView(APIView):
         # leaves it at 1, each further change adds one. A client that did NOT
         # make those writes cannot learn it -- a real gap in the frozen contract,
         # recorded in docs/modules/M03/handoff.md rather than patched around.
-        return Response(wire.session_to_wire(session))
+        return Response(with_names(request.school_context, [wire.session_to_wire(session)])[0])

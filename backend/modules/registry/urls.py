@@ -45,6 +45,7 @@ from .api.views_lifecycle import (
     TeachingAssignmentCollectionView,
     TeachingAssignmentDetailView,
 )
+from .api.views_self import MyStudentsView
 
 app_name = "registry"
 
@@ -64,6 +65,7 @@ urlpatterns = [
         name="student-duplicate-review",
     ),
     path("students", StudentCollectionView.as_view(), name="student-collection"),
+    path("students/mine", MyStudentsView.as_view(), name="students-mine"),
     path("guardians", GuardianCollectionView.as_view(), name="guardian-collection"),
     path("staff", StaffCollectionView.as_view(), name="staff-collection"),
     path(

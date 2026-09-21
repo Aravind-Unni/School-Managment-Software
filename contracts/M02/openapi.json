@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "M02 Academic Registry — PROPOSED, NOT FROZEN",
+    "title": "M02 Academic Registry \u2014 PROPOSED, NOT FROZEN",
     "version": "0.1.0-proposed"
   },
   "servers": [
@@ -7089,6 +7089,85 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/VersionedReason"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/students/mine": {
+      "get": {
+        "operationId": "list_my_students",
+        "summary": "List the pupils the caller acts for (self or linked children)",
+        "tags": [
+          "students"
+        ],
+        "responses": {
+          "200": {
+            "description": "The caller's own record and/or linked children.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "display_name": {
+                            "type": "string"
+                          },
+                          "admission_no": {
+                            "type": "string"
+                          },
+                          "section_id": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "uuid"
+                          },
+                          "section_label": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "relationship": {
+                            "type": "string",
+                            "enum": [
+                              "self",
+                              "guardian"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "display_name",
+                          "admission_no",
+                          "section_id",
+                          "section_label",
+                          "relationship"
+                        ]
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ]
+                }
               }
             }
           }

@@ -8,6 +8,7 @@ import type { FeatureModule } from "@app/moduleRegistry";
 import { AdmitStudentPage } from "./AdmitStudentPage";
 import { SchoolSetupPage } from "./SchoolSetupPage";
 import { StaffAdminPage } from "./StaffAdminPage";
+import { StudentOverviewPage } from "./StudentOverviewPage";
 import { StudentDirectoryPage } from "./StudentDirectoryPage";
 import { StudentProfilePage } from "./StudentProfilePage";
 
@@ -22,6 +23,12 @@ export const registryModule: FeatureModule = {
   apiPrefix: "/api/v1/",
   permissionPrefixes: ["registry.", "students.", "guardians.", "staff.", "year."],
   routes: [
+    {
+      path: "/registry/overview",
+      component: StudentOverviewPage,
+      navLabelKey: "nav.student_overview",
+      requiredPermission: REGISTRY_PERMISSIONS.studentsRead,
+    },
     {
       path: "/registry/setup",
       component: SchoolSetupPage,

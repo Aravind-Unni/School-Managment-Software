@@ -903,3 +903,200 @@ main table {
     padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
   }
 }
+
+/* --- shell refinements ----------------------------------------------------- */
+
+.language-switch {
+  flex-direction: row;
+  max-width: none;
+  color: var(--ink-soft);
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar .product-nav {
+  flex: 1;
+}
+
+.sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 1rem 0.6rem 0;
+  border-top: 1px solid rgb(255 255 255 / 20%);
+}
+
+.sidebar-footer .signed-in-name {
+  display: block;
+  color: #fff;
+  font-weight: 700;
+  max-width: 100%;
+}
+
+.sidebar-footer button.secondary {
+  background: transparent;
+  color: #fff;
+  border-color: rgb(255 255 255 / 45%);
+}
+
+.sidebar-footer button.secondary:hover {
+  background: rgb(255 255 255 / 12%);
+}
+
+@media (max-width: 60rem) {
+  .planner-grid th[scope="row"] {
+    width: 4.5rem;
+  }
+
+  .planner-grid td.is-mobile-day {
+    width: auto;
+  }
+
+  .planner-actions {
+    justify-content: stretch;
+  }
+
+  .planner-actions > * {
+    flex: 1 1 auto;
+  }
+}
+
+/* --- student overview ------------------------------------------------------ */
+
+.child-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.overview-person h3 {
+  margin: 0.5rem 0 0;
+  font-size: 1.35rem;
+}
+
+.overview-person p {
+  margin: 0.15rem 0 1rem;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.overview-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.25rem 1.1rem 1rem;
+}
+
+.overview-card h3 {
+  margin: 0.9rem 0 0.5rem;
+  font-size: 1rem;
+  color: var(--ink-soft);
+}
+
+.big-figure {
+  margin: 0;
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.big-figure.warn,
+.attention {
+  color: var(--danger);
+}
+
+.lesson-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lesson-list li {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  column-gap: 0.6rem;
+  padding: 0.45rem 0 0.45rem 0.6rem;
+  border-left: 4px solid var(--subject, var(--line));
+  margin-bottom: 0.3rem;
+  background: color-mix(in srgb, var(--subject, var(--line)) 8%, white);
+  border-radius: 0 var(--radius-small) var(--radius-small) 0;
+}
+
+.lesson-list li .hint {
+  grid-column: 2;
+}
+
+.lesson-list li.cancelled strong {
+  text-decoration: line-through;
+}
+
+.lesson-time {
+  grid-row: span 2;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.plain-rows {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+}
+
+.plain-rows li {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.9rem;
+}
+
+.overview-card details summary {
+  cursor: pointer;
+  color: var(--navy);
+  margin-top: 0.5rem;
+}
+
+.notice {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.notice h4 {
+  margin: 0;
+}
+
+.notice p {
+  margin: 0.2rem 0;
+}
+
+.student-picker {
+  max-width: 30rem;
+  margin-bottom: 1rem;
+}
+
+.picker-results {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.picker-results button {
+  width: 100%;
+  justify-content: space-between;
+  font-weight: 400;
+}

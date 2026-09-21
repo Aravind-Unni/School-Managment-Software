@@ -131,10 +131,16 @@ export function TimetablePlannerPage() {
     void reload();
   }, [structure, reload]);
 
-  const firstSection = structure?.sections[0]?.id ?? "";
+  // Open on the first class that already has periods, not an empty one.
+  const firstSection =
+    structure?.sections.find((row) =>
+      [...grid.keys()].some((key) => key.startsWith(`${row.id}|`)),
+    )?.id ??
+    structure?.sections[0]?.id ??
+    "";
   useEffect(() => {
-    if (sectionId === "" && firstSection !== "") setSectionId(firstSection);
-  }, [sectionId, firstSection]);
+    if (sectionId === "" && firstSection !== "" && grid.size > 0) setSectionId(firstSection);
+  }, [sectionId, firstSection, grid.size]);
 
   useEffect(() => {
     if (picking) dialog.current?.showModal();

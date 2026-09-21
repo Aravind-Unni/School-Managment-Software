@@ -200,6 +200,9 @@ function Frame() {
             <small>School management</small>
           </Link>
           <Navigation onNavigate={() => setNavOpen(false)} />
+          <div className="sidebar-footer">
+            <SessionControls />
+          </div>
         </aside>
       ) : null}
       {signedIn ? (
@@ -220,7 +223,6 @@ function Frame() {
             <span className="school-name">{schoolName}</span>
             <span className="spacer" />
             <LanguageSwitch />
-            <SessionControls />
           </header>
         ) : null}
         <main>

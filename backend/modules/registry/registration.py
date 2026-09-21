@@ -38,6 +38,12 @@ REGISTRATION = ModuleRegistration(
     permission_codes=PERMISSION_CODES,
     frontend_routes=(
         FrontendRoute(
+            path="/registry/overview",
+            component="StudentOverviewPage",
+            nav_label_key="nav.student_overview",
+            required_permission="students.read",
+        ),
+        FrontendRoute(
             path="/registry/setup",
             component="SchoolSetupPage",
             nav_label_key="nav.registry_setup",

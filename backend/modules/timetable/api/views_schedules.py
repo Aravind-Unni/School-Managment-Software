@@ -9,13 +9,15 @@ ceiling.
 
 from __future__ import annotations
 
+from uuid import UUID
+
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from . import params, wire
-from .deps import schedule_service
+from .deps import registry_port, schedule_service
 from .serializers import SectionDayResponse, StudentDayResponse, TeacherDayResponse
 from .views import COMMON_ERRORS
 
@@ -53,9 +55,37 @@ class CurrentTimetableView(APIView):
                 "reason_key": view.day.reason_key,
                 "timetable_id": str(view.timetable.id) if view.timetable else None,
                 "timetable_version": view.timetable.version if view.timetable else None,
-                "sessions": [wire.session_to_wire(session) for session in view.sessions],
+                "sessions": with_names(
+                    request.school_context,
+                    [wire.session_to_wire(session) for session in view.sessions],
+                ),
             }
         )
+
+
+def with_names(context, sessions: list[dict]) -> list[dict]:
+    """Add subject, teacher and class names so screens never show raw ids.
+
+    Names are read through RegistryPort as the caller, so they are only ever
+    names of this school's people. Each session dict may be the session
+    itself or ``{"session": ..., "enrolled": ...}``.
+    """
+    registry = registry_port()
+    inner = [row.get("session", row) for row in sessions]
+    subjects = {str(key): value for key, value in registry.subject_names(context).items()}
+    people = tuple(
+        {UUID(row["assigned_teacher_id"]) for row in inner}
+        | {UUID(row["substitute_teacher_id"]) for row in inner if row["substitute_teacher_id"]}
+    )
+    names = {str(key): value for key, value in registry.display_names(context, people).items()}
+    sections = {row["section_id"] for row in inner}
+    labels = {value: registry.section_label(context, UUID(value)) for value in sections}
+    for row in inner:
+        row["subject_name"] = subjects.get(row["subject_id"])
+        row["teacher_name"] = names.get(row["assigned_teacher_id"])
+        row["substitute_name"] = names.get(row["substitute_teacher_id"] or "")
+        row["section_label"] = labels.get(row["section_id"])
+    return sessions
 
 
 class TeacherScheduleView(APIView):
@@ -83,7 +113,10 @@ class TeacherScheduleView(APIView):
                 "date": on.isoformat(),
                 "is_school_day": day.is_school_day,
                 "reason_key": day.reason_key,
-                "sessions": [wire.session_to_wire(session) for session in sessions],
+                "sessions": with_names(
+                    request.school_context,
+                    [wire.session_to_wire(session) for session in sessions],
+                ),
             }
         )
 
@@ -118,9 +151,12 @@ class StudentScheduleView(APIView):
                 "date": day.date.isoformat(),
                 "is_school_day": day.day.is_school_day,
                 "reason_key": day.day.reason_key,
-                "sessions": [
-                    {"session": wire.session_to_wire(session), "enrolled": enrolled}
-                    for session, enrolled in day.sessions
-                ],
+                "sessions": with_names(
+                    request.school_context,
+                    [
+                        {"session": wire.session_to_wire(session), "enrolled": enrolled}
+                        for session, enrolled in day.sessions
+                    ],
+                ),
             }
         )

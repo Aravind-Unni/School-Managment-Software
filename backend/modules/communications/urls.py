@@ -11,11 +11,13 @@ from .api.views import (
     NoticePublishView,
     SmsCallbackView,
 )
+from .api.views_inbox import NoticeInboxView
 
 app_name = "communications"
 
 urlpatterns = [
     path("notices", NoticeCollectionView.as_view(), name="notice-collection"),
+    path("notices/inbox", NoticeInboxView.as_view(), name="notice-inbox"),
     path(
         "notices/<uuid:notice_id>/publish",
         NoticePublishView.as_view(),

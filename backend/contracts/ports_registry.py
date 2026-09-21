@@ -78,6 +78,16 @@ class RegistryPort(Protocol):
         """Return the standard (1-12) of the pupil's most recent enrolment, or None."""
         ...
 
+    def linked_student_ids(
+        self, context: RequestContext, person_id: UUID, on: date
+    ) -> tuple[UUID, ...]:
+        """Return the pupils a person acts for (self, or linked children); empty for staff."""
+        ...
+
+    def display_names(self, context: RequestContext, ids: tuple[UUID, ...]) -> dict[UUID, str]:
+        """Return display names for any people (students, guardians, staff) in ``ids``."""
+        ...
+
     def school_profile(self, context: RequestContext) -> SchoolProfileDTO | None:
         """Return the school's name and settings, or None before installation."""
         ...

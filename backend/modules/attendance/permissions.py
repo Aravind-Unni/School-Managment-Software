@@ -2,6 +2,7 @@
 
 PERMISSION_CODES: tuple[str, ...] = (
     "attendance.read",
+    "attendance.read_student",
     "attendance.mark",
     "attendance.submit",
     "attendance.correct",

@@ -116,6 +116,26 @@ class FakeRegistry:
             return (fixtures.STUDENT_S1_SCHOOL_B,)
         return ()
 
+    def linked_student_ids(
+        self, context: RequestContext, person_id: UUID, on: date
+    ) -> tuple[UUID, ...]:
+        """Return the fixture pupil, or the fixture guardian's linked children."""
+        self._failures.maybe_fail("registry.linked_student_ids")
+        if person_id in (fixtures.STUDENT_S1, fixtures.STUDENT_S2, fixtures.STUDENT_S3):
+            return (person_id,)
+        return tuple(
+            link.student_id for link in fixtures.GUARDIAN_LINKS if link.guardian_id == person_id
+        )
+
+    def display_names(self, context: RequestContext, ids: tuple[UUID, ...]) -> dict[UUID, str]:
+        """Return fixture labels for the requested ids."""
+        self._failures.maybe_fail("registry.display_names")
+        return {
+            value: fixtures.FIXTURE_LABELS[value]
+            for value in ids
+            if value in fixtures.FIXTURE_LABELS
+        }
+
     def school_profile(self, context: RequestContext) -> SchoolProfileDTO | None:
         """Return a synthetic school profile with the default CBSE grade bands."""
         self._failures.maybe_fail("registry.school_profile")

@@ -28,6 +28,7 @@ from contracts.scope import Relationship, RelationshipFacts
 from ..models import (
     Enrolment,
     Guardian,
+    GuardianLink,
     SchoolConfig,
     Section,
     StaffProfile,
@@ -119,6 +120,36 @@ class RegistryService:
             .first()
         )
         return row.section.standard.number if row is not None else None
+
+    def linked_student_ids(
+        self, context: RequestContext, person_id: UUID, on: date
+    ) -> tuple[UUID, ...]:
+        """Return the pupil themselves, or a guardian's children linked on ``on``."""
+        if Student.objects.filter(id=person_id, school_id=context.school_id).exists():
+            return (person_id,)
+        rows = (
+            GuardianLink.objects.filter(
+                school_id=context.school_id,
+                guardian_id=person_id,
+                visibility="academic",
+                from_date__lte=on,
+            )
+            .filter(Q(to_date__isnull=True) | Q(to_date__gte=on))
+            .values_list("student_id", flat=True)
+        )
+        return tuple(sorted(set(rows), key=str))
+
+    def display_names(self, context: RequestContext, ids: tuple[UUID, ...]) -> dict[UUID, str]:
+        """Return {person id: display name} across students, guardians and staff."""
+        wanted = set(ids)
+        names: dict[UUID, str] = {}
+        for model in (Student, Guardian, StaffProfile):
+            names.update(
+                model.objects.filter(school_id=context.school_id, id__in=wanted).values_list(
+                    "id", "display_name"
+                )
+            )
+        return names
 
     def school_profile(self, context: RequestContext) -> SchoolProfileDTO | None:
         """Return the installed SchoolConfig as a DTO, or None."""

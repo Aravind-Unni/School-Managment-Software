@@ -115,7 +115,8 @@ export function AccountsPage() {
   }, [load]);
 
   const roleName = useMemo(() => new Map(roles.map((role) => [role.id, role.name])), [roles]);
-  const visible = accounts.filter((row) => {
+  // The automatic-jobs account cannot sign in and is not a person; hide it.
+  const visible = accounts.filter((row) => row.login_name !== "system.jobs").filter((row) => {
     const needle = filter.trim().toLowerCase();
     return (
       needle === "" ||

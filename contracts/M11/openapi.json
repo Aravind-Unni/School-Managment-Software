@@ -201,7 +201,10 @@
             "required": true,
             "schema": {
               "type": "string",
-              "enum": ["fake", "launch"]
+              "enum": [
+                "fake",
+                "launch"
+              ]
             }
           }
         ],
@@ -239,6 +242,68 @@
           }
         }
       }
+    },
+    "/notices/inbox": {
+      "get": {
+        "operationId": "list_notice_inbox",
+        "summary": "Published notices addressed to the caller or their linked children",
+        "responses": {
+          "200": {
+            "description": "Newest first, at most 50.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "body": {
+                            "type": "string"
+                          },
+                          "locale": {
+                            "type": "string"
+                          },
+                          "published_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "title",
+                          "body",
+                          "locale",
+                          "published_at"
+                        ]
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -265,7 +330,11 @@
       "ErrorEnvelope": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["code", "message_key", "request_id"],
+        "required": [
+          "code",
+          "message_key",
+          "request_id"
+        ],
         "properties": {
           "code": {
             "type": "string"
@@ -281,7 +350,10 @@
             "items": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["field", "message_key"],
+              "required": [
+                "field",
+                "message_key"
+              ],
               "properties": {
                 "field": {
                   "type": "string"
@@ -297,7 +369,12 @@
       "CreateNoticeRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["title", "body", "locale", "audience"],
+        "required": [
+          "title",
+          "body",
+          "locale",
+          "audience"
+        ],
         "properties": {
           "title": {
             "type": "string",
@@ -311,13 +388,19 @@
           },
           "locale": {
             "type": "string",
-            "enum": ["en", "ml"]
+            "enum": [
+              "en",
+              "ml"
+            ]
           },
           "audience": {
             "$ref": "#/components/schemas/AudienceSelector"
           },
           "scheduled_at": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           }
         }
@@ -325,11 +408,16 @@
       "AudienceSelector": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["kind"],
+        "required": [
+          "kind"
+        ],
         "properties": {
           "kind": {
             "type": "string",
-            "enum": ["section", "person_ids"]
+            "enum": [
+              "section",
+              "person_ids"
+            ]
           },
           "section_id": {
             "type": "string",
@@ -380,21 +468,30 @@
           },
           "locale": {
             "type": "string",
-            "enum": ["en", "ml"]
+            "enum": [
+              "en",
+              "ml"
+            ]
           },
           "audience": {
             "$ref": "#/components/schemas/AudienceSelector"
           },
           "state": {
             "type": "string",
-            "enum": ["draft", "published"]
+            "enum": [
+              "draft",
+              "published"
+            ]
           },
           "version": {
             "type": "integer",
             "minimum": 1
           },
           "scheduled_at": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           },
           "created_at": {
@@ -406,7 +503,10 @@
             "format": "date-time"
           },
           "audience_snapshot_id": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "uuid"
           }
         }
@@ -414,7 +514,9 @@
       "PublishNoticeRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["expected_version"],
+        "required": [
+          "expected_version"
+        ],
         "properties": {
           "expected_version": {
             "type": "integer",
@@ -425,7 +527,12 @@
       "AudienceSnapshotDTO": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "notice_id", "recipient_ids", "created_at"],
+        "required": [
+          "id",
+          "notice_id",
+          "recipient_ids",
+          "created_at"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -451,7 +558,10 @@
       "PublishNoticeResponse": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["notice", "audience_snapshot"],
+        "required": [
+          "notice",
+          "audience_snapshot"
+        ],
         "properties": {
           "notice": {
             "$ref": "#/components/schemas/NoticeDTO"
@@ -484,17 +594,28 @@
           },
           "locale": {
             "type": "string",
-            "enum": ["en", "ml"]
+            "enum": [
+              "en",
+              "ml"
+            ]
           },
           "variables": {
             "type": "object",
             "additionalProperties": {
-              "type": ["string", "number", "boolean", "null"]
+              "type": [
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ]
             }
           },
           "channel": {
             "type": "string",
-            "enum": ["in_app", "sms"]
+            "enum": [
+              "in_app",
+              "sms"
+            ]
           },
           "dedupe_key": {
             "type": "string",
@@ -506,7 +627,11 @@
       "AttemptDTO": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "attempted_at", "outcome"],
+        "required": [
+          "id",
+          "attempted_at",
+          "outcome"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -563,7 +688,10 @@
           },
           "channel": {
             "type": "string",
-            "enum": ["in_app", "sms"]
+            "enum": [
+              "in_app",
+              "sms"
+            ]
           },
           "dedupe_key": {
             "type": "string"
@@ -585,14 +713,20 @@
             ]
           },
           "provider_ref": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "template_key": {
             "type": "string"
           },
           "locale": {
             "type": "string",
-            "enum": ["en", "ml"]
+            "enum": [
+              "en",
+              "ml"
+            ]
           },
           "version": {
             "type": "integer",
@@ -613,14 +747,19 @@
             }
           },
           "provider_status": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       },
       "CallbackAccepted": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["accepted"],
+        "required": [
+          "accepted"
+        ],
         "properties": {
           "accepted": {
             "type": "boolean",

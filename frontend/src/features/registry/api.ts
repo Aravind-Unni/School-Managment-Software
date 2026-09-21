@@ -442,3 +442,24 @@ export async function endTeachingAssignment(
     },
   });
 }
+
+export interface MyStudent {
+  readonly id: string;
+  readonly display_name: string;
+  readonly admission_no: string;
+  readonly section_id: string | null;
+  readonly section_label: string | null;
+  readonly relationship: "self" | "guardian";
+}
+
+/** The pupils this account acts for: a parent's children, or the pupil. */
+export async function listMyStudents(): Promise<readonly MyStudent[]> {
+  const page = await request<Collection<MyStudent>>(`${BASE}/students/mine`);
+  return page.items;
+}
+
+/** Search students by name or admission number (first page only). */
+export async function searchStudents(query: string): Promise<readonly StudentRecord[]> {
+  const page = await listStudents({ pageSize: 20, query });
+  return page.items;
+}

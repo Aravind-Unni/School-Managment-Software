@@ -6,6 +6,8 @@ the server what kind of person it is.
 
 from __future__ import annotations
 
+from uuid import UUID, uuid5
+
 from contracts.errors import ObjectInaccessible
 from contracts.identity import RequestContext
 
@@ -50,3 +52,13 @@ def is_school_wide_reader(access, context: RequestContext, on) -> bool:
         ScopeFacts(resource_school_id=context.school_id, effective_date=on),
     )
     return decision.allowed
+
+
+def system_actor_id(school_id) -> UUID:
+    """Return the id of the school's "automatic jobs" account.
+
+    Created by install_school with read-only grants and a password that can
+    never match, so scheduled work (nightly projections) runs as a real,
+    auditable account that no person can sign in as.
+    """
+    return uuid5(UUID(str(school_id)), "install.system-account")

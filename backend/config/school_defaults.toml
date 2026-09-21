@@ -297,6 +297,7 @@ requires_two_factor = false
 grants = [
   "auth.factor.manage_self@self",
   "students.read@self", "timetable.read_student@self", "attendance.read@self",
+  "attendance.read_student@self",
   "evidence.view@self", "performance.read@self", "fees.read@self",
   "transport.read@self", "library.read_own@self", "files.read@self",
 ]
@@ -307,5 +308,6 @@ requires_two_factor = false
 grants = [
   "auth.factor.manage_self@self",
   "students.read@self", "timetable.read_student@self", "attendance.read@self",
+  "attendance.read_student@self",
   "evidence.view@self", "performance.read@self", "library.read_own@self",
 ]

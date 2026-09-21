@@ -196,7 +196,7 @@
           "kind": "openapi",
           "owner": "M02 registry",
           "path": "contracts/M02/openapi.json",
-          "sha256": "34e97eb06e5d67dbb18383b6cfda081e86403c0e1fbc45d9ddf9572aaeb198f3"
+          "sha256": "d55fd2cfa4f64205a4e03e4133b4d1bfb33d88393fc2f2043e11c561ac3ce7c8"
         },
         {
           "frozen": true,
@@ -826,7 +826,7 @@
           "kind": "openapi",
           "owner": "M11 communications",
           "path": "contracts/M11/openapi.json",
-          "sha256": "107e5f4da18bf44b42ca1553b68121b0446ab8710673e0ca51bfaf7af250b976"
+          "sha256": "9afae9de585d90c8462a7a730e2384e10a2820e28ae68f641c4c92ce36a3d5f9"
         },
         {
           "frozen": true,

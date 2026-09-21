@@ -217,7 +217,9 @@ class SessionDetailView(APIView):
         """Return one dated period, or 404 when it does not run."""
         service = timetable_port()
         dto = service.get_session(request.school_context, timetable_session_id)
-        return Response(_session_dto_to_wire(dto))
+        from .views_schedules import with_names  # local: views_schedules imports this module
+
+        return Response(with_names(request.school_context, [_session_dto_to_wire(dto)])[0])
 
 
 def _session_dto_to_wire(dto) -> dict[str, object]:

@@ -224,6 +224,8 @@ def _install_roles(config, school_id, now, report) -> None:
             ]
         )
 
+    _install_system_account(school_id, now, report)
+
     # Owners hold every school-scoped action, including module actions added
     # since bootstrap_owner ran.
     owner_scopes = owner_grant_scopes()
@@ -276,3 +278,74 @@ def owner_grant_scopes() -> dict:
 def role_id_for(school_id: uuid.UUID, key: str) -> uuid.UUID:
     """Return the id install_school gives the role configured under ``key``."""
     return _stable_id(school_id, f"role.{key}")
+
+
+#: What scheduled jobs may do: read pupil records to compute dashboards and
+#: open warnings. Nothing that changes a mark, payment or attendance entry.
+SYSTEM_ACCOUNT_GRANTS = (
+    "students.read",
+    "reports.read",
+    "evidence.view",
+    "performance.read",
+    "attendance.read",
+    "warnings.manage",
+)
+
+
+def _install_system_account(school_id, now, report) -> None:
+    """Create the sign-in-proof account scheduled jobs act as, with its role."""
+    from django.contrib.auth.hashers import make_password
+
+    from modules.access.models import Grant, Role, User, UserRole
+    from modules.access.scopes import ScopeType
+    from shared.people import system_actor_id
+
+    user_id = system_actor_id(school_id)
+    user, created = User.objects.get_or_create(
+        id=user_id,
+        defaults={
+            "school_id": school_id,
+            "login_name": "system.jobs",
+            "password_hash": make_password(None),  # unusable: nobody can sign in
+            "display_name": "Automatic jobs",
+            "person_id": None,
+            "active": True,
+            "version": 1,
+            "created_at": now,
+            "updated_at": now,
+        },
+    )
+    role_id = _stable_id(school_id, "role.system")
+    role, _ = Role.objects.get_or_create(
+        id=role_id,
+        defaults={
+            "school_id": school_id,
+            "name": "Automatic jobs",
+            "is_owner_role": False,
+            "requires_two_factor": False,
+            "version": 1,
+            "created_at": now,
+            "updated_at": now,
+        },
+    )
+    held = set(Grant.objects.filter(role=role).values_list("action", flat=True))
+    Grant.objects.bulk_create(
+        [
+            Grant(
+                school_id=school_id,
+                role=role,
+                action=action,
+                scope_type=ScopeType.SCHOOL.value,
+                scope_id=None,
+                valid_from=GRANTS_VALID_FROM,
+                valid_to=None,
+                created_at=now,
+            )
+            for action in SYSTEM_ACCOUNT_GRANTS
+            if action not in held
+        ]
+    )
+    UserRole.objects.get_or_create(
+        user=user, role=role, defaults={"school_id": school_id, "granted_at": now}
+    )
+    report.note("system_account", created)

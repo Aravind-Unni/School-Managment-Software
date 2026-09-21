@@ -41,6 +41,7 @@ describe("module registry", () => {
       "nav.security",
       "nav.accounts",
       "nav.roles",
+      "nav.student_overview",
       "nav.registry_setup",
       "nav.students",
       "nav.admit",

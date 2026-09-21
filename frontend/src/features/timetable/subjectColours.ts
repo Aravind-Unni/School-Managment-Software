@@ -23,10 +23,26 @@ const FIXED: Record<string, string> = {
 
 const SPARE = ["#0369a1", "#7c3aed", "#b45309", "#047857", "#be185d", "#4d7c0f"];
 
-/** Return the colour for a subject code. */
+/** Display names of the default subjects, so screens that only have a name agree. */
+const NAME_TO_CODE: Record<string, string> = {
+  mathematics: "MATH",
+  english: "ENG",
+  malayalam: "MAL",
+  hindi: "HIN",
+  science: "SCI",
+  "social science": "SST",
+  "environmental studies": "EVS",
+  "computer science": "COMP",
+  physics: "PHY",
+  chemistry: "CHEM",
+  biology: "BIO",
+  "physical education": "PE",
+};
+
+/** Return the colour for a subject code (or its display name). */
 export function subjectColour(code: string | undefined): string {
   if (!code) return "#64748b";
-  const fixed = FIXED[code.toUpperCase()];
+  const fixed = FIXED[code.toUpperCase()] ?? FIXED[NAME_TO_CODE[code.toLowerCase()] ?? ""];
   if (fixed) return fixed;
   let hash = 0;
   for (const char of code) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
