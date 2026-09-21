@@ -56,10 +56,11 @@ Integrated must **raise** when a declared consumer has no real provider.
 
 ## Open defects
 
-1. M02 incomplete — blocks all registry-backed journeys.
+1. M02 step 4 (promotion/withdrawal/exchange polish) still open; RegistryPort for C02 journeys is present.
 2. Zero STANDALONE_VERIFIED.
-3. `dev.py` lacks `all` / `integration` / `load` / `restore` until C02 host work lands.
+3. No container engine on the verification machine — `up all` / browser / load / restore blocked.
 4. Frontend OpenAPI client generation covers only M00/M01/M03 today.
+5. M01 contracts remain unfrozen (see m01-contract-conflict.md).
 
 ## How a fresh chat continues
 
