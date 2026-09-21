@@ -162,9 +162,7 @@ class EnrolmentService:
         """Enrol a pupil in one subject offering."""
         self._authorise(context, "registry.manage")
         require_ordered_dates(from_date, to_date or from_date)
-        enrolment = fetch_in_school(
-            Enrolment, school_id=context.school_id, row_id=enrolment_id
-        )
+        enrolment = fetch_in_school(Enrolment, school_id=context.school_id, row_id=enrolment_id)
         offering = fetch_in_school(
             SubjectOffering, school_id=context.school_id, row_id=subject_offering_id
         )

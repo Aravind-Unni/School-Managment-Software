@@ -199,9 +199,7 @@ class RegistryService:
                     )
                     if row.section_id in section_ids
                 ]
-                relationship = (
-                    Relationship.ASSIGNED_TEACHER if matching else Relationship.NONE
-                )
+                relationship = Relationship.ASSIGNED_TEACHER if matching else Relationship.NONE
             else:
                 relationship = Relationship.NONE
 

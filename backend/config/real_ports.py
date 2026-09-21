@@ -150,12 +150,11 @@ def build_real_providers(required_ports: frozenset[str]) -> dict[str, tuple]:
         except ModuleNotFoundError as exc:
             raise env.ConfigurationError(
                 "integrated mode requires M02 RegistryPort "
-                f"({exc.name} missing); complete registry steps 2–3 first"
+                f"({exc.name} missing); complete registry steps 2-3 first"
             ) from exc
 
     return {
-        name: (REAL_PORT_FACTORIES[name], AdapterKind.REAL)
-        for name in sorted(required_ports)
+        name: (REAL_PORT_FACTORIES[name], AdapterKind.REAL) for name in sorted(required_ports)
     }
 
 

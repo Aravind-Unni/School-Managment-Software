@@ -9,8 +9,6 @@ from __future__ import annotations
 
 from datetime import date
 
-from shared import fixtures
-
 from modules.registry import seeds as registry_seeds
 from modules.registry.models import (
     AcademicYear,
@@ -26,6 +24,7 @@ from modules.registry.models import (
     SubjectOffering,
     TeachingAssignment,
 )
+from shared import fixtures
 
 
 def integration() -> dict[str, int]:

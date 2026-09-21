@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from config.real_ports import REAL_PORT_FACTORIES, _bind_known_factories, required_ports_for
 
 
@@ -39,7 +37,8 @@ def test_integrated_approved_module_ids_follow_assembly_order():
     tree = ast.parse(path.read_text())
     approved = None
     for node in tree.body:
-        if isinstance(node, ast.AnnAssign) and getattr(node.target, "id", None) == "APPROVED_MODULE_IDS":
+        target_id = getattr(getattr(node, "target", None), "id", None)
+        if isinstance(node, ast.AnnAssign) and target_id == "APPROVED_MODULE_IDS":
             approved = ast.literal_eval(node.value)
             break
         if isinstance(node, ast.Assign):

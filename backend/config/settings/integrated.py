@@ -16,11 +16,11 @@ from __future__ import annotations
 import importlib
 
 from config import env
+from config.real_ports import build_real_providers, required_ports_for
 from config.settings.base import *
 from config.settings.base import HARNESS_APPS, INSTALLED_APPS, MIDDLEWARE, SCHOOL_CLOCK
 from shared.module_catalog import MODULE_SLUGS
-from shared.ports import AdapterKind, PortRegistry
-from config.real_ports import build_real_providers, required_ports_for
+from shared.ports import PortRegistry
 
 APP_ENV = "integrated"
 

@@ -664,7 +664,11 @@ def command_seed(arguments: argparse.Namespace) -> int:
         names=names,
         allocated=allocated,
         profile=profile,
-        extra_env={"DEMO_FIXTURES_ENABLED": "true"} if declaration.module_id == ALL_MODULE_ID else None,
+        extra_env=(
+            {"DEMO_FIXTURES_ENABLED": "true"}
+            if declaration.module_id == ALL_MODULE_ID
+            else None
+        ),
     )
     if status != 0:
         fail("seeding failed.")

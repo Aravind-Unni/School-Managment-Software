@@ -169,9 +169,7 @@ class TeachingAssignmentDetailView(APIView):
     )
     def get(self, request: Request, section_id: UUID) -> Response:
         """Return one teaching assignment."""
-        row = teaching_assignment_service().get_assignment(
-            request.school_context, section_id
-        )
+        row = teaching_assignment_service().get_assignment(request.school_context, section_id)
         return Response(wire_lifecycle.teaching_assignment_to_wire(row))
 
     @extend_schema(

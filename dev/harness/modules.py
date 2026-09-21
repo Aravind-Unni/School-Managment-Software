@@ -110,7 +110,7 @@ def load(repo_root: pathlib.Path, module_id: str) -> ModuleDeclaration:
         raise ModuleDeclarationError(f"{path}: 'slug' is required")
 
     if normalised == "ALL":
-        # C02 integrated host: implemented when every M00–M14 registration exists.
+        # C02 integrated host: implemented when every M00-M14 registration exists.
         missing = []
         for mid in KNOWN_MODULE_IDS:
             mid_path = declaration_path(repo_root, mid)
