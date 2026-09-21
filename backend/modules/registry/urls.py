@@ -33,6 +33,18 @@ from .api.views import (
     SubjectCollectionView,
     TermCollectionView,
 )
+from .api.views_lifecycle import (
+    EnrolmentCollectionView,
+    EnrolmentTransferView,
+    GuardianLinkCollectionView,
+    GuardianLinkDetailView,
+    SectionRosterView,
+    SubjectEnrolmentCollectionView,
+    SubjectEnrolmentEndView,
+    SubjectOfferingCollectionView,
+    TeachingAssignmentCollectionView,
+    TeachingAssignmentDetailView,
+)
 
 app_name = "registry"
 
@@ -59,6 +71,52 @@ urlpatterns = [
         SectionArchiveView.as_view(),
         name="section-archive",
     ),
+    path(
+        "sections/<uuid:section_id>/roster",
+        SectionRosterView.as_view(),
+        name="section-roster",
+    ),
     path("sections/<uuid:section_id>", SectionDetailView.as_view(), name="section-detail"),
     path("students/<uuid:student_id>", StudentDetailView.as_view(), name="student-detail"),
+    path(
+        "guardian-links",
+        GuardianLinkCollectionView.as_view(),
+        name="guardian-link-collection",
+    ),
+    path(
+        "guardian-links/<uuid:section_id>",
+        GuardianLinkDetailView.as_view(),
+        name="guardian-link-detail",
+    ),
+    path(
+        "teaching-assignments",
+        TeachingAssignmentCollectionView.as_view(),
+        name="teaching-assignment-collection",
+    ),
+    path(
+        "teaching-assignments/<uuid:section_id>",
+        TeachingAssignmentDetailView.as_view(),
+        name="teaching-assignment-detail",
+    ),
+    path(
+        "subject-offerings",
+        SubjectOfferingCollectionView.as_view(),
+        name="subject-offering-collection",
+    ),
+    path("enrolments", EnrolmentCollectionView.as_view(), name="enrolment-collection"),
+    path(
+        "enrolments/<uuid:section_id>/transfer",
+        EnrolmentTransferView.as_view(),
+        name="enrolment-transfer",
+    ),
+    path(
+        "subject-enrolments",
+        SubjectEnrolmentCollectionView.as_view(),
+        name="subject-enrolment-collection",
+    ),
+    path(
+        "subject-enrolments/<uuid:section_id>/end",
+        SubjectEnrolmentEndView.as_view(),
+        name="subject-enrolment-end",
+    ),
 ]

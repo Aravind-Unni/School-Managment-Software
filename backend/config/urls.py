@@ -73,6 +73,11 @@ def _build_port_registry():
             f"settings module {settings.SETTINGS_MODULE} defines no "
             "build_port_registry; every profile must declare how ports are bound"
         )
+    if settings.APP_ENV == "integrated":
+        from contracts.registration import assert_no_registration_collisions
+
+        assert_no_registration_collisions(tuple(REGISTRATIONS))
+        return builder(None)
     primary = REGISTRATIONS[0] if REGISTRATIONS else None
     return builder(primary)
 

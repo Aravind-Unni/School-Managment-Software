@@ -109,11 +109,23 @@ def load(repo_root: pathlib.Path, module_id: str) -> ModuleDeclaration:
     if not slug:
         raise ModuleDeclarationError(f"{path}: 'slug' is required")
 
-    registration = repo_root / "backend" / "modules" / slug / "registration.py"
+    if normalised == "ALL":
+        # C02 integrated host: implemented when every M00-M14 registration exists.
+        missing = []
+        for mid in KNOWN_MODULE_IDS:
+            mid_path = declaration_path(repo_root, mid)
+            mid_slug = json.loads(mid_path.read_text())["slug"]
+            if not (repo_root / "backend" / "modules" / mid_slug / "registration.py").exists():
+                missing.append(mid)
+        implemented = not missing
+    else:
+        registration = repo_root / "backend" / "modules" / slug / "registration.py"
+        implemented = registration.exists()
+
     return ModuleDeclaration(
         module_id=normalised,
         slug=slug,
         resources=enabled,
         seed_scenarios=tuple(data.get("seed_scenarios") or ()),
-        implemented=registration.exists(),
+        implemented=implemented,
     )

@@ -20,7 +20,11 @@ from django.conf import settings
 from shared.ports import runtime
 
 from ..services.configuration import ConfigurationService
+from ..services.enrolments import EnrolmentService
+from ..services.guardian_links import GuardianLinkService
 from ..services.people import PeopleService
+from ..services.port import RegistryService, registry_service
+from ..services.teaching_assignments import TeachingAssignmentService
 
 
 def access_port():
@@ -41,3 +45,23 @@ def configuration_service() -> ConfigurationService:
 def people_service() -> PeopleService:
     """Assemble the people service from the profile's bound ports."""
     return PeopleService(access=access_port(), clock=clock())
+
+
+def registry_port() -> RegistryService:
+    """Return the in-process RegistryPort adapter backed by this module's database."""
+    return registry_service()
+
+
+def guardian_link_service() -> GuardianLinkService:
+    """Assemble the guardian link service from the profile's bound ports."""
+    return GuardianLinkService(access=access_port(), clock=clock())
+
+
+def teaching_assignment_service() -> TeachingAssignmentService:
+    """Assemble the teaching assignment service from the profile's bound ports."""
+    return TeachingAssignmentService(access=access_port(), clock=clock())
+
+
+def enrolment_service() -> EnrolmentService:
+    """Assemble the enrolment service from the profile's bound ports."""
+    return EnrolmentService(access=access_port(), clock=clock())

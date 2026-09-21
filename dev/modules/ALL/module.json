@@ -1,0 +1,16 @@
+{
+  "module_id": "ALL",
+  "slug": "integrated",
+  "_comment": "C02 integrated stack: union of resources every business module needs.",
+  "_status": "integration host declaration; not a business module",
+  "resources": {
+    "postgres": true,
+    "frontend": true,
+    "broker": true,
+    "worker": true,
+    "object_storage": true
+  },
+  "seed_scenarios": [
+    "integration"
+  ]
+}

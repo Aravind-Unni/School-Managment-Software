@@ -39,25 +39,32 @@ class Command(BaseCommand):
         self._refuse_unsafe_target()
 
         scenario = options["scenario"]
-        address = address_for(settings.MODULE_ID)
-        try:
-            seeds = importlib.import_module(f"{address.django_app}.seeds")
-        except ModuleNotFoundError as exc:
-            raise CommandError(
-                f"{address.id} ({address.slug}) has no seeds module at "
-                f"{address.django_app}.seeds; nothing to seed."
-            ) from exc
+        if settings.MODULE_ID.upper() == "ALL":
+            from config import integration_seed as seeds
 
-        available = getattr(seeds, "SCENARIOS", {})
+            available = getattr(seeds, "SCENARIOS", {})
+            address_label = "ALL (integrated)"
+        else:
+            address = address_for(settings.MODULE_ID)
+            try:
+                seeds = importlib.import_module(f"{address.django_app}.seeds")
+            except ModuleNotFoundError as exc:
+                raise CommandError(
+                    f"{address.id} ({address.slug}) has no seeds module at "
+                    f"{address.django_app}.seeds; nothing to seed."
+                ) from exc
+            available = getattr(seeds, "SCENARIOS", {})
+            address_label = address.id
+
         if scenario not in available:
             raise CommandError(
-                f"unknown scenario {scenario!r}; {address.id} declares {sorted(available)}"
+                f"unknown scenario {scenario!r}; {address_label} declares {sorted(available)}"
             )
 
         with transaction.atomic():
             summary = available[scenario]()
 
-        self.stdout.write(f"loaded scenario {scenario!r} for {address.id}")
+        self.stdout.write(f"loaded scenario {scenario!r} for {address_label}")
         for label, count in sorted(summary.items()):
             self.stdout.write(f"  {label}: {count}")
 

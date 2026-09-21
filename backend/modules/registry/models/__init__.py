@@ -16,6 +16,7 @@ from .configuration import (
     Subject,
     Term,
 )
+from .enrolments import ENROLMENT_STATES, Enrolment, SubjectEnrolment
 from .people import (
     DUPLICATE_REASONS,
     STUDENT_STATUSES,
@@ -25,21 +26,29 @@ from .people import (
     StaffProfile,
     Student,
 )
+from .relationships import VISIBILITY_CHOICES, GuardianLink, SubjectOffering, TeachingAssignment
 
 __all__ = [
     "DUPLICATE_REASONS",
+    "ENROLMENT_STATES",
     "LANGUAGES",
     "STUDENT_STATUSES",
+    "VISIBILITY_CHOICES",
     "YEAR_STATES",
     "AcademicYear",
     "DuplicateReview",
+    "Enrolment",
     "ExternalIdentity",
     "Guardian",
+    "GuardianLink",
     "SchoolConfig",
     "Section",
     "StaffProfile",
     "Standard",
     "Student",
     "Subject",
+    "SubjectEnrolment",
+    "SubjectOffering",
+    "TeachingAssignment",
     "Term",
 ]

@@ -44,7 +44,8 @@ EXIT_NOT_IMPLEMENTED = 3
 EXIT_REFUSED = 4
 
 VALID_PROFILES = ("standalone", "integrated")
-VALID_SUITES = ("standalone", "contracts", "browser")
+VALID_SUITES = ("standalone", "contracts", "browser", "integration", "load", "restore")
+ALL_MODULE_ID = "ALL"
 
 
 # --------------------------------------------------------------------------
@@ -240,6 +241,7 @@ def run_django(
     names: naming.ResourceNames,
     allocated: dict[str, int],
     profile: str,
+    extra_env: dict[str, str] | None = None,
 ) -> int:
     """Run a Django management command in the module's environment.
 
@@ -258,10 +260,13 @@ def run_django(
             ),
         )
         return EXIT_PREREQUISITE_MISSING
+    environment = environment_for(declaration, names, allocated, profile=profile)
+    if extra_env:
+        environment = {**environment, **extra_env}
     return subprocess.run(
         [str(interpreter), "backend/manage.py", *arguments],
         cwd=REPO_ROOT,
-        env=environment_for(declaration, names, allocated, profile=profile),
+        env=environment,
     ).returncode
 
 
@@ -652,12 +657,18 @@ def command_seed(arguments: argparse.Namespace) -> int:
     say(
         f"seeding {declaration.module_id} scenario {arguments.scenario!r} into {names.database}"
     )
+    profile = "integrated" if declaration.module_id == ALL_MODULE_ID else "standalone"
     status = run_django(
         ["seed_scenario", "--scenario", arguments.scenario],
         declaration=declaration,
         names=names,
         allocated=allocated,
-        profile="standalone",
+        profile=profile,
+        extra_env=(
+            {"DEMO_FIXTURES_ENABLED": "true"}
+            if declaration.module_id == ALL_MODULE_ID
+            else None
+        ),
     )
     if status != 0:
         fail("seeding failed.")
@@ -708,8 +719,96 @@ def command_check(arguments: argparse.Namespace) -> int:
         return _check_standalone(declaration, names, arguments.profile)
     if suite == "browser":
         return _check_browser(declaration, names)
+    if suite == "integration":
+        return _check_integration(declaration, names, arguments.profile)
+    if suite == "load":
+        return _check_not_implemented_suite(declaration, names, "load")
+    if suite == "restore":
+        return _check_not_implemented_suite(declaration, names, "restore")
     fail(f"unknown suite {suite!r}", hint=f"valid suites: {list(VALID_SUITES)}")
     return EXIT_REFUSED
+
+
+def _check_not_implemented_suite(declaration, names, suite: str) -> int:
+    """Record a suite as not-run when the harness has no executor yet.
+
+    Never reports passed. C02 capacity and restore gates must be measured, not
+    claimed.
+    """
+    path = evidence.write_report(
+        repo_root=REPO_ROOT,
+        stem=names.stem,
+        suite=suite,
+        module_id=declaration.module_id,
+        passed=False,
+        backend="not-run",
+        details={
+            "reason": (
+                f"{suite} suite executor is not yet wired on this branch; "
+                "recorded as not-run, not as passing"
+            )
+        },
+    )
+    say(f"check {declaration.module_id} -- suite {suite}: NOT RUN")
+    say(f"  report {path.relative_to(REPO_ROOT)}")
+    return EXIT_FAILED
+
+
+def _check_integration(declaration, names, profile: str) -> int:
+    """Run integration tests against the integrated profile settings.
+
+    Requires profile=integrated. Does not start containers itself; uses the
+    local pytest suite under tests/integration plus module port wiring checks.
+    """
+    if profile != "integrated" and declaration.module_id != ALL_MODULE_ID:
+        say(
+            "note: integration suite expects --profile integrated "
+            f"(got {profile!r}); continuing with integrated settings anyway"
+        )
+    say(f"check {declaration.module_id} -- suite integration")
+    interpreter = test_interpreter()
+    if interpreter is None:
+        path = evidence.write_report(
+            repo_root=REPO_ROOT,
+            stem=names.stem,
+            suite="integration",
+            module_id=declaration.module_id,
+            passed=False,
+            backend="not-run",
+            details={"reason": "no interpreter with pytest"},
+        )
+        say(f"  report {path.relative_to(REPO_ROOT)}")
+        return EXIT_FAILED
+
+    environment = {
+        **os.environ,
+        "MODULE_ID": "M00" if declaration.module_id == ALL_MODULE_ID else declaration.module_id,
+        "APP_ENV": "integrated",
+        "DJANGO_SETTINGS_MODULE": "config.settings.test_sqlite",
+    }
+    # test_sqlite is standalone-shaped; run port-binding unit tests that import
+    # real_bindings without requiring a live integrated DB when containers are down.
+    command = [
+        str(interpreter),
+        "-m",
+        "pytest",
+        "tests/integration",
+        "tests/contracts/test_registration_contract.py",
+        "-q",
+        "--tb=line",
+    ]
+    status = subprocess.run(command, cwd=REPO_ROOT, env=environment).returncode
+    path = evidence.write_report(
+        repo_root=REPO_ROOT,
+        stem=names.stem,
+        suite="integration",
+        module_id=declaration.module_id,
+        passed=status == 0,
+        backend="pytest-integration",
+        details={"pytest_exit": status},
+    )
+    say(f"  report {path.relative_to(REPO_ROOT)}")
+    return EXIT_OK if status == 0 else EXIT_FAILED
 
 
 def _check_contracts(declaration, names) -> int:
@@ -755,7 +854,12 @@ def _check_contracts(declaration, names) -> int:
     ok = True
     # MODULE_ID selects both the settings profile and which module suite pytest
     # collects, so it must be present for the module's own contract tests.
-    environment = {**os.environ, "MODULE_ID": declaration.module_id}
+    # ALL is the C02 host id and is not in MODULE_SLUGS; use M00 for Django
+    # settings while still recording the evidence under ALL.
+    pytest_module_id = (
+        "M00" if declaration.module_id == ALL_MODULE_ID else declaration.module_id
+    )
+    environment = {**os.environ, "MODULE_ID": pytest_module_id}
     for label, command in steps:
         say(f"  {label} ...")
         status = subprocess.run(command, cwd=REPO_ROOT, env=environment).returncode

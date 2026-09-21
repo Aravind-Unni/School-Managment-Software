@@ -40,7 +40,6 @@ READING_RELATIONSHIPS = frozenset(
 FIXTURE_POLICY_RULES: tuple[PolicyRule, ...] = (
     # Configuration and reference data are school-scoped staff work: there is no
     # single subject, so a relationship-gated rule would deny every list call.
-    PolicyRule(action="registry.manage", allowed_relationships=frozenset()),
     PolicyRule(action="staff.assign", allowed_relationships=frozenset()),
     # Directory reads are school-scoped; per-record reads are relationship-gated.
     PolicyRule(action="students.read", allowed_relationships=frozenset()),
@@ -54,6 +53,12 @@ FIXTURE_POLICY_RULES: tuple[PolicyRule, ...] = (
     ),
     PolicyRule(
         action="guardians.manage",
+        allowed_relationships=frozenset(),
+        minimum_auth_level=AuthLevel.TWO_FACTOR,
+        max_auth_age=RECENT_TWO_FACTOR_WINDOW,
+    ),
+    PolicyRule(
+        action="registry.manage",
         allowed_relationships=frozenset(),
         minimum_auth_level=AuthLevel.TWO_FACTOR,
         max_auth_age=RECENT_TWO_FACTOR_WINDOW,

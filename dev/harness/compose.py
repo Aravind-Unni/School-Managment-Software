@@ -379,9 +379,14 @@ def _frontend(
         f"      SCHOOL_FRONTEND_PORT: {_quote(FRONTEND_PORT)}",
         # Tells the bundle which module's feature routes to register. A standalone
         # profile serves ONE module; without this the frontend would mount every
-        # implemented module's routes while the backend served only one.
+        # implemented module's routes while the backend served only one. ALL
+        # (integrated) leaves this empty so the frontend registers every feature.
         "      VITE_SCHOOL_MODULE_ID: "
-        + _quote(declaration.module_id if declaration is not None else ""),
+        + _quote(
+            ""
+            if declaration is not None and declaration.module_id == "ALL"
+            else (declaration.module_id if declaration is not None else "")
+        ),
         "    ports:",
         f'      - "127.0.0.1:{ports["frontend"]}:{FRONTEND_PORT}"',
         "    volumes:",
