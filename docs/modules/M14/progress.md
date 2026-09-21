@@ -7,7 +7,7 @@
 | Branch | `m14/platform-audit-jobs-backup` |
 | Branched from | `a2f16c24dc6a7c7004e5358a094f0bd0fc5760dd` (`origin/main`) |
 | Manifest revision | `school-contracts-v14` (proposed freeze → `v15`) |
-| PR | (set after draft PR opens) |
+| PR | https://github.com/Aravind-Unni/School-Managment-Software/pull/15 (draft) |
 | Last recorded | 2026-09-21 |
 
 ## Original request
