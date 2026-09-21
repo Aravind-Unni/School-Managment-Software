@@ -179,6 +179,12 @@ min_percent = 33
 grade = "E"
 min_percent = 0
 
+[assessment]
+# When true, a written test cannot be submitted until every scored pupil has a
+# scanned answer sheet attached (Files module). Off by default so a school can
+# start entering marks before it has a scanning routine.
+written_test_requires_evidence = false    # REVIEW
+
 [attendance]
 # A student below this percentage over the term raises a warning for staff.
 low_attendance_percent = 75         # REVIEW

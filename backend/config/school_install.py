@@ -154,6 +154,9 @@ def _install_identity(config, school_id, now, report) -> None:
         "working_days": list(config["timetable"]["working_days"]),
         "grading_bands": list(config.get("grading", {}).get("bands", [])),
         "low_attendance_percent": config["attendance"]["low_attendance_percent"],
+        "written_test_requires_evidence": bool(
+            config.get("assessment", {}).get("written_test_requires_evidence", True)
+        ),
     }
     row = SchoolConfig.objects.filter(school_id=school_id).first()
     if row is None:

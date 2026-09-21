@@ -24,7 +24,7 @@ from ..models import (
 )
 from .authority import AuthorityGate
 from .wire import build_result_snapshot, publication_to_wire
-from .workflow import assert_evidence_confirmed, assert_marks_complete
+from .workflow import assert_evidence_confirmed, assert_marks_complete, evidence_required
 
 
 @dataclass(frozen=True, slots=True)
@@ -76,7 +76,9 @@ class PublishService:
         if assessment.version != expected_version:
             raise VersionConflict("error.version_conflict")
 
-        assert_marks_complete(assessment)
+        assert_marks_complete(
+            assessment, require_evidence=evidence_required(self.gate.registry, context)
+        )
         assert_evidence_confirmed(assessment, self.files, context)
 
         now = self.clock.now()

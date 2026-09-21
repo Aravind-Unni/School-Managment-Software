@@ -25,9 +25,22 @@ from .authority import AuthorityGate
 from .wire import assessment_to_wire
 
 
-def assert_marks_complete(assessment: Assessment) -> None:
+def evidence_required(registry, context) -> bool:
+    """Return whether scored written tests need a scanned answer sheet.
+
+    The school decides, in its config file (``written_test_requires_evidence``);
+    with no configured school the stricter rule applies.
+    """
+    profile = registry.school_profile(context) if registry is not None else None
+    if profile is None:
+        return True
+    return bool(profile.settings.get("written_test_requires_evidence", True))
+
+
+def assert_marks_complete(assessment: Assessment, *, require_evidence: bool = True) -> None:
     """Raise when scored results lack complete component scores or evidence.
 
+    ``require_evidence`` applies the school's written-test scan rule.
     Does not handle: oral/practical evidence rules beyond scored written work.
     """
     component_ids = {c.id for c in assessment.components.all()}
@@ -44,7 +57,7 @@ def assert_marks_complete(assessment: Assessment) -> None:
         marked = {m.component_id for m in result.marks.all()}
         if marked != component_ids:
             raise ValidationFailed("assessment.error.incomplete_marks")
-        if assessment.type == AssessmentType.WRITTEN_TEST:
+        if require_evidence and assessment.type == AssessmentType.WRITTEN_TEST:
             evidence = result.evidence_bindings.filter(revision_id__isnull=True)
             if not evidence.exists():
                 raise ValidationFailed("assessment.error.evidence_required")
@@ -90,7 +103,9 @@ class WorkflowService:
         if assessment.version != expected_version:
             raise VersionConflict("error.version_conflict")
 
-        assert_marks_complete(assessment)
+        assert_marks_complete(
+            assessment, require_evidence=evidence_required(self.gate.registry, context)
+        )
 
         now = self.clock.now()
         with transaction.atomic():
@@ -142,7 +157,9 @@ class WorkflowService:
         ):
             raise ValidationFailed("assessment.error.distinct_approver_required")
 
-        assert_marks_complete(assessment)
+        assert_marks_complete(
+            assessment, require_evidence=evidence_required(self.gate.registry, context)
+        )
 
         now = self.clock.now()
         with transaction.atomic():

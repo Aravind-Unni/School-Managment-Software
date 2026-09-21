@@ -24,6 +24,11 @@ READING_RELATIONSHIPS = frozenset(
 )
 
 
+#: Review actions a school-wide grant holder may take on any class's results;
+#: everyone else needs the section/subject teaching assignment.
+SCHOOL_REVIEW_ACTIONS = frozenset({"results.approve", "results.publish", "results.reopen"})
+
+
 @dataclass(frozen=True, slots=True)
 class AuthorityGate:
     """Combines Registry teaching assignments with Access policy."""
@@ -88,6 +93,10 @@ class AuthorityGate:
         """
         if assessment.school_id != context.school_id:
             raise ObjectInaccessible("error.object_inaccessible")
+        if action in SCHOOL_REVIEW_ACTIONS and self._holds_school_wide(context, action):
+            # A principal or academic head reviews every class's results
+            # without being its subject teacher.
+            return
         if require_assignment:
             self.require_section_subject_action(
                 context,
@@ -102,6 +111,16 @@ class AuthorityGate:
                 action,
                 ScopeFacts(resource_school_id=assessment.school_id),
             )
+
+    def _holds_school_wide(self, context: RequestContext, action: str) -> bool:
+        """Return whether Access grants ``action`` across the whole school."""
+        return self.access.authorize(
+            context,
+            action,
+            ScopeFacts(
+                resource_school_id=context.school_id, effective_date=self.effective_date()
+            ),
+        ).allowed
 
     def require_publish_or_reopen(
         self,
