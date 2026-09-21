@@ -41,7 +41,9 @@ DTO shapes match `schemas/dtos.schema.json` (`DeliveryDTO`).
 class SmsProviderPort(Protocol):
     def send(self, message: SmsMessage, idempotency_key: str) -> ProviderSendResult: ...
     def lookup(self, provider_ref: str) -> str: ...  # delivery state
-    def verify_callback(self, headers: Mapping[str, str], raw_body: bytes) -> VerifiedCallbackEvent: ...
+    def verify_callback(
+        self, headers: Mapping[str, str], raw_body: bytes
+    ) -> VerifiedCallbackEvent: ...
 ```
 
 Fake adapter in standalone; real adapter only in integrated/production with

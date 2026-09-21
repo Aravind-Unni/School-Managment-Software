@@ -26,9 +26,7 @@ def test_publish_en_and_ml_notices(client, baseline):
         assert body["notice"]["state"] == "published"
         assert body["audience_snapshot"]["recipient_ids"]
     assert (
-        HarnessOutboxEvent.objects.filter(
-            event_type="communications.notice_published"
-        ).count()
+        HarnessOutboxEvent.objects.filter(event_type="communications.notice_published").count()
         == 2
     )
 
@@ -344,9 +342,7 @@ def test_publish_rollback_drops_outbox(client, baseline):
     )
     try:
         with transaction.atomic():
-            service.publish(
-                ctx, UUID(baseline["notice_ml_id"]), expected_version=1
-            )
+            service.publish(ctx, UUID(baseline["notice_ml_id"]), expected_version=1)
             raise ValidationFailed("error.validation_failed")
     except ValidationFailed:
         pass
@@ -354,8 +350,6 @@ def test_publish_rollback_drops_outbox(client, baseline):
     assert row.state == "draft"
     assert HarnessOutboxEvent.objects.count() == before_events
     assert (
-        HarnessAuditRecord.objects.filter(
-            action="communications.notice_published"
-        ).count()
+        HarnessAuditRecord.objects.filter(action="communications.notice_published").count()
         == before_audits
     )
