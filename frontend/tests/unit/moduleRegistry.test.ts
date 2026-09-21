@@ -23,6 +23,7 @@ describe("module registry", () => {
       "M11",
       "M12",
       "M13",
+      "M14",
     ]);
   });
 
@@ -72,6 +73,9 @@ describe("module registry", () => {
       "nav.exports",
       "nav.reports",
       "nav.report_cards",
+      "nav.platform_jobs",
+      "nav.platform_audit",
+      "nav.platform_backups",
     ]);
   });
 

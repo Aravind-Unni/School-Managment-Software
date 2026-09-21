@@ -55,9 +55,9 @@ def test_implemented_modules_are_exactly_those_with_a_registration():
     M00 (placeholder), M01 (access), M02 (registry), M03 (timetable), M04
     (attendance), M05 (assessment), M06 (performance), M07 (fees), M08
     (transport), M09 (library), M10 (alumni), M11 (communications), M12
-    (files) and M13 (exchange) are implemented. Everything else must report
-    not-implemented so `dev.py up` fails honestly rather than booting an empty
-    app.
+    (files), M13 (exchange) and M14 (platform) are implemented. Everything else
+    must report not-implemented so `dev.py up` fails honestly rather than booting
+    an empty app.
     """
     from harness.modules import KNOWN_MODULE_IDS, load
 
@@ -79,6 +79,7 @@ def test_implemented_modules_are_exactly_those_with_a_registration():
         "M11",
         "M12",
         "M13",
+        "M14",
     ]
 
 

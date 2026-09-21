@@ -65,19 +65,31 @@ TEST_BACKEND_LABEL = "sqlite-local-only"
 
 
 def build_port_registry(registration=None):
-    """Bind fakes for the local SQLite test profile.
+    """Bind fakes for the local SQLite test profile; M14 uses real Platform.
 
     Identical binding to the standalone runner, by construction: both call
     shared.ports.build_fake_registry. ``worker_available`` is False, so any test
     touching enqueue raises EagerModeNotAsserted rather than pretending.
     """
     from shared.ports import build_fake_registry
+    from shared.ports.registry import AdapterKind
 
+    overrides = None
+    if registration is not None and registration.id == "M14":
+        from modules.platform.services.adapter import PlatformAdapter
+
+        overrides = {
+            "platform": (
+                lambda: PlatformAdapter(worker_available=False, clock=SCHOOL_CLOCK),
+                AdapterKind.REAL,
+            )
+        }
     return build_fake_registry(
         registration,
         app_env="standalone",
         clock=SCHOOL_CLOCK,
         worker_available=False,
+        overrides=overrides,
     )
 
 

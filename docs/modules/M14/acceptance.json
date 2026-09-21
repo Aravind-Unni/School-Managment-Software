@@ -1,0 +1,35 @@
+{
+  "module_id": "M14",
+  "slug": "platform",
+  "status": "implemented_contracts_green_container_pending",
+  "branch": "m14/platform-audit-jobs-backup",
+  "started_from": "a2f16c24dc6a7c7004e5358a094f0bd0fc5760dd",
+  "manifest_revision": "school-contracts-v15",
+  "draft_pr": "https://github.com/Aravind-Unni/School-Managment-Software/pull/15",
+  "STANDALONE_VERIFIED": false,
+  "verified_criteria": [
+    "contracts frozen school-contracts-v15",
+    "real PlatformAdapter bound for M14 (not TestPlatformAdapter)",
+    "check M14 --suite contracts green",
+    "tests/modules/M14 19 passed on SQLite profile",
+    "rollback leaves no audit/outbox rows",
+    "duplicate delivery one ConsumerReceipt side effect",
+    "secrets redacted on GET /audit",
+    "cross-school job 404",
+    "restore rehearsal ops identity + production target forbidden",
+    "restore verifies sample hashes and fee_total_paise"
+  ],
+  "unverified_criteria": [
+    "dev.py up/migrate/seed against Compose PostgreSQL",
+    "check M14 --suite standalone",
+    "check M14 --suite browser",
+    "worker crash/retry on real broker",
+    "second-developer fresh checkout verification"
+  ],
+  "pending_integration": [
+    "real domain job identities",
+    "production monitoring",
+    "full-scale RPO/RTO",
+    "real M01 auth/2FA"
+  ]
+}

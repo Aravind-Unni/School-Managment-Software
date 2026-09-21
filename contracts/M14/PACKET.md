@@ -1,11 +1,7 @@
 # Contract packet -- M14 platform
 
-Status: **PROPOSED — awaiting human freeze**. Artefacts exist; `contracts/manifest.json`
-lists them with `frozen: false`. Do **not** implement until a named reviewer
-approves `review-decisions.md` and freezes under `school-contracts-v15`.
-
-Manifest revision this packet targets: `school-contracts-v14` (current) →
-proposed freeze revision `school-contracts-v15`.
+Status: **APPROVED AND FROZEN** under revision `school-contracts-v15` on 2026-09-21
+(reviewer: Abhinav M).
 
 Branched from `a2f16c24dc6a7c7004e5358a094f0bd0fc5760dd` (`origin/main`).
 
@@ -13,22 +9,22 @@ Branched from `a2f16c24dc6a7c7004e5358a094f0bd0fc5760dd` (`origin/main`).
 
 ## The rule this packet exists to enforce
 
-**Contract approval comes before module coding.** Artefacts below are proposed
-for review:
+**Contract approval comes before module coding.** Artefacts below are frozen in
+`contracts/manifest.json`.
 
-### Checklist — proposed artefacts
+### Checklist — frozen artefacts
 
 | # | Artefact | Path | Status |
 |---|---|---|---|
-| 1 | OpenAPI 3.1.0 | `openapi.json` | proposed |
-| 2 | Request/response DTOs | `schemas/dtos.schema.json` | proposed |
-| 3 | Event payloads | `schemas/events.schema.json` | proposed |
-| 4 | Error rows | `error-codes.json` | proposed |
-| 5 | Service ports | `ports.md` | proposed |
-| 6 | Review decisions | `review-decisions.md` | proposed |
-| 7 | Seed scenario | `fixtures/scenario.json` | proposed |
-| 8 | Example responses | `fixtures/responses.json` | proposed |
-| 9 | Acceptance assertions | `fixtures/expected-results.json` | proposed |
+| 1 | OpenAPI 3.1.0 | `openapi.json` | frozen |
+| 2 | Request/response DTOs | `schemas/dtos.schema.json` | frozen |
+| 3 | Event payloads | `schemas/events.schema.json` | frozen |
+| 4 | Error rows | `error-codes.json` | frozen |
+| 5 | Service ports | `ports.md` | frozen |
+| 6 | Review decisions | `review-decisions.md` | frozen |
+| 7 | Seed scenario | `fixtures/scenario.json` | frozen |
+| 8 | Example responses | `fixtures/responses.json` | frozen |
+| 9 | Acceptance assertions | `fixtures/expected-results.json` | frozen |
 
 ## Module registration
 
@@ -40,9 +36,8 @@ for review:
 | api_path_roots | `health/`, `jobs/`, `audit/`, `operations/` |
 | permission_codes | `platform.read_health`, `jobs.read`, `jobs.retry`, `audit.read`, `backups.manage` |
 | permission_prefixes | `platform.`, `jobs.`, `audit.`, `backups.` |
-| consumers | access, clock (+ local object store for backup versions) |
+| consumers | access, clock, object_storage, platform (self: real adapter, never TestPlatformAdapter) |
 | public_paths | `health/live` |
-| scheduled_jobs | outbox dispatcher; backup age monitor (Asia/Kolkata cron) |
 
 ## Inherited, non-negotiable constraints
 
@@ -81,7 +76,8 @@ here; Kubernetes is NOT required.
 
 ## Human gates before this module ships
 
-- this packet reviewed and frozen in the manifest
+- ~~this packet reviewed and frozen in the manifest~~
 - every equivalence/authorisation rule reviewed before being enabled
 - the phase exit gate
 - first customer-facing report for each design partner, where applicable
+- standalone PostgreSQL + browser evidence (container path)
