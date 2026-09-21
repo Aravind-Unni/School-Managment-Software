@@ -102,9 +102,7 @@ def build_port_registry(registration: ModuleRegistration | None) -> PortRegistry
 
         overrides = {
             "platform": (
-                lambda: PlatformAdapter(
-                    worker_available=WORKER_AVAILABLE, clock=SCHOOL_CLOCK
-                ),
+                lambda: PlatformAdapter(worker_available=WORKER_AVAILABLE, clock=SCHOOL_CLOCK),
                 AdapterKind.REAL,
             )
         }
