@@ -7,7 +7,8 @@
   "started_from": "8d84c00da9f3378514b91adc8b98c211dc77dfc9",
   "manifest_revision": "school-contracts-v11",
   "proposed_freeze_revision": "school-contracts-v12",
-  "head_commit": "cd2b8322f96df1b938fa1a3398b049c1e07e6200",
+  "head_commit": "d4ce6a0",
+  "pr_url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/12",
   "suites": {
     "contracts": "not-run",
     "standalone": "not-run",

@@ -7,8 +7,8 @@
 | Branch | `m11/notices-third-party-sms` |
 | Started from | `8d84c00da9f3378514b91adc8b98c211dc77dfc9` (`origin/main`) |
 | Manifest revision | `school-contracts-v11` (current); proposed freeze `school-contracts-v12` |
-| PR | (pending) |
-| Head commit | `cd2b8322f96df1b938fa1a3398b049c1e07e6200` |
+| PR | https://github.com/Aravind-Unni/School-Managment-Software/pull/12 (draft) |
+| Head commit | `d4ce6a0` (docs tip; proposal artefacts on `cd2b832`) |
 | Last recorded | 2026-09-21 |
 
 ## Original request
