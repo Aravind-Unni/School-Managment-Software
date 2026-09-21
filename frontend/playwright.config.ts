@@ -6,6 +6,9 @@ const SPEC_BY_MODULE: Record<string, string> = {
   M01: "**/access.spec.ts",
   M03: "**/timetable.spec.ts",
   M04: "**/attendance.spec.ts",
+  // Integrated profile: real M01 sessions, not the fixed persona the module
+  // specs assume. Keep a dedicated smoke file so ALL does not collect them.
+  ALL: "**/integrated-smoke.spec.ts",
 };
 
 /**

@@ -44,6 +44,17 @@ const FORBIDDEN_HEADERS = [
   "x-persona",
 ] as const;
 
+const CSRF_COOKIE = "school_csrf";
+
+/** Read the CSRF cookie when present. */
+function readCsrfCookie(): string | null {
+  if (typeof document === "undefined") {
+    return null;
+  }
+  const match = document.cookie.match(new RegExp(`(?:^|; )${CSRF_COOKIE}=([^;]*)`));
+  return match?.[1] ? decodeURIComponent(match[1]) : null;
+}
+
 interface RequestOptions {
   readonly method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   readonly body?: unknown;
@@ -80,6 +91,16 @@ export async function request<Result>(
     ...(extraHeaders ?? {}),
   };
   if (body !== undefined) headers["Content-Type"] = "application/json";
+
+  // Double-submit CSRF: readable cookie echoed on unsafe methods. Login has no
+  // cookie yet and needs none.
+  const methodUpper = method.toUpperCase();
+  if (methodUpper !== "GET" && methodUpper !== "HEAD" && methodUpper !== "OPTIONS") {
+    const csrf = readCsrfCookie();
+    if (csrf !== null && headers["X-CSRF-Token"] === undefined) {
+      headers["X-CSRF-Token"] = csrf;
+    }
+  }
 
   // Defence in depth. The server REJECTS these outright; this catches a caller
   // trying to set one via `headers`, which is now an open door for CSRF tokens.

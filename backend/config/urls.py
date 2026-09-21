@@ -25,7 +25,7 @@ def _load_registrations() -> list:
     Raises ImproperlyConfigured-style errors early, at import time, so a missing
     module fails at boot rather than on first request.
     """
-    if settings.APP_ENV == "integrated":
+    if settings.APP_ENV in ("integrated", "production"):
         module_ids = list(getattr(settings, "APPROVED_MODULE_IDS", ()))
     else:
         module_ids = [settings.MODULE_ID]
@@ -73,7 +73,7 @@ def _build_port_registry():
             f"settings module {settings.SETTINGS_MODULE} defines no "
             "build_port_registry; every profile must declare how ports are bound"
         )
-    if settings.APP_ENV == "integrated":
+    if settings.APP_ENV in ("integrated", "production"):
         from contracts.registration import assert_no_registration_collisions
 
         assert_no_registration_collisions(tuple(REGISTRATIONS))

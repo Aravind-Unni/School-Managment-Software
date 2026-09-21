@@ -16,6 +16,8 @@ export const performanceMessages = {
     "performance.metric.attendance_percentage": "Attendance",
     "performance.metric.topic_weakness": "Topic analysis",
     "performance.warning.low_attendance": "Attendance below threshold",
+    "performance.student_label": "Student",
+    "performance.intervention_review": "Review",
   },
   ml: {
     "nav.performance_dashboard": "പുരോഗതി",
@@ -32,5 +34,7 @@ export const performanceMessages = {
     "performance.metric.attendance_percentage": "ഹാജർ",
     "performance.metric.topic_weakness": "വിഷയ വിശകലനം",
     "performance.warning.low_attendance": "ഹാജർ പരിധിക്ക് താഴെ",
+    "performance.student_label": "വിദ്യാർത്ഥി",
+    "performance.intervention_review": "റിവ്യൂ",
   },
 } as const;

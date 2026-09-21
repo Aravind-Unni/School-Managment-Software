@@ -722,36 +722,258 @@ def command_check(arguments: argparse.Namespace) -> int:
     if suite == "integration":
         return _check_integration(declaration, names, arguments.profile)
     if suite == "load":
-        return _check_not_implemented_suite(declaration, names, "load")
+        return _check_load(declaration, names)
     if suite == "restore":
-        return _check_not_implemented_suite(declaration, names, "restore")
+        return _check_restore(declaration, names)
     fail(f"unknown suite {suite!r}", hint=f"valid suites: {list(VALID_SUITES)}")
     return EXIT_REFUSED
 
 
-def _check_not_implemented_suite(declaration, names, suite: str) -> int:
-    """Record a suite as not-run when the harness has no executor yet.
+def _check_load(declaration, names) -> int:
+    """Measure API readiness under a short concurrent burst.
 
-    Never reports passed. C02 capacity and restore gates must be measured, not
-    claimed.
+    Requires a running stack. Records latency percentiles; fails when any probe
+    is non-200 or p95 exceeds 2 seconds. Never invents a pass without probes.
     """
+    import statistics
+    import time
+    import urllib.error
+    import urllib.request
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    say(f"check {declaration.module_id} -- suite load")
+    allocated = ports.PortAllocation(repo_root=REPO_ROOT, stem=names.stem).load()
+    if not allocated.get("api"):
+        path = evidence.write_report(
+            repo_root=REPO_ROOT,
+            stem=names.stem,
+            suite="load",
+            module_id=declaration.module_id,
+            passed=False,
+            backend="not-run",
+            details={"reason": "no running stack (run: python scripts/dev.py up ...)"},
+        )
+        say(f"  report {path.relative_to(REPO_ROOT)}")
+        return EXIT_PREREQUISITE_MISSING
+
+    health = f"http://127.0.0.1:{allocated['api']}/healthz"
+    ready = f"http://127.0.0.1:{allocated['api']}/readyz"
+    probes = 40
+
+    def one(url: str) -> tuple[float, int]:
+        started = time.perf_counter()
+        try:
+            with urllib.request.urlopen(url, timeout=5) as response:
+                status = int(response.status)
+        except urllib.error.HTTPError as exc:
+            status = int(exc.code)
+        except Exception:
+            status = 0
+        return (time.perf_counter() - started) * 1000, status
+
+    latencies: list[float] = []
+    failures = 0
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        futures = [
+            pool.submit(one, health if index % 2 == 0 else ready) for index in range(probes)
+        ]
+        for future in as_completed(futures):
+            ms, status = future.result()
+            latencies.append(ms)
+            if status != 200:
+                failures += 1
+
+    latencies.sort()
+    p95 = latencies[max(0, int(len(latencies) * 0.95) - 1)] if latencies else 0.0
+    mean = statistics.fmean(latencies) if latencies else 0.0
+    ok = failures == 0 and p95 <= 2000
+    details = {
+        "probes": probes,
+        "failures": failures,
+        "mean_ms": round(mean, 2),
+        "p95_ms": round(p95, 2),
+        "threshold_p95_ms": 2000,
+    }
     path = evidence.write_report(
         repo_root=REPO_ROOT,
         stem=names.stem,
-        suite=suite,
+        suite="load",
         module_id=declaration.module_id,
-        passed=False,
-        backend="not-run",
+        passed=ok,
+        backend="http-burst",
+        details=details,
+    )
+    say(f"  p95={details['p95_ms']}ms failures={failures}")
+    say(f"  report {path.relative_to(REPO_ROOT)}")
+    return EXIT_OK if ok else EXIT_FAILED
+
+
+def _check_restore(declaration, names) -> int:
+    """Take a Postgres dump and restore it into a scratch database.
+
+    Requires a running stack with Compose postgres. Records dump size and restore
+    exit status. Never claims pass without a successful restore.
+    """
+    say(f"check {declaration.module_id} -- suite restore")
+    allocated = ports.PortAllocation(repo_root=REPO_ROOT, stem=names.stem).load()
+    if not allocated.get("postgres"):
+        path = evidence.write_report(
+            repo_root=REPO_ROOT,
+            stem=names.stem,
+            suite="restore",
+            module_id=declaration.module_id,
+            passed=False,
+            backend="not-run",
+            details={"reason": "no running stack (run: python scripts/dev.py up ...)"},
+        )
+        say(f"  report {path.relative_to(REPO_ROOT)}")
+        return EXIT_PREREQUISITE_MISSING
+
+    compose_file = compose_file_path(names)
+    composer = docker_command()
+    if composer is None or not compose_file.exists():
+        path = evidence.write_report(
+            repo_root=REPO_ROOT,
+            stem=names.stem,
+            suite="restore",
+            module_id=declaration.module_id,
+            passed=False,
+            backend="not-run",
+            details={"reason": "docker compose or compose file unavailable"},
+        )
+        say(f"  report {path.relative_to(REPO_ROOT)}")
+        return EXIT_PREREQUISITE_MISSING
+
+    local = secrets.LocalSecrets(repo_root=REPO_ROOT, stem=names.stem).ensure()
+    env = {**os.environ, **local}
+    dump_db = names.database
+    scratch = f"{dump_db}_restore_probe"
+    db_user = compose.LOCAL_DB_USER
+    dump = subprocess.run(
+        [
+            *composer,
+            "-f",
+            str(compose_file),
+            "exec",
+            "-T",
+            "postgres",
+            "pg_dump",
+            "-U",
+            db_user,
+            dump_db,
+        ],
+        cwd=REPO_ROOT,
+        env=env,
+        capture_output=True,
+    )
+    if dump.returncode != 0:
+        path = evidence.write_report(
+            repo_root=REPO_ROOT,
+            stem=names.stem,
+            suite="restore",
+            module_id=declaration.module_id,
+            passed=False,
+            backend="pg_dump",
+            details={"reason": "pg_dump failed", "stderr": dump.stderr.decode()[-500:]},
+        )
+        say(f"  report {path.relative_to(REPO_ROOT)}")
+        return EXIT_FAILED
+
+    size = len(dump.stdout)
+    drop = subprocess.run(
+        [
+            *composer,
+            "-f",
+            str(compose_file),
+            "exec",
+            "-T",
+            "postgres",
+            "dropdb",
+            "--if-exists",
+            "-U",
+            db_user,
+            scratch,
+        ],
+        cwd=REPO_ROOT,
+        env=env,
+        capture_output=True,
+    )
+    create = subprocess.run(
+        [
+            *composer,
+            "-f",
+            str(compose_file),
+            "exec",
+            "-T",
+            "postgres",
+            "createdb",
+            "-U",
+            db_user,
+            scratch,
+        ],
+        cwd=REPO_ROOT,
+        env=env,
+        capture_output=True,
+    )
+    restore = subprocess.run(
+        [
+            *composer,
+            "-f",
+            str(compose_file),
+            "exec",
+            "-T",
+            "postgres",
+            "psql",
+            "-U",
+            db_user,
+            "-d",
+            scratch,
+            "-v",
+            "ON_ERROR_STOP=1",
+        ],
+        cwd=REPO_ROOT,
+        env=env,
+        input=dump.stdout,
+        capture_output=True,
+    )
+    subprocess.run(
+        [
+            *composer,
+            "-f",
+            str(compose_file),
+            "exec",
+            "-T",
+            "postgres",
+            "dropdb",
+            "--if-exists",
+            "-U",
+            db_user,
+            scratch,
+        ],
+        cwd=REPO_ROOT,
+        env=env,
+        capture_output=True,
+    )
+    ok = create.returncode == 0 and restore.returncode == 0 and size > 0
+    path = evidence.write_report(
+        repo_root=REPO_ROOT,
+        stem=names.stem,
+        suite="restore",
+        module_id=declaration.module_id,
+        passed=ok,
+        backend="pg_dump+psql",
         details={
-            "reason": (
-                f"{suite} suite executor is not yet wired on this branch; "
-                "recorded as not-run, not as passing"
-            )
+            "dump_bytes": size,
+            "drop_exit": drop.returncode,
+            "create_exit": create.returncode,
+            "restore_exit": restore.returncode,
+            "restore_stderr": restore.stderr.decode()[-500:] if restore.returncode else "",
+            "scratch_database": scratch,
         },
     )
-    say(f"check {declaration.module_id} -- suite {suite}: NOT RUN")
+    say(f"  dump_bytes={size} restore_exit={restore.returncode}")
     say(f"  report {path.relative_to(REPO_ROOT)}")
-    return EXIT_FAILED
+    return EXIT_OK if ok else EXIT_FAILED
 
 
 def _check_integration(declaration, names, profile: str) -> int:

@@ -18,6 +18,7 @@ import { FILES_MESSAGES } from "@features/files/locales/messages";
 import { feesMessages as FEES_MESSAGES } from "@features/fees/locales/messages";
 import { LIBRARY_MESSAGES } from "@features/library/locales/messages";
 import { performanceMessages as PERFORMANCE_MESSAGES } from "@features/performance/locales/messages";
+import { REGISTRY_MESSAGES } from "@features/registry/locales/messages";
 import { PLATFORM_MESSAGES } from "@features/platform/locales/messages";
 import { TIMETABLE_MESSAGES } from "@features/timetable/locales/messages";
 import { TRANSPORT_MESSAGES } from "@features/transport/locales/messages";
@@ -74,6 +75,7 @@ export function LanguageProvider({ children }: { readonly children: ReactNode })
             ...ATTENDANCE_MESSAGES.en,
             ...ASSESSMENT_MESSAGES.en,
             ...PERFORMANCE_MESSAGES.en,
+            ...REGISTRY_MESSAGES.en,
             ...FEES_MESSAGES.en,
             ...TRANSPORT_MESSAGES.en,
             ...LIBRARY_MESSAGES.en,
@@ -90,6 +92,7 @@ export function LanguageProvider({ children }: { readonly children: ReactNode })
             ...ATTENDANCE_MESSAGES.ml,
             ...ASSESSMENT_MESSAGES.ml,
             ...PERFORMANCE_MESSAGES.ml,
+            ...REGISTRY_MESSAGES.ml,
             ...FEES_MESSAGES.ml,
             ...TRANSPORT_MESSAGES.ml,
             ...LIBRARY_MESSAGES.ml,

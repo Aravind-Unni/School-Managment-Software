@@ -12,6 +12,7 @@ import * as api from "./api";
 import { Failure } from "./Feedback";
 import { useAccessMessages } from "./useMessages";
 import { toMessage } from "./Feedback";
+import { useSession } from "@app/SessionContext";
 
 type Step =
   | { readonly kind: "password" }
@@ -25,6 +26,7 @@ type Step =
 export function LoginPage() {
   const t = useAccessMessages();
   const navigate = useNavigate();
+  const { refresh } = useSession();
   const [step, setStep] = useState<Step>({ kind: "password" });
   const [loginName, setLoginName] = useState("");
   const [password, setPassword] = useState("");
@@ -48,10 +50,10 @@ export function LoginPage() {
     }
   }
 
-  const finishSignedIn = (authLevel: string) => {
+  const finishSignedIn = async (authLevel: string) => {
     setStep({ kind: "done", authLevel });
-    // Leave /login so the shell can show module navigation.
-    navigate("/settings/security", { replace: true });
+    await refresh();
+    navigate("/", { replace: true });
   };
 
   const submitPassword = () =>
@@ -66,14 +68,14 @@ export function LoginPage() {
         });
         setStep({ kind: "enrol", challengeId: challenge.challenge_id, start });
       } else {
-        finishSignedIn("password");
+        await finishSignedIn("password");
       }
     });
 
   const submitCode = (challengeId: string) =>
     guard(async () => {
       const result = await api.verifyTotp({ challengeId, code });
-      finishSignedIn(result.auth_level);
+      await finishSignedIn(result.auth_level);
     });
 
   const submitEnrolment = (challengeId: string, factorId: string) =>
@@ -85,7 +87,7 @@ export function LoginPage() {
   const submitRecovery = (challengeId: string) =>
     guard(async () => {
       const result = await api.recover({ challengeId, recoveryCode });
-      finishSignedIn(result.auth_level);
+      await finishSignedIn(result.auth_level);
     });
 
   const submitLostDevice = () =>
@@ -121,6 +123,7 @@ export function LoginPage() {
             void submitPassword();
           }}
         >
+          <p role="status">{t("access.login.helper")}</p>
           <label htmlFor="login-name">{t("access.login.name")}</label>
           <input
             id="login-name"
@@ -130,7 +133,6 @@ export function LoginPage() {
             onChange={(event) => setLoginName(event.target.value)}
             required
           />
-          <p>{t("access.login.helper")}</p>
           <label htmlFor="login-password">{t("access.login.password")}</label>
           <input
             id="login-password"

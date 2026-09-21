@@ -119,6 +119,11 @@ export async function currentSession(): Promise<Authenticated> {
   return call<Authenticated>("/auth/session");
 }
 
+/** List action codes the caller holds (navigation only). */
+export async function listCapabilities(): Promise<{ actions: string[] }> {
+  return call<{ actions: string[] }>("/auth/capabilities");
+}
+
 /** Revoke the current session. */
 export async function logout(): Promise<void> {
   await call<{ revoked: boolean }>("/auth/logout", { method: "POST" });

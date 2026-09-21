@@ -2,28 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { useLanguage } from "@shared/i18n/LanguageContext";
-import { fetchOverdue } from "./api";
+import { fetchOverdue, type OverdueItemDTO } from "./api";
+import { feeErrorMessageKey } from "./formatError";
 import { feesMessages } from "./locales/messages";
 
 export function FeeOverduePage() {
-  const { language } = useLanguage();
+  const { language, t: translate } = useLanguage();
   const t = feesMessages[language];
-  const [items, setItems] = useState<Array<Record<string, unknown>>>([]);
+  const [items, setItems] = useState<readonly OverdueItemDTO[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchOverdue()
       .then((body) => setItems(body.items))
-      .catch((err: Error) =>
-        setError(
-          err.message.includes("403") || err.message.includes("404")
-            ? t["fees.denied"]
-            : err.message,
-        ),
-      )
+      .catch((err: unknown) => setError(translate(feeErrorMessageKey(err))))
       .finally(() => setLoading(false));
-  }, [t]);
+  }, [t, translate]);
 
   return (
     <main>
@@ -33,8 +28,8 @@ export function FeeOverduePage() {
       {!loading && !error && items.length === 0 && <p>{t["fees.empty"]}</p>}
       <ul>
         {items.map((row) => (
-          <li key={String(row.charge_id)}>
-            {String(row.display_name ?? row.student_id)} — {String(row.balance_paise)}
+          <li key={row.charge_id}>
+            {row.display_name ?? row.student_id} — {row.balance_paise}
           </li>
         ))}
       </ul>

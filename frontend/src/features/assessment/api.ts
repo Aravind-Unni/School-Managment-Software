@@ -5,6 +5,7 @@
  */
 
 import { request } from "@shared/api/client";
+import { rememberAttemptId } from "./storage";
 
 const BASE = "/api/v1";
 
@@ -63,6 +64,12 @@ export interface PublicationResponse {
   readonly report_job_id: string;
 }
 
+export interface PatchResultResponse {
+  readonly result: ResultDTO;
+  readonly version: number;
+  readonly total: string | null;
+}
+
 /** Create a draft assessment structure. */
 export async function createAssessment(body: Record<string, unknown>): Promise<AssessmentDTO> {
   return request<AssessmentDTO>(`${BASE}/assessments`, { method: "POST", body });
@@ -73,10 +80,26 @@ export async function patchResult(
   assessmentId: string,
   studentId: string,
   body: Record<string, unknown>,
-): Promise<{ readonly result: ResultDTO; readonly version: number; readonly total: string | null }> {
-  return request(`${BASE}/assessments/${assessmentId}/results/${studentId}`, {
-    method: "PATCH",
-    body,
+): Promise<PatchResultResponse> {
+  const response = await request<PatchResultResponse>(
+    `${BASE}/assessments/${assessmentId}/results/${studentId}`,
+    {
+      method: "PATCH",
+      body,
+    },
+  );
+  rememberAttemptId(assessmentId, studentId, response.result.attempt_id);
+  return response;
+}
+
+/** Reopen a published assessment for correction. */
+export async function reopenAssessment(
+  assessmentId: string,
+  expectedVersion: number,
+): Promise<AssessmentDTO> {
+  return request<AssessmentDTO>(`${BASE}/assessments/${assessmentId}/reopen`, {
+    method: "POST",
+    body: { expected_version: expectedVersion },
   });
 }
 

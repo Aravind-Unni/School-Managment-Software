@@ -1,5 +1,9 @@
 /** API helpers for M06 performance. */
 
+import { request, type Collection } from "@shared/api/client";
+
+const BASE = "/api/v1";
+
 export type MetricDTO = {
   code: string;
   value: string | null;
@@ -28,22 +32,29 @@ export type DashboardDTO = {
   updated_at: string;
 };
 
+export type InterventionDTO = {
+  id: string;
+  school_id: string;
+  student_id: string;
+  goal: string;
+  owner_id: string;
+  review_date: string;
+  state: string;
+  visibility: string;
+  version: number;
+};
+
 export async function fetchDashboard(
   studentId: string,
   window = "term",
 ): Promise<DashboardDTO> {
-  const params = new URLSearchParams({
-    scope: "student",
-    window,
-    student_id: studentId,
+  return request<DashboardDTO>(`${BASE}/performance/dashboard`, {
+    query: {
+      scope: "student",
+      window,
+      student_id: studentId,
+    },
   });
-  const res = await fetch(`/api/v1/performance/dashboard?${params.toString()}`, {
-    credentials: "include",
-  });
-  if (!res.ok) {
-    throw new Error(`dashboard_failed_${res.status}`);
-  }
-  return (await res.json()) as DashboardDTO;
 }
 
 export async function dismissWarning(
@@ -51,13 +62,21 @@ export async function dismissWarning(
   reason: string,
   expectedVersion: number,
 ): Promise<void> {
-  const res = await fetch(`/api/v1/warnings/${warningId}/dismiss`, {
+  await request(`${BASE}/warnings/${warningId}/dismiss`, {
     method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ reason, expected_version: expectedVersion }),
+    body: { reason, expected_version: expectedVersion },
   });
-  if (!res.ok) {
-    throw new Error(`dismiss_failed_${res.status}`);
-  }
+}
+
+/** List interventions for one student. */
+export async function listInterventions(
+  studentId: string,
+  cursor?: string,
+): Promise<Collection<InterventionDTO>> {
+  return request<Collection<InterventionDTO>>(`${BASE}/interventions`, {
+    query: {
+      student_id: studentId,
+      cursor,
+    },
+  });
 }
