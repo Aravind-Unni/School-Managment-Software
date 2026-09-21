@@ -21,7 +21,7 @@ Read [`progress.md`](progress.md) and [`release-manifest.json`](release-manifest
 | Port | Owning module | Factory (existing code) | Status at inventory |
 |---|---|---|---|
 | `access` | M01 | `modules.access.services.authorize.AccessService` | Code exists; contracts unfrozen |
-| `registry` | M02 | **missing** — must implement `RegistryPort` | **BLOCKER** |
+| `registry` | M02 | `modules.registry.api.deps.registry_port` | **Implemented** (steps 2–3); step 4 open |
 | `timetable` | M03 | `modules.timetable.services.port.TimetableService` | Exists |
 | `attendance` | M04 | `modules.attendance.services.port.AttendanceService` | Exists |
 | `assessment` | M05 | `modules.assessment.services.port.AssessmentService` | Exists |
