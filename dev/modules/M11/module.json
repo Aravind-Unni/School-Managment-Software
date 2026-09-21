@@ -2,7 +2,7 @@
   "module_id": "M11",
   "slug": "communications",
   "_comment": "Owns message dispatch, so it owns asynchronous work. Local profiles never reach a real SMS or email provider.",
-  "_status": "module not implemented; this declaration describes the stack `dev.py up` would start once it is",
+  "_status": "implemented; contracts frozen under school-contracts-v12; awaiting standalone PostgreSQL + browser evidence",
   "resources": {
     "postgres": true,
     "frontend": true,

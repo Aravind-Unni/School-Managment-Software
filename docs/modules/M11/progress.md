@@ -2,47 +2,45 @@
 
 | | |
 |---|---|
-| Phase | Contract proposal — awaiting human review gate |
-| Status | Artefacts proposed; **not frozen**; **no module code** |
+| Phase | Implementation complete; awaiting PostgreSQL/browser evidence |
+| Status | Contracts **frozen** (`school-contracts-v12`). Module code on branch. **STANDALONE_VERIFIED=false** |
 | Branch | `m11/notices-third-party-sms` |
 | Started from | `8d84c00da9f3378514b91adc8b98c211dc77dfc9` (`origin/main`) |
-| Manifest revision | `school-contracts-v11` (current); proposed freeze `school-contracts-v12` |
+| Manifest revision | `school-contracts-v12` |
 | PR | https://github.com/Aravind-Unni/School-Managment-Software/pull/12 (draft) |
-| Head commit | `d4ce6a0` (docs tip; proposal artefacts on `cd2b832`) |
+| Head commit | (see tip after push) |
 | Last recorded | 2026-09-21 |
 
 ## Original request
 
 Build M11 notices and third-party SMS as an independently runnable standalone
-module. Inspect contracts first, propose missing schemas for review, then
-implement. May commit/push/draft PR; no merge/deploy.
+module. Contracts first; then implement. May commit/push/draft PR; no merge/deploy.
 
 ## Completed behavior
 
-- Branch from latest `origin/main`.
-- Proposed OpenAPI, DTO/event schemas, error rows, ports.md, consumer fixtures,
-  review-decisions (18 items).
+- Contracts approved and frozen (`school-contracts-v12`): OpenAPI, DTO/event
+  schemas, error rows, CommunicationsPort, fixtures.
+- Backend: notices create/publish, enqueue/dedupe, fake SMS provider,
+  timeout reconcile, signed callbacks, revocation skip, en+ml templates,
+  provider secret_ref logging only.
+- Frontend: composer, templates, delivery dashboard (en+ml nav/copy).
+- Seeds: baseline en+ml draft notices, templates, verified/revoked contacts.
+- Acceptance cases in `tests/modules/M11/` (21 passed locally on SQLite).
+- `check M11 --suite contracts` green (manifest, arch 7, shared 105, M11 8).
 
-## Incomplete behavior
+## Incomplete / not-run
 
-- Human review / freeze of contracts.
-- Steps 1–4 implementation (notices → adapter → callbacks → bilingual templates).
-- Standalone / contracts / browser suites; evidence; STANDALONE_VERIFIED.
-
-## Changed interfaces (proposed, not applied)
-
-- New `CommunicationsPort.enqueue` (after freeze).
-- Possible revision of shared `NotificationPort` (review item 3).
-- Module-local `SmsProviderPort` (not shared).
+- Standalone PostgreSQL suite — not run this session (use `dev.py up`).
+- Browser suite — not-run.
+- PENDING integration: real SMS sandbox, real Registry contacts, real M01
+  auth/2FA, production fake-adapter refusal path verification.
 
 ## Exact next step
 
-1. Reviewer approves or revises `contracts/M11/review-decisions.md` items 1–18.
-2. On approval: set revision `school-contracts-v12`, freeze hashes, add
-   `backend/contracts/communications.py`.
-3. Then implement step 1 (Notices) only.
+1. `python3 scripts/dev.py up M11 --profile standalone` then migrate/seed/check
+   standalone + browser when Docker/Playwright available.
+2. `evidence M11`; STANDALONE_VERIFIED only after peer verify from fresh checkout.
 
 ## Blockers
 
-**Human gate:** contract packet must be reviewed before any module coding or
-tests. Shared `NotificationPort` change (item 3) needs an explicit decision.
+None for local SQLite module tests. Container/browser evidence pending runtime.

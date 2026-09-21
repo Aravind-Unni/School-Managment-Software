@@ -16,6 +16,7 @@ from .alumni import (
     ContactPreferenceView,
     CreateCandidateResult,
 )
+from .communications import CommunicationsPort, DeliveryDTO
 from .decisions import (
     NOT_FOUND_REASONS,
     UNAUTHENTICATED_REASONS,
@@ -151,12 +152,14 @@ __all__ = [
     "CalendarDayDTO",
     "ChargeDTO",
     "ClockPort",
+    "CommunicationsPort",
     "ContactPreferenceView",
     "ContractError",
     "CreateCandidateResult",
     "CreditDTO",
     "DashboardDTO",
     "Decision",
+    "DeliveryDTO",
     "ErrorCode",
     "ErrorEnvelope",
     "EventEnvelope",

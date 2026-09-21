@@ -1,9 +1,4 @@
-# frontend/src/features/communications -- M11
+# M11 communications UI
 
-Not implemented. Feature code, routes, permissions and navigation metadata live
-here, beside the feature, so deleting the directory cannot leave a dangling menu
-entry.
-
-The TypeScript API client for this feature is **generated** from the module's
-approved OpenAPI document once it is frozen in `contracts/manifest.json`. Do not
-hand-write request types.
+Notice composer, bilingual templates and delivery dashboard. Standalone never
+contacts a real SMS provider.

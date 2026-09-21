@@ -1,5 +1,5 @@
 {
-  "status": "proposed",
+  "status": "frozen",
   "note": "Synthetic baseline for M11. Shared fixture UUIDs. One live fake SMS provider. sms.configure 2FA off.",
   "policy_fixture": {
     "sms_configure_requires_2fa": false,
@@ -11,10 +11,10 @@
     "publisher_actor_id": "5e101a6a-eca4-5a5f-b5ef-c2d776c939fe",
     "sender_actor_id": "6a201b7b-fdb5-5b6f-c6f0-d3e887d0400f",
     "unrelated_actor_id": "7b302c8c-0ec6-5c7f-d701-e4f998e15110",
-    "section_id": "a1111111-1111-5111-8111-111111111111",
+    "section_id": "86847c87-bedd-505d-9e2f-3bb35275320c",
     "student_id": "1e06f5ad-b530-51fa-a3be-e1bd65fd230c",
-    "guardian_contact_ref": "c0a11111-1111-5111-8111-111111111101",
-    "revoked_guardian_contact_ref": "c0a11111-1111-5111-8111-111111111102",
+    "guardian_contact_ref": "a98bf46f-c03f-59a9-96e4-5eb94f0cf4a7",
+    "revoked_guardian_contact_ref": "7731fd5f-a464-53df-9429-a515f8a06301",
     "notice_en": {
       "title": "Sports day",
       "body": "Sports day is on Friday.",

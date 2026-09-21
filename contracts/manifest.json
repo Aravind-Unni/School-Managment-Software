@@ -813,15 +813,15 @@
     "M11": {
       "artefacts": [
         {
-          "frozen": false,
+          "frozen": true,
           "id": "M11/error-codes.json",
           "kind": "json-schema",
           "owner": "M11 communications",
           "path": "contracts/M11/error-codes.json",
-          "sha256": "4702c6099f09be8555b45b85f6259debbd5007a13d16669cbf6f0309c6531181"
+          "sha256": "5e4ec029b63260717949893065cd8e42b5a173bdad623926a35785cc57198a30"
         },
         {
-          "frozen": false,
+          "frozen": true,
           "id": "M11/openapi.json",
           "kind": "openapi",
           "owner": "M11 communications",
@@ -829,7 +829,7 @@
           "sha256": "107e5f4da18bf44b42ca1553b68121b0446ab8710673e0ca51bfaf7af250b976"
         },
         {
-          "frozen": false,
+          "frozen": true,
           "id": "M11/schemas/dtos.schema.json",
           "kind": "json-schema",
           "owner": "M11 communications",
@@ -837,7 +837,7 @@
           "sha256": "5bb49e0cd13d9d026aadf8b468b8e4468606fefe883dba2ac603ea7a8e2c5cd1"
         },
         {
-          "frozen": false,
+          "frozen": true,
           "id": "M11/schemas/events.schema.json",
           "kind": "json-schema",
           "owner": "M11 communications",
@@ -847,33 +847,38 @@
       ],
       "fixtures": [
         {
-          "frozen": false,
+          "frozen": true,
           "id": "M11/fixtures/expected-results.json",
           "kind": "consumer-fixture",
           "owner": "M11 communications",
           "path": "contracts/M11/fixtures/expected-results.json",
-          "sha256": "7c75fbce5a2cab611873e4b3e58d5e8c9afbb1de9cd41a37b784a4b97b02fb89"
+          "sha256": "f88308fcb78c710edc2c2e6b925a1982c3ac26d62a0caabeeede1e85b5ad80fd"
         },
         {
-          "frozen": false,
+          "frozen": true,
           "id": "M11/fixtures/responses.json",
           "kind": "consumer-fixture",
           "owner": "M11 communications",
           "path": "contracts/M11/fixtures/responses.json",
-          "sha256": "bbfaac18d6cae2e9ceedf13326f0c6f15574c15a032752b3a3be9d0532851360"
+          "sha256": "322edad9b826873628a498340428e52097f58766efa3125b9603bd4d1a0124d2"
         },
         {
-          "frozen": false,
+          "frozen": true,
           "id": "M11/fixtures/scenario.json",
           "kind": "consumer-fixture",
           "owner": "M11 communications",
           "path": "contracts/M11/fixtures/scenario.json",
-          "sha256": "89a24fa7732c214f0865228bea8e1b496ce56b4a7fb7b07b0c62b7e0ce958484"
+          "sha256": "f7cd7e4e452a0ce1fd3fe6a76449fe016107bf2d1ebedfd572c547d32c20cd39"
         }
       ],
       "packet": "contracts/M11/PACKET.md",
+      "review": {
+        "note": "Communications packet, OpenAPI, DTO/event schemas, error rows, CommunicationsPort signatures and consumer fixtures approved as proposed (items 1\u201318). NotificationPort docstring clarified; SmsProviderPort module-local; no invented whole-school audience.",
+        "reviewed_on": "2026-09-21",
+        "reviewer": "Abhinav M"
+      },
       "slug": "communications",
-      "status": "not_started"
+      "status": "frozen"
     },
     "M12": {
       "artefacts": [],
@@ -898,6 +903,6 @@
     }
   },
   "note": "Revision data, not code. The generator reads this file; it decides nothing itself. A module is listed under 'frozen_modules' only after its contract packet passed a human review gate, and the reviewer is named alongside the date. Adding a module here is the freeze; removing one un-freezes it and the drift guard will report every hash that moves.",
-  "revision": "school-contracts-v11",
+  "revision": "school-contracts-v12",
   "status": "reviewed"
 }

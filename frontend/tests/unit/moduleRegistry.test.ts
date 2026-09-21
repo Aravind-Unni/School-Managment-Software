@@ -20,6 +20,7 @@ describe("module registry", () => {
       "M08",
       "M09",
       "M10",
+      "M11",
     ]);
   });
 
@@ -60,6 +61,9 @@ describe("module registry", () => {
       "nav.alumni_directory",
       "nav.alumni_profile",
       "nav.alumni_export",
+      "nav.notices",
+      "nav.templates",
+      "nav.deliveries",
     ]);
   });
 

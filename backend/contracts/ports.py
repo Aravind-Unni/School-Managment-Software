@@ -272,10 +272,9 @@ class ObjectStoragePort(Protocol):
 
 @runtime_checkable
 class NotificationPort(Protocol):
-    """Outbound messages. Owned by M11 communications.
+    """Multi-recipient helper. Prefer CommunicationsPort.enqueue for dedupe.
 
-    Local and test profiles must never reach a real SMS or email provider; the
-    fake records messages in memory for assertion.
+    Local/test fakes never reach a real SMS provider.
     """
 
     def send(
@@ -287,7 +286,7 @@ class NotificationPort(Protocol):
         template_key: str,
         variables: dict[str, object],
     ) -> str:
-        """Queue a templated message and return its dispatch id."""
+        """Queue templated messages; return a dispatch id. No cross-call dedupe."""
         ...
 
 

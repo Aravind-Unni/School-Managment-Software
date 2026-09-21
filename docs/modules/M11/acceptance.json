@@ -1,16 +1,16 @@
 {
   "module_id": "M11",
   "slug": "communications",
-  "status": "contracts_proposed",
+  "status": "implemented_contracts_frozen",
   "STANDALONE_VERIFIED": false,
   "branch": "m11/notices-third-party-sms",
   "started_from": "8d84c00da9f3378514b91adc8b98c211dc77dfc9",
-  "manifest_revision": "school-contracts-v11",
-  "proposed_freeze_revision": "school-contracts-v12",
-  "head_commit": "d4ce6a0",
+  "manifest_revision": "school-contracts-v12",
   "pr_url": "https://github.com/Aravind-Unni/School-Managment-Software/pull/12",
+  "head_commit": null,
   "suites": {
-    "contracts": "not-run",
+    "contracts": "pass",
+    "module_sqlite": "21 passed",
     "standalone": "not-run",
     "browser": "not-run"
   },
