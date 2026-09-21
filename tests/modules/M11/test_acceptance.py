@@ -331,8 +331,9 @@ def test_publish_rollback_drops_outbox(client, baseline):
         action="communications.notice_published"
     ).count()
     service = deps.notice_service()
-    from contracts.identity import AuthLevel, RequestContext
     from datetime import UTC, datetime
+
+    from contracts.identity import AuthLevel, RequestContext
 
     ctx = RequestContext(
         actor_id=fixtures.PRINCIPAL_P1,
