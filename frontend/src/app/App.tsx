@@ -12,9 +12,10 @@ import { LanguageProvider, useLanguage } from "@shared/i18n/LanguageContext";
 import { LANGUAGES, type Language } from "@shared/i18n/messages";
 import { REGISTERED_MODULES } from "./registeredModules";
 import { navigationRoutes, type FeatureRoute } from "./moduleRegistry";
-import { SessionProvider, can, useSession } from "./SessionContext";
+import { SessionProvider, canUseRoute, useSession } from "./SessionContext";
 import { HomePage } from "./HomePage";
 import "./shell.css";
+import { ActivityBar } from "@shared/ui/Loading";
 
 /** Product navigation groups — school staff should not see a flat dump. */
 const startsWithAny = (path: string, prefixes: readonly string[]) =>
@@ -82,20 +83,20 @@ function LanguageSwitch() {
   );
 }
 
-function visibleRoutes(actions: ReadonlySet<string>): FeatureRoute[] {
+function visibleRoutes(actions: ReadonlySet<string>, selfOnly: ReadonlySet<string>): FeatureRoute[] {
   return navigationRoutes(REGISTERED_MODULES).filter((route) => {
     // Demo is foundation regression only — never school chrome.
     if (route.path.startsWith("/demo")) {
       return false;
     }
-    return can(actions, route.requiredPermission);
+    return canUseRoute(actions, selfOnly, route);
   });
 }
 
 function Navigation({ onNavigate }: { readonly onNavigate: () => void }) {
   const { t } = useLanguage();
-  const { actions } = useSession();
-  const routes = visibleRoutes(actions);
+  const { actions, selfOnly } = useSession();
+  const routes = visibleRoutes(actions, selfOnly);
   return (
     <nav aria-label="Main" className="product-nav">
       {NAV_GROUPS.map((group) => {
@@ -175,9 +176,27 @@ export function AppShell() {
   );
 }
 
+/**
+ * A page this account cannot use is not shown at all: someone who follows an
+ * old link lands on a plain note and a way home, not a refusal from the server.
+ */
+function Guarded({ route }: { readonly route: FeatureRoute }) {
+  const { t } = useLanguage();
+  const { status, actions, selfOnly } = useSession();
+  if (status === "authenticated" && !canUseRoute(actions, selfOnly, route)) {
+    return (
+      <section className="empty-state">
+        <p>{t("ui.not_for_account")}</p>
+        <Link to="/">{t("ui.go_home")}</Link>
+      </section>
+    );
+  }
+  const Page = route.component;
+  return <Page />;
+}
+
 /** Sidebar + top bar + routed page. The sidebar is a drawer on phones. */
 function Frame() {
-  const { t } = useLanguage();
   const { status, session } = useSession();
   const location = useLocation();
   const [navOpen, setNavOpen] = useState(false);
@@ -195,12 +214,13 @@ function Frame() {
 
   return (
     <div className={`app${signedIn ? "" : " signed-out"}${navOpen ? " nav-open" : ""}`}>
+      <ActivityBar />
       {signedIn ? (
         <aside className="sidebar" id="main-navigation">
           <Link className="brand" to="/" onClick={() => setNavOpen(false)}>
             <OriginatorMark size={34} onDark />
             <span>
-              {PRODUCT_NAME}
+              <span className="wordmark">{PRODUCT_NAME}</span>
               <small>{schoolName}</small>
             </span>
           </Link>
@@ -236,11 +256,8 @@ function Frame() {
         <main>
           {signedIn ? null : (
             <div className="signin-brand">
-              <OriginatorMark size={56} />
-              <div>
-                <strong>{PRODUCT_NAME}</strong>
-                <span>{t("brand.tagline")}</span>
-              </div>
+              <OriginatorMark size={44} />
+              <strong className="wordmark">{PRODUCT_NAME}</strong>
             </div>
           )}
           <Routes>
@@ -248,7 +265,7 @@ function Frame() {
             <Route path="/login" element={<LoginRoute />} />
             {REGISTERED_MODULES.flatMap((module) =>
               module.routes.map((route) => (
-                <Route key={route.path} path={route.path} element={<route.component />} />
+                <Route key={route.path} path={route.path} element={<Guarded route={route} />} />
               )),
             )}
             <Route path="*" element={<NotFound />} />

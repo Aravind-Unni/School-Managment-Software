@@ -13,6 +13,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react
 import { useLanguage } from "@shared/i18n/LanguageContext";
 import { Problem } from "@shared/ui/Problem";
 import * as api from "./api";
+import { Loading } from "@shared/ui/Loading";
 
 interface Slip {
   readonly loginName: string;
@@ -155,7 +156,7 @@ export function AccountsPage() {
     });
   };
 
-  if (!loaded) return <p role="status">{t("ui.loading")}</p>;
+  if (!loaded) return <Loading />;
 
   return (
     <section aria-labelledby="accounts-title">

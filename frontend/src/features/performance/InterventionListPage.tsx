@@ -10,6 +10,7 @@ import { useLanguage } from "@shared/i18n/LanguageContext";
 import { listInterventions, type InterventionDTO } from "./api";
 import { performanceErrorMessage } from "./loadError";
 import { performanceMessages } from "./locales/messages";
+import { Loading } from "@shared/ui/Loading";
 
 export function InterventionListPage() {
   const { language } = useLanguage();
@@ -85,7 +86,7 @@ export function InterventionListPage() {
           </select>
         </label>
       )}
-      {loading && <p role="status">{t["performance.loading"]}</p>}
+      {loading && <Loading />}
       {error && <p role="alert">{error}</p>}
       {!loading && !error && items.length === 0 && <p>{t["performance.empty"]}</p>}
       <ul>

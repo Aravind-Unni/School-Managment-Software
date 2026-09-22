@@ -23,6 +23,7 @@ import {
   saveStudentDetails,
   type StudentDetails,
 } from "./StudentDetailsFields";
+import { Loading } from "@shared/ui/Loading";
 
 export function StudentProfilePage() {
   const { t, language } = useLanguage();
@@ -71,7 +72,7 @@ export function StudentProfilePage() {
     }
   };
 
-  if (student === null) return error ? <Problem error={error} /> : <p role="status">{t("ui.loading")}</p>;
+  if (student === null) return error ? <Problem error={error} /> : <Loading />;
 
   return (
     <section aria-labelledby="profile-title" className="student-profile">
@@ -143,7 +144,7 @@ export function StudentProfilePage() {
           <StudentDetailsFields value={draft} onChange={setDraft} problems={detailProblems(error)} />
           <Problem error={error} />
           <div className="row-actions">
-            <button type="submit" disabled={busy}>
+            <button aria-busy={busy} type="submit" disabled={busy}>
               {busy ? t("ui.loading") : t("details.save")}
             </button>
             <button type="button" className="quiet" onClick={() => setDraft(null)}>

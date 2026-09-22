@@ -9,6 +9,7 @@ import {
   type AvailabilityView,
   type TitleDTO,
 } from "./api";
+import { Loading } from "@shared/ui/Loading";
 
 type LoadState =
   | { readonly status: "loading" }
@@ -79,7 +80,7 @@ export function LibraryCataloguePage() {
         </label>
         <button type="submit">{t("library.search_submit")}</button>
       </form>
-      {state.status === "loading" && <p role="status">{t("ui.loading")}</p>}
+      {state.status === "loading" && <Loading />}
       {state.status === "error" && (
         <p role="alert">
           {t(state.messageKey)}

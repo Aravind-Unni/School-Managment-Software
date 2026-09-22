@@ -5,6 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 import { toLoadError } from "@shared/api/errors";
 import { useLanguage } from "@shared/i18n/LanguageContext";
 import { findAlumniById, patchAlumniContact, type AlumniProfile } from "./api";
+import { Loading } from "@shared/ui/Loading";
 
 type LoadState =
   | { readonly status: "idle" }
@@ -82,7 +83,7 @@ export function AlumniProfilePage() {
         <Link to="/alumni">{t("alumni.back_directory")}</Link>
       </p>
       {state.status === "idle" && <p role="status">{t("alumni.profile_pick")}</p>}
-      {state.status === "loading" && <p role="status">{t("ui.loading")}</p>}
+      {state.status === "loading" && <Loading />}
       {state.status === "missing" && <p role="status">{t("alumni.profile_not_found")}</p>}
       {state.status === "error" && (
         <div role="alert">

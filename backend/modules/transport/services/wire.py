@@ -13,6 +13,8 @@ def bus_to_wire(bus: Bus) -> dict:
         "label": bus.label,
         "active": bus.active,
         "version": bus.version,
+        "fee_plan_id": str(bus.fee_plan_id) if bus.fee_plan_id else None,
+        "monthly_fee_paise": bus.monthly_fee_paise,
     }
 
 

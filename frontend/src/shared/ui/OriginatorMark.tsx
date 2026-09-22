@@ -1,17 +1,18 @@
 /**
- * The Originator mark: a ring (the school's whole year, going round) with
- * one marked point where something starts. Drawn inline so it is crisp at any
- * size and needs no request. ``onDark`` drops the tile for navy backgrounds.
+ * The Originator mark: a plain square carrying a letter O. Institutional and
+ * quiet, like an examination board's seal; drawn inline so it is crisp at any
+ * size. ``onDark`` inverts it for the navy sidebar.
  */
 
 export const PRODUCT_NAME = "Originator";
 
 export function OriginatorMark({ size = 32, onDark = false }: { readonly size?: number; readonly onDark?: boolean }) {
+  const ground = onDark ? "#FFFFFF" : "#1E4E8C";
+  const letter = onDark ? "#1E4E8C" : "#FFFFFF";
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" focusable="false" className="originator-mark">
-      {onDark ? null : <rect width="64" height="64" rx="15" fill="#1E4E8C" />}
-      <circle cx="30" cy="34" r="15" fill="none" stroke="#FFFFFF" strokeWidth="8" />
-      <circle cx="40.6" cy="23.4" r="8.5" fill="#E8A317" stroke="#1E4E8C" strokeWidth="3.5" />
+      <rect width="64" height="64" rx="4" fill={ground} />
+      <circle cx="32" cy="32" r="15" fill="none" stroke={letter} strokeWidth="7" />
     </svg>
   );
 }

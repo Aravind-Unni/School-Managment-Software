@@ -16,6 +16,7 @@ import { listTimetables, readSectionDay, readTimetable, type SectionDay } from "
 import { SessionList } from "./SessionList";
 import { todayIso, toErrorState, type LoadState } from "./state";
 import { useTimetableMessages } from "./useMessages";
+import { Loading } from "@shared/ui/Loading";
 
 interface ClassValue {
   readonly sections: readonly string[];
@@ -66,7 +67,7 @@ export function ClassSchedulePage() {
   }, [load, sectionId, date]);
 
   if (state.status === "loading") {
-    return <p role="status">{t("ui.loading")}</p>;
+    return <Loading />;
   }
 
   if (state.status === "error") {

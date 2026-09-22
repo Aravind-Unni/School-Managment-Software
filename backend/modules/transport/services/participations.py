@@ -152,6 +152,8 @@ class ParticipationService:
             )
             rows = rows[:size]
         items = []
+        buses = Bus.objects.filter(school_id=context.school_id)
+        labels = dict(buses.values_list("id", "label"))
         for row in rows:
             student = self.registry.get_student(context, row.student_id)
             items.append(
@@ -160,6 +162,8 @@ class ParticipationService:
                     "student_id": str(row.student_id),
                     "display_name": student.display_name,
                     "bus_id": str(row.bus_id) if row.bus_id else None,
+                    "bus_label": labels.get(row.bus_id),
+                    "version": row.version,
                     "from_date": row.from_date.isoformat(),
                     "to_date": row.to_date.isoformat() if row.to_date else None,
                     "fee_plan_id": str(row.fee_plan_id),

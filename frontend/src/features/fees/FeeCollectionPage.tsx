@@ -17,6 +17,7 @@ import { paiseFromRupees, rupees, shortDate } from "@shared/format";
 import { Problem } from "@shared/ui/Problem";
 import { StudentPicker, type PickedStudent } from "@features/registry/StudentPicker";
 import { postPayment, type PaymentReceiptDTO } from "./api";
+import { Loading } from "@shared/ui/Loading";
 
 interface ChargeEntry {
   readonly entry_type: string;
@@ -172,7 +173,7 @@ export function FeeCollectionPage() {
             </button>
           </div>
           <Problem error={error} />
-          {statement === null && error === null ? <p role="status">{t("ui.loading")}</p> : null}
+          {statement === null && error === null ? <Loading /> : null}
           {statement !== null && openCharges.length === 0 ? (
             <p role="status" className="notice-success">
               {t("fees.collect.nothing_due")}

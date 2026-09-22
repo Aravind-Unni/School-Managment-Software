@@ -12,6 +12,7 @@ import { request } from "@shared/api/client";
 import { useLanguage } from "@shared/i18n/LanguageContext";
 import { Problem } from "@shared/ui/Problem";
 import { retryJob, type Job } from "./api";
+import { Loading } from "@shared/ui/Loading";
 
 /** "platform.modules.exchange.tasks.process_report_card" -> "process_report_card". */
 function taskName(kind: string): string {
@@ -95,7 +96,7 @@ export function OperatorJobsPage() {
       ) : null}
       <Problem error={error} />
       {jobs === null ? (
-        <p role="status">{t("ui.loading")}</p>
+        <Loading />
       ) : jobs.length === 0 ? (
         <p className="empty-state">{failedOnly ? t("jobs.none_failed") : t("jobs.none")}</p>
       ) : (

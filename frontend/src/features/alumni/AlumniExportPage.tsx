@@ -84,7 +84,7 @@ export function AlumniExportPage() {
           </label>
         ))}
       </fieldset>
-      <button type="button" disabled={submitting || fields.length === 0} onClick={() => void submit()}>
+      <button aria-busy={submitting} type="button" disabled={submitting || fields.length === 0} onClick={() => void submit()}>
         {submitting ? t("ui.loading") : t("alumni.start_export")}
       </button>
       {errorKey !== null && (

@@ -55,6 +55,7 @@ export const timetableModule: FeatureModule = {
     },
     {
       path: "/timetable/student",
+      forFamilies: true,
       component: StudentSchedulePage,
       navLabelKey: "nav.timetable_student",
       requiredPermission: TIMETABLE_PERMISSIONS.readStudent,

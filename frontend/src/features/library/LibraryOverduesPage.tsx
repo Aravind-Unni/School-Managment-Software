@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ApiError, TransportError } from "@shared/api/errors";
 import { useLanguage } from "@shared/i18n/LanguageContext";
 import { listOverdues, type OverdueItemDTO } from "./api";
+import { Loading } from "@shared/ui/Loading";
 
 type LoadState =
   | { readonly status: "loading" }
@@ -52,7 +53,7 @@ export function LibraryOverduesPage() {
           aria-label={t("library.as_of")}
         />
       </label>
-      {state.status === "loading" && <p role="status">{t("ui.loading")}</p>}
+      {state.status === "loading" && <Loading />}
       {state.status === "error" && (
         <p role="alert">
           {t(state.messageKey)}

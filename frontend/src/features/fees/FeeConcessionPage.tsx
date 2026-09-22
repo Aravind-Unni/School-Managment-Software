@@ -14,6 +14,7 @@ import { paiseFromRupees, rupees, shortDate } from "@shared/format";
 import { Problem } from "@shared/ui/Problem";
 import { StudentPicker, type PickedStudent } from "@features/registry/StudentPicker";
 import { postConcession } from "./api";
+import { Loading } from "@shared/ui/Loading";
 
 interface ChargeEntry {
   readonly entry_type: string;
@@ -114,7 +115,7 @@ export function FeeConcessionPage() {
           <Problem error={error} />
           <h3>{t("concession.which_fee")}</h3>
           {charges === null ? (
-            <p role="status">{t("ui.loading")}</p>
+            <Loading />
           ) : charges.length === 0 ? (
             <p className="empty-state">{t("concession.nothing_owed")}</p>
           ) : (
@@ -188,7 +189,7 @@ export function FeeConcessionPage() {
                 </label>
               </fieldset>
               {major && paise ? <p className="hint">{t("concession.major")}</p> : null}
-              <button type="submit" disabled={busy || !ready}>
+              <button aria-busy={busy} type="submit" disabled={busy || !ready}>
                 {busy ? t("ui.loading") : paise ? `${t("concession.save")} ${rupees(paise)}` : t("concession.save")}
               </button>
             </form>

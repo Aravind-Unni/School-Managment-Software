@@ -27,6 +27,8 @@ export interface SessionState {
   readonly status: "loading" | "anonymous" | "authenticated";
   readonly session: Authenticated | null;
   readonly actions: ReadonlySet<string>;
+  /** Actions held only for oneself or one's own child (pupils and parents). */
+  readonly selfOnly: ReadonlySet<string>;
   readonly refresh: () => Promise<void>;
   readonly signOut: () => Promise<void>;
 }
@@ -39,6 +41,7 @@ export function SessionProvider({ children }: { readonly children: ReactNode }) 
   const [status, setStatus] = useState<SessionState["status"]>("loading");
   const [session, setSession] = useState<Authenticated | null>(null);
   const [actions, setActions] = useState<ReadonlySet<string>>(new Set());
+  const [selfOnly, setSelfOnly] = useState<ReadonlySet<string>>(new Set());
 
   const refresh = useCallback(async () => {
     try {
@@ -47,6 +50,7 @@ export function SessionProvider({ children }: { readonly children: ReactNode }) 
       try {
         const caps = await accessApi.listCapabilities();
         setActions(new Set(caps.actions));
+        setSelfOnly(new Set(caps.self_only_actions ?? []));
       } catch {
         setActions(new Set());
       }
@@ -74,7 +78,7 @@ export function SessionProvider({ children }: { readonly children: ReactNode }) 
   }, [refresh]);
 
   return (
-    <SessionContext.Provider value={{ status, session, actions, refresh, signOut }}>
+    <SessionContext.Provider value={{ status, session, actions, selfOnly, refresh, signOut }}>
       {children}
     </SessionContext.Provider>
   );
@@ -95,4 +99,19 @@ export function can(actions: ReadonlySet<string>, permission: string | undefined
     return true;
   }
   return actions.has(permission);
+}
+
+/**
+ * True when this account can actually use a page: it holds the action, and
+ * if it holds it only for itself or its own child, the page is one built for
+ * families. Hides staff tools from parents rather than letting them refuse.
+ */
+export function canUseRoute(
+  actions: ReadonlySet<string>,
+  selfOnly: ReadonlySet<string>,
+  route: { readonly requiredPermission?: string; readonly forFamilies?: boolean },
+): boolean {
+  if (!can(actions, route.requiredPermission)) return false;
+  if (route.requiredPermission && selfOnly.has(route.requiredPermission)) return route.forFamilies === true;
+  return true;
 }

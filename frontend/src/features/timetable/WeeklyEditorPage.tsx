@@ -23,6 +23,7 @@ import {
 } from "./api";
 import { toErrorState, type LoadState } from "./state";
 import { useTimetableMessages } from "./useMessages";
+import { Loading } from "@shared/ui/Loading";
 
 const WEEKDAY_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
 const WEEKDAY_LABELS: Record<number, string> = {
@@ -69,7 +70,7 @@ export function WeeklyEditorPage() {
   }, [load]);
 
   if (state.status === "loading") {
-    return <p role="status">{t("ui.loading")}</p>;
+    return <Loading />;
   }
 
   if (state.status === "error") {

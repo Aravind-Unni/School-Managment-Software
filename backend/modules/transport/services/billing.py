@@ -21,6 +21,7 @@ from .period import (
     covers_full_period,
     overlaps_period,
     period_bounds,
+    prorated_amount,
     source_key_for,
 )
 from .wire import billing_request_to_wire
@@ -135,7 +136,13 @@ class BillingService:
                 existing=existing,
             )
 
-        amount = plan.amount_paise
+        amount = prorated_amount(
+            amount_paise=plan.amount_paise,
+            from_date=participation.from_date,
+            to_date=participation.to_date,
+            period=period,
+            policy=None if full else plan.proration_policy,
+        )
         _, period_end = period_bounds(period)
         due_date = period_end
         now = self.clock.now()

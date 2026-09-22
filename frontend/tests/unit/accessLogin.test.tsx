@@ -10,6 +10,7 @@ const anonymousSession: SessionState = {
   status: "anonymous",
   session: null,
   actions: new Set(),
+  selfOnly: new Set(),
   refresh: () => Promise.resolve(),
   signOut: () => Promise.resolve(),
 };

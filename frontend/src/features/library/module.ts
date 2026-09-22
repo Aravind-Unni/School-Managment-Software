@@ -24,6 +24,7 @@ export const libraryModule: FeatureModule = {
   routes: [
     {
       path: "/library",
+      forFamilies: true,
       component: LibraryCataloguePage,
       navLabelKey: "nav.library",
       requiredPermission: LIBRARY_PERMISSIONS.readOwn,

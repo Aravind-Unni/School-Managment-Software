@@ -7,6 +7,7 @@
 
 import { ApiError, TransportError } from "@shared/api/errors";
 import { useAccessMessages } from "./useMessages";
+import { Loading as Spinner } from "@shared/ui/Loading";
 
 /** Map any thrown value to a renderable message key plus a request id. */
 export function toMessage(error: unknown): { messageKey: string; requestId: string | null } {
@@ -21,7 +22,7 @@ export function toMessage(error: unknown): { messageKey: string; requestId: stri
 
 export function Loading() {
   const t = useAccessMessages();
-  return <p role="status">{t("ui.loading")}</p>;
+  return <Spinner label={t("ui.loading")} />;
 }
 
 export function Empty({ messageKey = "ui.empty" }: { readonly messageKey?: string }) {

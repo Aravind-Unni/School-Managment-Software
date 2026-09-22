@@ -218,28 +218,6 @@ class CurrentSessionView(APIView):
         )
 
 
-class CapabilitiesView(APIView):
-    """GET /auth/capabilities -- action codes the caller currently holds.
-
-    Navigation-only surface. Authorisation still runs through AccessPort on every
-    write; this list exists so the product shell can hide links the actor cannot
-    use, not so the browser can grant itself power.
-    """
-
-    @extend_schema(
-        operation_id="auth_capabilities",
-        summary="List action codes the calling session holds",
-        responses={200: dict, **COMMON_ERRORS},
-    )
-    def get(self, request: Request) -> Response:
-        """Return distinct grant action codes for the caller."""
-        context = deps.require_context(request)
-        deps.require_session(request)
-        grants = deps.access_service().held_grants(context)
-        actions = sorted({grant.action for grant in grants})
-        return Response({"actions": actions})
-
-
 def _resolve_enrolling_account(request, validated):
     """Return (user, challenge) for an enrolment request.
 

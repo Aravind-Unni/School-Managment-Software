@@ -8,7 +8,7 @@
 
 import { Link } from "react-router-dom";
 import { useLanguage } from "@shared/i18n/LanguageContext";
-import { can, useSession } from "./SessionContext";
+import { canUseRoute, useSession } from "./SessionContext";
 import { REGISTERED_MODULES } from "./registeredModules";
 import { navigationRoutes, type FeatureRoute } from "./moduleRegistry";
 
@@ -49,7 +49,7 @@ function pick(routes: readonly FeatureRoute[], paths: readonly string[]): Featur
 
 export function HomePage() {
   const { t } = useLanguage();
-  const { status, session, actions } = useSession();
+  const { status, session, actions, selfOnly } = useSession();
   const schoolName = session?.school_name ?? null;
 
   if (status !== "authenticated" || session === null) {
@@ -57,7 +57,7 @@ export function HomePage() {
   }
 
   const routes = navigationRoutes(REGISTERED_MODULES).filter(
-    (route) => !route.path.startsWith("/demo") && can(actions, route.requiredPermission),
+    (route) => !route.path.startsWith("/demo") && canUseRoute(actions, selfOnly, route),
   );
   const setup = SETUP_STEPS.filter((step) => routes.some((route) => route.path === step.path));
   const everyday = [

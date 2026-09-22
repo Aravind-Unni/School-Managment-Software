@@ -35,7 +35,7 @@ export function ParentFileViewerPage() {
         {t("files.file_id")}
         <input value={fileId} onChange={(event) => setFileId(event.target.value)} />
       </label>
-      <button type="button" disabled={loading || fileId.trim().length === 0} onClick={() => void load()}>
+      <button aria-busy={loading} type="button" disabled={loading || fileId.trim().length === 0} onClick={() => void load()}>
         {loading ? t("ui.loading") : t("files.load_status")}
       </button>
       {errorKey !== null && (

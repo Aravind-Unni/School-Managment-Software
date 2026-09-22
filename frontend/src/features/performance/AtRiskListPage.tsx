@@ -17,6 +17,7 @@ import { shortDate } from "@shared/format";
 import { Problem } from "@shared/ui/Problem";
 import { can, useSession } from "@app/SessionContext";
 import { performanceMessages } from "./locales/messages";
+import { Loading } from "@shared/ui/Loading";
 
 interface ListedWarning {
   readonly id: string;
@@ -109,7 +110,7 @@ export function AtRiskListPage() {
     return () => window.clearInterval(timer);
   }, [checking, load]);
 
-  if (rows === null) return <p role="status">{t["performance.loading"]}</p>;
+  if (rows === null) return <Loading />;
 
   const shown = rows.filter((row) => filter === "all" || row.rule_code === filter);
   const byClass = new Map<string, ListedWarning[]>();
@@ -150,7 +151,7 @@ export function AtRiskListPage() {
           ))}
         </div>
         {canManage ? (
-          <button type="button" className="secondary" disabled={busy || checking} onClick={() => void recheck()}>
+          <button aria-busy={busy} type="button" className="secondary" disabled={busy || checking} onClick={() => void recheck()}>
             {busy ? t["performance.loading"] : t["risk.recheck"]}
           </button>
         ) : null}

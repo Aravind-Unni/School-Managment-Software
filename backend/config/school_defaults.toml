@@ -192,6 +192,22 @@ low_attendance_minimum_days = 10
 # Missing-work warning: raised after this many unsubmitted assessments.
 missing_work_count = 2
 
+[transport]
+# Monthly bus fee in rupees (a bus below may set its own), and how a month a
+# pupil only partly uses is charged: "daily" (by days used) or "full".
+monthly_fee = 1200                  # REVIEW
+part_month = "daily"
+
+[[transport.buses]]
+label = "Bus 1 - Kakkanad"
+
+[[transport.buses]]
+label = "Bus 2 - Edappally"
+
+[[transport.buses]]
+label = "Bus 3 - Vyttila"
+monthly_fee = 1500
+
 [library]
 max_active_loans_per_borrower = 3   # REVIEW
 max_renewals_per_loan = 2
@@ -241,7 +257,7 @@ grants = [
   "assessment.manage", "results.approve", "results.publish", "evidence.view",
   "performance.read", "warnings.manage", "interventions.manage", "meetings.record",
   "fees.read",
-  "transport.read", "library.read_overdues",
+  "transport.read", "transport.manage", "transport.bill", "library.read_overdues",
   "alumni.review", "alumni.read",
   "notices.create", "notices.publish", "messages.send", "messages.read_status",
   "files.upload", "files.read", "files.review_quality",

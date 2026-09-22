@@ -33,6 +33,7 @@ export const feesModule: FeatureModule = {
     },
     {
       path: "/fees/statement",
+      forFamilies: true,
       component: FeeStatementPage,
       navLabelKey: "nav.fees_statement",
       requiredPermission: FEES_PERMISSIONS.read,

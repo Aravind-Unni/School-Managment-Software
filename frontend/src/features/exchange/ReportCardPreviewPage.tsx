@@ -146,7 +146,7 @@ export function ReportCardPreviewPage() {
           </select>
         </label>
         <div className="form-end">
-          <button type="submit" disabled={busy || termId === "" || sectionId === ""}>
+          <button aria-busy={busy} type="submit" disabled={busy || termId === "" || sectionId === ""}>
             {busy ? t("ui.loading") : t("exchange.generate_report_cards")}
           </button>
         </div>

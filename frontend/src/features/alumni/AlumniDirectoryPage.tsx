@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { toLoadError } from "@shared/api/errors";
 import { useLanguage } from "@shared/i18n/LanguageContext";
 import { listAlumni, type AlumniProfile, type LeavingOutcome } from "./api";
+import { Loading } from "@shared/ui/Loading";
 
 type LoadState =
   | { readonly status: "loading" }
@@ -77,7 +78,7 @@ export function AlumniDirectoryPage() {
           {t("alumni.apply_filters")}
         </button>
       </fieldset>
-      {state.status === "loading" && <p role="status">{t("ui.loading")}</p>}
+      {state.status === "loading" && <Loading />}
       {state.status === "error" && (
         <div role="alert">
           <p>{t(state.messageKey)}</p>

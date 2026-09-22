@@ -77,6 +77,22 @@ interface RequestOptions {
  * TransportError otherwise. Never returns a partially-successful result: a
  * caller that gets a value knows the call succeeded.
  */
+// Requests in flight, so the shell can show a busy bar while anything loads.
+let inFlight = 0;
+const activityListeners = new Set<(busy: boolean) => void>();
+
+/** Be told whenever the app starts or stops waiting on the server. */
+export function onRequestActivity(listener: (busy: boolean) => void): () => void {
+  activityListeners.add(listener);
+  return () => activityListeners.delete(listener);
+}
+
+function trackRequest(delta: 1 | -1): void {
+  const wasBusy = inFlight > 0;
+  inFlight = Math.max(0, inFlight + delta);
+  if (wasBusy !== inFlight > 0) for (const listener of activityListeners) listener(inFlight > 0);
+}
+
 export async function request<Result>(
   path: string,
   options: RequestOptions = {},
@@ -127,7 +143,12 @@ export async function request<Result>(
     if (body !== undefined) init.body = JSON.stringify(body);
     if (rawBody !== undefined) init.body = rawBody.data;
     if (signal) init.signal = signal;
-    response = await fetch(url.toString(), init);
+    trackRequest(1);
+    try {
+      response = await fetch(url.toString(), init);
+    } finally {
+      trackRequest(-1);
+    }
   } catch (cause) {
     throw new TransportError(
       `request to ${path} failed before a response arrived: ${String(cause)}`,

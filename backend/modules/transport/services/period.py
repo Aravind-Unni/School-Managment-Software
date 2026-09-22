@@ -67,3 +67,28 @@ def ranges_overlap(
 def source_key_for(participation_id, period: str, charge_kind: str = "period") -> str:
     """Build the Fees source_key for one participation/period/kind."""
     return f"transport:{participation_id}:{period}:{charge_kind}"
+
+
+def prorated_amount(
+    *,
+    amount_paise: int,
+    from_date: date,
+    to_date: date | None,
+    period: str,
+    policy: str | None,
+) -> int:
+    """Return what to charge for a period under the plan's part-month rule.
+
+    "daily" charges the days used out of the days in the month, rounded to the
+    nearest rupee; any other rule ("full") charges the whole month.
+    """
+    if policy != "daily":
+        return amount_paise
+    start, end = period_bounds(period)
+    first = max(start, from_date)
+    last = min(end, to_date) if to_date is not None else end
+    if last < first:
+        return 0
+    used = (last - first).days + 1
+    total = (end - start).days + 1
+    return round(amount_paise * used / total / 100) * 100

@@ -14,6 +14,7 @@ import { useLanguage } from "@shared/i18n/LanguageContext";
 import { paiseFromRupees, rupees, shortDate } from "@shared/format";
 import { Problem } from "@shared/ui/Problem";
 import { useSchoolStructure } from "@features/registry/useSchoolStructure";
+import { Loading } from "@shared/ui/Loading";
 
 interface FeeHeadRow {
   readonly id: string;
@@ -105,7 +106,7 @@ export function FeeSetupPage() {
         <div>
           <h3>{t("feesetup.types")}</h3>
           {heads === null ? (
-            <p role="status">{t("ui.loading")}</p>
+            <Loading />
           ) : heads.length === 0 ? (
             <p className="empty-state">{t("feesetup.none")}</p>
           ) : (

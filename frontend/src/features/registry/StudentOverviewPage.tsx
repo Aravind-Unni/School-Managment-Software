@@ -18,6 +18,7 @@ import * as api from "./api";
 import { StudentPicker, type PickedStudent } from "./StudentPicker";
 import { StudentAvatar } from "./StudentPhoto";
 import { schoolToday } from "./useSchoolStructure";
+import { Loading } from "@shared/ui/Loading";
 
 interface Chosen {
   readonly id: string;
@@ -292,7 +293,7 @@ export function StudentOverviewPage() {
     );
   }, [linkedStudent]);
 
-  if (mine === null) return <p role="status">{t("ui.loading")}</p>;
+  if (mine === null) return <Loading />;
   const isFamily = mine.length > 0;
 
   return (

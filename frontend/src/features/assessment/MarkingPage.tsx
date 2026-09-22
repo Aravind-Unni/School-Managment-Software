@@ -17,6 +17,7 @@ import { useLanguage } from "@shared/i18n/LanguageContext";
 import { Problem } from "@shared/ui/Problem";
 import { can, useSession } from "@app/SessionContext";
 import { approveAssessment, patchResult, publishAssessment, submitAssessment } from "./api";
+import { Loading } from "@shared/ui/Loading";
 
 interface ResultRow {
   readonly student_id: string;
@@ -81,7 +82,7 @@ export function MarkingPage() {
     void load();
   }, [load]);
 
-  if (detail === null) return error ? <Problem error={error} /> : <p role="status">{t("ui.loading")}</p>;
+  if (detail === null) return error ? <Problem error={error} /> : <Loading />;
 
   const max = Number(detail.max_score);
   const editable = detail.state === "draft" || detail.state === "reopened";

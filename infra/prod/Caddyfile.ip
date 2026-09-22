@@ -3,7 +3,18 @@
 # own local certificate: browsers show a warning once; accept it to continue.
 # Select with CADDYFILE=Caddyfile.ip and DOMAIN=<the server's IP> in .env.
 
-{$DOMAIN} {
+{
+	# Browsers send no server name when given an IP; answer with the IP's certificate.
+	default_sni {$DOMAIN}
+	# The public ports may not be 80/443, so redirect explicitly below.
+	auto_https disable_redirects
+}
+
+http://{$DOMAIN} {
+	redir https://{$DOMAIN}:{$PUBLIC_HTTPS_PORT}{uri} permanent
+}
+
+https://{$DOMAIN} {
 	tls internal
 	encode zstd gzip
 	header {

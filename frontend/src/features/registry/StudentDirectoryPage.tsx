@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { useLanguage } from "@shared/i18n/LanguageContext";
 import { listStudents, type StudentRecord } from "./api";
 import { loadErrorKey } from "./loadErrorKey";
+import { Loading } from "@shared/ui/Loading";
 
 type LoadState =
   | { readonly status: "loading"; readonly items: readonly StudentRecord[] }
@@ -91,7 +92,7 @@ export function StudentDirectoryPage() {
         <button type="submit">{t("registry.search_submit")}</button>
       </form>
       {state.status === "loading" && state.items.length === 0 && (
-        <p role="status">{t("ui.loading")}</p>
+        <Loading />
       )}
       {state.status === "error" && (
         <p role="alert">
@@ -132,7 +133,7 @@ export function StudentDirectoryPage() {
         </button>
       )}
       {state.status === "loading" && state.items.length > 0 && (
-        <p role="status">{t("ui.loading")}</p>
+        <Loading />
       )}
     </section>
   );

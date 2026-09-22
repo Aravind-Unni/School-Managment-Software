@@ -10,6 +10,7 @@ import { useLanguage } from "@shared/i18n/LanguageContext";
 import { fetchDashboard, type DashboardDTO } from "./api";
 import { performanceErrorMessage } from "./loadError";
 import { performanceMessages } from "./locales/messages";
+import { Loading } from "@shared/ui/Loading";
 
 export function StudentDashboardPage() {
   const { language } = useLanguage();
@@ -91,7 +92,7 @@ export function StudentDashboardPage() {
           </select>
         </label>
       )}
-      {loading && <p role="status">{t["performance.loading"]}</p>}
+      {loading && <Loading />}
       {error && <p role="alert">{error}</p>}
       {!loading && !error && data && data.metrics.length === 0 && (
         <p>{t["performance.empty"]}</p>

@@ -33,6 +33,7 @@ import {
   type PeriodRow,
 } from "./plannerModel";
 import { subjectColour } from "./subjectColours";
+import { Loading } from "@shared/ui/Loading";
 
 interface Base {
   readonly id: string;
@@ -165,7 +166,7 @@ export function TimetablePlannerPage() {
     [structure],
   );
 
-  if (structureState.kind === "loading") return <p role="status">{t("ui.loading")}</p>;
+  if (structureState.kind === "loading") return <Loading />;
   if (structureState.kind === "failed") return <Problem error={structureState.error} />;
   if (base === null) {
     return (

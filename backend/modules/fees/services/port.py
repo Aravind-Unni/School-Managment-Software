@@ -16,6 +16,16 @@ from .statements import StatementService
 
 
 @dataclass(frozen=True, slots=True)
+class PlanTerms:
+    """What another module (transport) needs to bill a plan: head, amount, part-month rule."""
+
+    fee_plan_id: UUID
+    fee_head_id: UUID
+    amount_paise: int
+    proration_policy: str | None
+
+
+@dataclass(frozen=True, slots=True)
 class FeesService:
     """Concrete FeesPort for in-process consumers."""
 
@@ -67,3 +77,25 @@ class FeesService:
     ) -> BalanceDTO:
         """Return derived balance totals."""
         return self.statements.get_balance(context, student_id, as_of)
+
+    def get_plan(self, fee_plan_id: UUID) -> PlanTerms:
+        """Return a plan's first schedule line as billing terms.
+
+        ``applicability.proration`` carries the part-month rule ("daily",
+        "full" or absent). Raises ValidationFailed when the plan is unknown or
+        has no schedule, which transport records as a blocked charge.
+        """
+        from contracts.errors import ValidationFailed
+
+        from ..models import FeePlan
+
+        plan = FeePlan.objects.filter(id=fee_plan_id).first()
+        line = (plan.schedule or [None])[0] if plan is not None else None
+        if plan is None or not line:
+            raise ValidationFailed("transport.error.fee_plan_missing")
+        return PlanTerms(
+            fee_plan_id=plan.id,
+            fee_head_id=UUID(str(line["fee_head_id"])),
+            amount_paise=int(line["amount_paise"]),
+            proration_policy=(plan.applicability or {}).get("proration"),
+        )

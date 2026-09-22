@@ -31,7 +31,7 @@ def main() -> int:
     owner_password = secrets.token_urlsafe(12)
     target.write_text(
         f"""DOMAIN={domain}
-ALLOWED_HOSTS={domain}
+ALLOWED_HOSTS={domain},127.0.0.1,localhost
 SCHOOL_ID={uuid.uuid4()}
 POSTGRES_USER=school
 POSTGRES_PASSWORD={secrets.token_urlsafe(24)}

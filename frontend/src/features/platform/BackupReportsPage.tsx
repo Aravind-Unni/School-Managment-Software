@@ -43,7 +43,7 @@ export function BackupReportsPage() {
         {t("platform.isolated_target_label")}
         <input value={targetLabel} onChange={(event) => setTargetLabel(event.target.value)} />
       </label>
-      <button
+      <button aria-busy={busy}
         type="button"
         disabled={busy || manifestId.trim().length === 0 || targetLabel.trim().length === 0}
         onClick={() => void submit()}

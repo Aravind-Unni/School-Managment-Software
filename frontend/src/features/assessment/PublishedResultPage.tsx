@@ -1,19 +1,10 @@
 /**
- * Student/guardian published result view.
+ * Old link target for a single published result. Published marks and grades
+ * are shown on the Student overview, so this sends the reader there.
  */
 
-import { useParams } from "react-router-dom";
-import { useLanguage } from "@shared/i18n/LanguageContext";
+import { Navigate } from "react-router-dom";
 
 export function PublishedResultPage() {
-  const { t } = useLanguage();
-  const { resultId } = useParams<{ resultId: string }>();
-
-  return (
-    <section>
-      <h1>{t("assessment.published.title")}</h1>
-      <p>{t("assessment.grade_pending")}</p>
-      {resultId ? <p data-testid="result-id">{resultId}</p> : null}
-    </section>
-  );
+  return <Navigate to="/registry/overview" replace />;
 }

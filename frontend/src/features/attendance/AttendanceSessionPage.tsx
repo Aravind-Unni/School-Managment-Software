@@ -16,6 +16,7 @@ import {
   type AuthorizedPeriod,
   type WritableStatus,
 } from "./api";
+import { Loading } from "@shared/ui/Loading";
 
 const STATUSES: readonly WritableStatus[] = ["present", "absent", "late", "excused"];
 
@@ -53,7 +54,7 @@ export function AttendanceSessionPage() {
   }, [load]);
 
   if (error !== null && session === null) return <Problem error={error} />;
-  if (session === null) return <p role="status">{t("ui.loading")}</p>;
+  if (session === null) return <Loading />;
 
   const readOnly = session.state === "submitted";
   const counts = STATUSES.map(

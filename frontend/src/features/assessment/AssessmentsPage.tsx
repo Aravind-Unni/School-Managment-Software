@@ -18,6 +18,7 @@ import * as registry from "@features/registry/api";
 import { schoolToday, useSchoolStructure } from "@features/registry/useSchoolStructure";
 import { subjectColour } from "@features/timetable/subjectColours";
 import { createAssessment } from "./api";
+import { Loading } from "@shared/ui/Loading";
 
 interface Row {
   readonly id: string;
@@ -140,7 +141,7 @@ export function AssessmentsPage() {
       <div className="two-column">
         <div>
           <h3>{t("assessments.mine")}</h3>
-          {rows === null ? <p role="status">{t("ui.loading")}</p> : null}
+          {rows === null ? <Loading /> : null}
           {rows !== null && rows.length === 0 ? <p className="hint">{t("assessments.none")}</p> : null}
           <ul className="period-cards">
             {(rows ?? []).map((row) => {

@@ -9,6 +9,7 @@ import {
   type AlumniCandidate,
   type CandidateState,
 } from "./api";
+import { Loading } from "@shared/ui/Loading";
 
 type LoadState =
   | { readonly status: "loading" }
@@ -75,7 +76,7 @@ export function AlumniCandidatesPage() {
       {notice !== null && (
         <p role="status">{notice.startsWith("alumni.") || notice.startsWith("error.") ? t(notice) : notice}</p>
       )}
-      {state.status === "loading" && <p role="status">{t("ui.loading")}</p>}
+      {state.status === "loading" && <Loading />}
       {state.status === "error" && (
         <div role="alert">
           <p>{t(state.messageKey)}</p>

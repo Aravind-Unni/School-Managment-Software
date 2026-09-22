@@ -11,6 +11,7 @@ import { Problem } from "@shared/ui/Problem";
 import { schoolToday } from "@features/registry/useSchoolStructure";
 import { subjectColour } from "@features/timetable/subjectColours";
 import { listPeriods, type AuthorizedPeriod } from "./api";
+import { Loading } from "@shared/ui/Loading";
 
 function shiftDay(iso: string, days: number): string {
   const [y, m, d] = iso.split("-").map(Number);
@@ -63,7 +64,7 @@ export function AttendanceTodayPage() {
         ) : null}
       </div>
       <Problem error={error} />
-      {items === null ? <p role="status">{t("ui.loading")}</p> : null}
+      {items === null ? <Loading /> : null}
       {items !== null && items.length === 0 && error === null ? (
         <p role="status">{t("attendance.no_periods")}</p>
       ) : null}

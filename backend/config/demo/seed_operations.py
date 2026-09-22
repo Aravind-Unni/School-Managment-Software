@@ -167,6 +167,36 @@ NOTICES = (
 )
 
 
+def seed_transport(
+    principal: ApiActor, cast: DemoCast, school_id, *, rng: random.Random
+) -> int:
+    """Put about a third of the pupils on the school's buses; bill this month."""
+    from modules.transport.models import Bus
+
+    buses = list(Bus.objects.filter(school_id=school_id, active=True).exclude(fee_plan_id=None))
+    if not buses:
+        return 0
+    joined = 0
+    for student in cast.students:
+        if rng.random() > 0.33:
+            continue
+        bus = rng.choice(buses)
+        # Most joined at the start of term; a few part-way through the month.
+        start = "2026-09-01" if rng.random() > 0.15 else "2026-09-14"
+        principal.post(
+            "/bus-participations",
+            {
+                "student_id": student["id"],
+                "from_date": start,
+                "fee_plan_id": str(bus.fee_plan_id),
+                "bus_id": str(bus.id),
+            },
+        )
+        joined += 1
+    principal.post("/bus-billing-runs", {"period": "2026-09", "policy_version": 1})
+    return joined
+
+
 def seed_notices(actors: dict[str, ApiActor], cast: DemoCast) -> int:
     """Publish one notice per class, written by a teacher."""
     teachers = [login for login, row in cast.staff.items() if row["subject"] is not None]

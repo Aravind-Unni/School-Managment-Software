@@ -17,6 +17,7 @@ import { readTeacherDay, type TeacherDay } from "./api";
 import { SessionList } from "./SessionList";
 import { todayIso, toErrorState, type LoadState } from "./state";
 import { useTimetableMessages } from "./useMessages";
+import { Loading } from "@shared/ui/Loading";
 
 export function TeacherSchedulePage() {
   const t = useTimetableMessages();
@@ -82,7 +83,7 @@ export function TeacherSchedulePage() {
         />
       </label>
 
-      {state.status === "loading" && <p role="status">{t("ui.loading")}</p>}
+      {state.status === "loading" && <Loading />}
 
       {state.status === "error" && (
         <div role="alert">

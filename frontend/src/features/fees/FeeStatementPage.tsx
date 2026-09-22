@@ -8,6 +8,7 @@ import { useLanguage } from "@shared/i18n/LanguageContext";
 import { listMyStudents, type MyStudent } from "@features/registry/api";
 import { FeesPanel } from "@features/registry/StudentOverviewPage";
 import { StudentPicker, type PickedStudent } from "@features/registry/StudentPicker";
+import { Loading } from "@shared/ui/Loading";
 
 export function FeeStatementPage() {
   const { t } = useLanguage();
@@ -24,7 +25,7 @@ export function FeeStatementPage() {
     );
   }, []);
 
-  if (mine === null) return <p role="status">{t("ui.loading")}</p>;
+  if (mine === null) return <Loading />;
   return (
     <section aria-labelledby="statement-title">
       <h2 id="statement-title">{t("fees.statement_title")}</h2>

@@ -17,6 +17,8 @@ export interface FeatureRoute {
   readonly navLabelKey?: string;
   /** Permission code the backend checks. Used to hide navigation, never to authorise. */
   readonly requiredPermission?: string;
+  /** Built for pupils and parents: shown to accounts that hold the permission only for themselves. */
+  readonly forFamilies?: boolean;
 }
 
 /** One module's frontend declaration. Mirrors the backend registration. */
@@ -71,6 +73,7 @@ export function validateModule(module: FeatureModule): FeatureModule {
 /** Routes that should appear in navigation, in declaration order. */
 export function navigationRoutes(modules: readonly FeatureModule[]): FeatureRoute[] {
   return modules.flatMap((module) =>
-    module.routes.filter((route) => route.navLabelKey !== undefined),
+    // A path with a placeholder (":id") is reached from a link, never the menu.
+    module.routes.filter((route) => route.navLabelKey !== undefined && !route.path.includes(":")),
   );
 }

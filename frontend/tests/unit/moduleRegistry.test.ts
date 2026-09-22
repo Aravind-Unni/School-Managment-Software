@@ -54,7 +54,6 @@ describe("module registry", () => {
       "nav.timetable_student",
       "nav.attendance",
       "nav.assessment_setup",
-      "nav.assessment_results",
       "nav.performance_dashboard",
       "nav.performance_at_risk",
       "nav.performance_interventions",

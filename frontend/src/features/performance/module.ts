@@ -29,6 +29,7 @@ export const performanceModule: FeatureModule = {
   routes: [
     {
       path: "/performance",
+      forFamilies: true,
       component: StudentDashboardPage,
       navLabelKey: "nav.performance_dashboard",
       requiredPermission: PERFORMANCE_PERMISSIONS.read,

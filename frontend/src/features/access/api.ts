@@ -120,8 +120,8 @@ export async function currentSession(): Promise<Authenticated> {
 }
 
 /** List action codes the caller holds (navigation only). */
-export async function listCapabilities(): Promise<{ actions: string[] }> {
-  return call<{ actions: string[] }>("/auth/capabilities");
+export async function listCapabilities(): Promise<{ actions: string[]; self_only_actions?: string[] }> {
+  return call<{ actions: string[]; self_only_actions?: string[] }>("/auth/capabilities");
 }
 
 /** Revoke the current session. */

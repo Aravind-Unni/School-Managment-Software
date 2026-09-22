@@ -1,47 +1,49 @@
-/** Period billing reconciliation and run queue. */
+/**
+ * Bus billing for one month: one button charges every rider their bus fee
+ * (part months by the school's rule), and anything that could not be charged
+ * is listed by pupil with what went wrong and a Try again button.
+ *
+ * Charging is safe to repeat: pupils already billed for the month are skipped.
+ * Does not handle: refunds or fee changes for one pupil (use Concessions).
+ */
 
 import { useCallback, useEffect, useState } from "react";
-import { ApiError, TransportError } from "@shared/api/errors";
+import { request } from "@shared/api/client";
 import { useLanguage } from "@shared/i18n/LanguageContext";
-import {
-  createBillingRun,
-  getBillingReconciliation,
-  type BillingRunDTO,
-  type ReconciliationDTO,
-} from "./api";
+import { Problem } from "@shared/ui/Problem";
+import { schoolToday } from "@features/registry/useSchoolStructure";
+import { createBillingRun, getBillingReconciliation, type BillingRunDTO, type ReconciliationDTO } from "./api";
+import { Loading } from "@shared/ui/Loading";
 
-type LoadState =
-  | { readonly status: "loading" }
-  | { readonly status: "ready"; readonly data: ReconciliationDTO }
-  | { readonly status: "error"; readonly messageKey: string };
-
-function defaultPeriod(): string {
-  return "2026-06";
-}
-
-function toMessageKey(error: unknown): string {
-  if (error instanceof ApiError) return error.messageKey;
-  if (error instanceof TransportError) return "error.transport";
-  return "error.transport";
+function monthLabel(period: string, language: string): string {
+  const [year, month] = period.split("-").map(Number);
+  return new Date(year ?? 2026, (month ?? 1) - 1, 1).toLocaleDateString(language === "ml" ? "ml-IN" : "en-IN", {
+    month: "long",
+    year: "numeric",
+  });
 }
 
 export function TransportBillingPage() {
-  const { t } = useLanguage();
-  const [period, setPeriod] = useState(defaultPeriod);
-  const [state, setState] = useState<LoadState>({ status: "loading" });
-  const [runResult, setRunResult] = useState<BillingRunDTO | null>(null);
-  const [runErrorKey, setRunErrorKey] = useState<string | null>(null);
-  const [queuing, setQueuing] = useState(false);
+  const { t, language } = useLanguage();
+  const [period, setPeriod] = useState(schoolToday().slice(0, 7));
+  const [data, setData] = useState<ReconciliationDTO | null>(null);
+  const [names, setNames] = useState<ReadonlyMap<string, string>>(new Map());
+  const [run, setRun] = useState<BillingRunDTO | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<unknown>(null);
 
   const load = useCallback(async (value: string) => {
-    setState({ status: "loading" });
-    setRunResult(null);
-    setRunErrorKey(null);
     try {
-      const data = await getBillingReconciliation(value);
-      setState({ status: "ready", data });
-    } catch (error) {
-      setState({ status: "error", messageKey: toMessageKey(error) });
+      const [recon, riders] = await Promise.all([
+        getBillingReconciliation(value),
+        request<{ items: { participation_id: string; display_name: string }[] }>("/api/v1/bus-participants", {
+          query: { date: `${value}-15` },
+        }),
+      ]);
+      setData(recon);
+      setNames(new Map(riders.items.map((row) => [row.participation_id, row.display_name])));
+    } catch (caught) {
+      setError(caught);
     }
   }, []);
 
@@ -50,80 +52,82 @@ export function TransportBillingPage() {
     void load(period);
   }, [period, load]);
 
-  async function onQueueRun() {
-    setQueuing(true);
-    setRunErrorKey(null);
-    setRunResult(null);
+  const act = async (work: () => Promise<unknown>) => {
+    setBusy(true);
+    setError(null);
     try {
-      const run = await createBillingRun({ period, policy_version: 1 });
-      setRunResult(run);
+      await work();
       await load(period);
-    } catch (error) {
-      setRunErrorKey(toMessageKey(error));
+    } catch (caught) {
+      setError(caught);
     } finally {
-      setQueuing(false);
+      setBusy(false);
     }
-  }
+  };
+
+  const billMonth = () => act(async () => setRun(await createBillingRun({ period, policy_version: 1 })));
+  const retry = (billingRequestId: string) =>
+    act(() => request(`/api/v1/bus-billing-requests/${billingRequestId}/retry`, { method: "POST", body: {} }));
+
+  const problems = data?.items ?? [];
 
   return (
-    <section>
-      <h1>{t("transport.billing_title")}</h1>
-      <label>
-        {t("transport.billing_period")}
-        <input
-          type="month"
-          value={period}
-          onChange={(event) => setPeriod(event.target.value)}
-          aria-label={t("transport.billing_period")}
-        />
-      </label>
-      {state.status === "loading" && <p role="status">{t("ui.loading")}</p>}
-      {state.status === "error" && (
-        <p role="alert">
-          {t(state.messageKey)}
-          <button type="button" onClick={() => void load(period)}>
-            {t("ui.retry")}
+    <section aria-labelledby="bus-billing-title">
+      <h2 id="bus-billing-title">{t("busbill.title")}</h2>
+      <p className="hint">{t("busbill.intro")}</p>
+      <div className="inline-fields">
+        <label>
+          {t("busbill.month")}
+          <input
+            type="month"
+            value={period}
+            onChange={(event) => {
+              setPeriod(event.target.value);
+              setRun(null);
+            }}
+          />
+        </label>
+        <div className="form-end">
+          <button aria-busy={busy} type="button" disabled={busy} onClick={() => void billMonth()}>
+            {busy ? t("ui.loading") : `${t("busbill.bill")} ${monthLabel(period, language)}`}
           </button>
+        </div>
+      </div>
+      <Problem error={error} />
+      {run ? (
+        <p role="status" className="notice-success">
+          {run.preview.eligible_count} {t("busbill.charged")} · {run.preview.already_billed_count}{" "}
+          {t("busbill.already")}
+          {run.preview.blocked_count ? ` · ${run.preview.blocked_count} ${t("busbill.blocked")}` : ""}
         </p>
-      )}
-      {state.status === "ready" && (
-        <>
-          {state.data.items.length === 0 ? (
-            <p>{t("ui.empty")}</p>
-          ) : (
-            <table>
-              <caption>{t("transport.reconciliation_title")}</caption>
-              <thead>
-                <tr>
-                  <th scope="col">{t("transport.col_kind")}</th>
-                  <th scope="col">{t("transport.col_owner")}</th>
-                  <th scope="col">{t("transport.col_state")}</th>
-                  <th scope="col">{t("transport.col_error")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {state.data.items.map((item, index) => (
-                  <tr key={`${item.kind}-${item.source_key ?? index}`}>
-                    <th scope="row">{item.kind}</th>
-                    <td>{item.owner}</td>
-                    <td>{item.state ?? "—"}</td>
-                    <td>{item.error_code ?? "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          <button type="button" disabled={queuing} onClick={() => void onQueueRun()}>
-            {queuing ? t("transport.queuing") : t("transport.queue_run")}
-          </button>
-        </>
-      )}
-      {runErrorKey && <p role="alert">{t(runErrorKey)}</p>}
-      {runResult && (
-        <p role="status">
-          {t("transport.run_queued")}: {runResult.job_id} · {runResult.state} ·{" "}
-          {t("transport.preview_eligible")} {runResult.preview.eligible_count}
-        </p>
+      ) : null}
+      <h3>{t("busbill.attention")}</h3>
+      {data === null ? (
+        <Loading />
+      ) : problems.length === 0 ? (
+        <p className="empty-state">{t("busbill.all_good")}</p>
+      ) : (
+        <ul className="charge-list">
+          {problems.map((item, index) => (
+            <li key={`${item.billing_request_id ?? item.participation_id ?? index}`}>
+              <div>
+                <strong>{(item.participation_id && names.get(item.participation_id)) || t("busbill.a_rider")}</strong>
+                <span className="attention">{t(`busbill.kind.${item.kind}`)}</span>
+                {item.error_code ? <span className="hint">{t(item.error_code)}</span> : null}
+              </div>
+              {item.retryable && item.billing_request_id ? (
+                <button
+                  type="button"
+                  className="secondary"
+                  disabled={busy}
+                  onClick={() => void retry(item.billing_request_id as string)}
+                >
+                  {t("jobs.retry")}
+                </button>
+              ) : null}
+            </li>
+          ))}
+        </ul>
       )}
     </section>
   );

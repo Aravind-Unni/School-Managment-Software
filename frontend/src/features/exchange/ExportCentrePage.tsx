@@ -199,7 +199,7 @@ export function ExportCentrePage() {
 
       <Problem error={error} />
       <div className="row-actions">
-        <button type="button" disabled={busy || !ready} onClick={() => void start()}>
+        <button aria-busy={busy} type="button" disabled={busy || !ready} onClick={() => void start()}>
           {busy ? t("ui.loading") : t("exchange.create_export")}
         </button>
         {job && !downloadUrl && job.state !== "failed" ? <span role="status">{t("exports.preparing")}</span> : null}

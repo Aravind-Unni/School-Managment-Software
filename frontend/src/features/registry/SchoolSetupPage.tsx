@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useLanguage } from "@shared/i18n/LanguageContext";
 import { getSchoolConfig, type SchoolConfig } from "./api";
 import { loadErrorKey } from "./loadErrorKey";
+import { Loading } from "@shared/ui/Loading";
 
 type LoadState =
   | { readonly status: "loading" }
@@ -35,7 +36,7 @@ export function SchoolSetupPage() {
   return (
     <section>
       <h1>{t("registry.setup_title")}</h1>
-      {state.status === "loading" && <p role="status">{t("ui.loading")}</p>}
+      {state.status === "loading" && <Loading />}
       {state.status === "error" && (
         <p role="alert">
           {t(state.messageKey)}{" "}

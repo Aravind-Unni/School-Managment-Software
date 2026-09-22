@@ -34,7 +34,7 @@ export function DeliveryDashboardPage() {
         {t("communications.delivery_id")}
         <input value={deliveryId} onChange={(event) => setDeliveryId(event.target.value)} />
       </label>
-      <button type="button" disabled={loading || deliveryId.trim().length === 0} onClick={() => void load()}>
+      <button aria-busy={loading} type="button" disabled={loading || deliveryId.trim().length === 0} onClick={() => void load()}>
         {loading ? t("ui.loading") : t("communications.load_delivery")}
       </button>
       {errorKey !== null && (

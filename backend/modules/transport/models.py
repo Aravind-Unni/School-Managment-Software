@@ -44,6 +44,10 @@ class Bus(models.Model):
     school_id = models.UUIDField(db_index=True)
     label = models.CharField(max_length=128)
     active = models.BooleanField(default=True)
+    #: The fee plan pupils on this bus are billed under, and its monthly amount
+    #: (set from the school config's [transport] section).
+    fee_plan_id = models.UUIDField(null=True, blank=True)
+    monthly_fee_paise = models.BigIntegerField(null=True, blank=True)
     version = models.IntegerField(default=1)
 
     class Meta:

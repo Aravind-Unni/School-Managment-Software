@@ -107,6 +107,9 @@ def validate_school_config(config: dict[str, Any]) -> None:
     for period in config["timetable"]["periods"]:
         if _parse_time(period["end"]) <= _parse_time(period["start"]):
             problems.append(f"period {period['code']} ends before it starts")
+    from config.school_install_transport import validate_transport
+
+    problems.extend(validate_transport(config))
     if problems:
         raise ValueError("invalid school config:\n  - " + "\n  - ".join(problems))
 
@@ -127,6 +130,7 @@ def install_school(
 ) -> InstallReport:
     """Write every configuration row described by ``config``. One transaction."""
     from config.school_install_access import _install_policies, _install_roles
+    from config.school_install_transport import install_transport
 
     report = InstallReport()
     with transaction.atomic():
@@ -137,6 +141,7 @@ def install_school(
         _install_timetable_draft(config, school_id, year, now, report)
         _install_policies(config, school_id, report)
         _install_roles(config, school_id, now, report)
+        install_transport(config, school_id, now, report)
     return report
 
 

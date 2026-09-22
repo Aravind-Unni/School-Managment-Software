@@ -17,6 +17,7 @@ import {
   viewEvidence,
 } from "./api";
 import { loadAssessment, loadAttemptId, rememberAssessment } from "./storage";
+import { Loading } from "@shared/ui/Loading";
 
 function toMessageKey(error: unknown): string {
   if (error instanceof ApiError) return error.messageKey;
@@ -251,7 +252,7 @@ export function MarkingGridPage() {
       )}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
         <section aria-label={t("assessment.marking.title")}>
-          {rows.length === 0 && !pageError && <p role="status">{t("ui.loading")}</p>}
+          {rows.length === 0 && !pageError && <Loading />}
           <table>
             <thead>
               <tr>

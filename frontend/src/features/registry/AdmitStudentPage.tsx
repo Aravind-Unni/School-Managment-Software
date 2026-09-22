@@ -23,6 +23,7 @@ import { uploadStudentPhoto } from "./StudentPhoto";
 import * as accessApi from "@features/access/api";
 import * as api from "./api";
 import { schoolToday, useSchoolStructure } from "./useSchoolStructure";
+import { Loading } from "@shared/ui/Loading";
 
 type ParentMode = "new" | "existing" | "none";
 
@@ -92,7 +93,7 @@ export function AdmitStudentPage() {
       .slice(0, 50);
   }, [guardians, guardianFilter]);
 
-  if (state.kind === "loading") return <p role="status">{t("ui.loading")}</p>;
+  if (state.kind === "loading") return <Loading />;
   if (state.kind === "failed") return <Problem error={state.error} />;
   const { year, sections } = state.structure;
 
@@ -374,7 +375,7 @@ export function AdmitStudentPage() {
           </ul>
         ) : null}
         <Problem error={error} />
-        <button type="submit" disabled={busy}>
+        <button aria-busy={busy} type="submit" disabled={busy}>
           {busy ? t("ui.loading") : t("registry.admit.submit")}
         </button>
       </form>

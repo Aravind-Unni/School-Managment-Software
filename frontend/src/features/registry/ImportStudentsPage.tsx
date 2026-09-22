@@ -15,6 +15,7 @@ import { Link } from "react-router-dom";
 import { request } from "@shared/api/client";
 import { useLanguage } from "@shared/i18n/LanguageContext";
 import { Problem } from "@shared/ui/Problem";
+import { Loading } from "@shared/ui/Loading";
 
 interface ImportProblem {
   readonly row: number;
@@ -107,7 +108,7 @@ export function ImportStudentsPage() {
           {t("import.save_as_csv")}
         </p>
       ) : null}
-      {busy ? <p role="status">{t("ui.loading")}</p> : null}
+      {busy ? <Loading /> : null}
       <Problem error={error} />
 
       {result && !done ? (

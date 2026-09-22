@@ -26,6 +26,7 @@ export const registryModule: FeatureModule = {
   routes: [
     {
       path: "/registry/overview",
+      forFamilies: true,
       component: StudentOverviewPage,
       navLabelKey: "nav.student_overview",
       requiredPermission: REGISTRY_PERMISSIONS.studentsRead,

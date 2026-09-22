@@ -10,6 +10,7 @@ import { rupees, shortDate } from "@shared/format";
 import { Problem } from "@shared/ui/Problem";
 import { schoolToday } from "@features/registry/useSchoolStructure";
 import { fetchOverdue, type OverdueItemDTO } from "./api";
+import { Loading } from "@shared/ui/Loading";
 
 function daysBetween(fromIso: string, toIso: string): number {
   return Math.max(0, Math.round((Date.parse(toIso) - Date.parse(fromIso)) / 86_400_000));
@@ -49,7 +50,7 @@ export function FeeOverduePage() {
     <section aria-labelledby="overdue-title">
       <h2 id="overdue-title">{t("fees.overdue_title")}</h2>
       <Problem error={error} />
-      {items === null ? <p role="status">{t("ui.loading")}</p> : null}
+      {items === null ? <Loading /> : null}
       {items !== null && byStudent.length === 0 && error === null ? (
         <p role="status" className="notice-success">
           {t("fees.overdue.none")}

@@ -14,6 +14,7 @@ import { Problem } from "@shared/ui/Problem";
 import * as accessApi from "@features/access/api";
 import * as api from "./api";
 import { schoolToday, useSchoolStructure } from "./useSchoolStructure";
+import { Loading } from "@shared/ui/Loading";
 
 function AddStaffForm({
   roles,
@@ -135,7 +136,7 @@ function AddStaffForm({
         </label>
       ) : null}
       <Problem error={error} />
-      <button type="submit" disabled={busy}>
+      <button aria-busy={busy} type="submit" disabled={busy}>
         {busy ? t("ui.loading") : t("registry.staff.add")}
       </button>
     </form>
@@ -152,7 +153,7 @@ function AssignTeachingForm({ staff }: { readonly staff: readonly api.StaffMembe
   const [error, setError] = useState<unknown>(null);
   const [done, setDone] = useState<readonly string[]>([]);
 
-  if (state.kind === "loading") return <p role="status">{t("ui.loading")}</p>;
+  if (state.kind === "loading") return <Loading />;
   if (state.kind === "failed") return <Problem error={state.error} />;
   const { sections, subjects, year } = state.structure;
 
@@ -235,7 +236,7 @@ function AssignTeachingForm({ staff }: { readonly staff: readonly api.StaffMembe
         </ul>
       ) : null}
       <Problem error={error} />
-      <button type="submit" disabled={busy || sectionIds.length === 0}>
+      <button aria-busy={busy} type="submit" disabled={busy || sectionIds.length === 0}>
         {busy ? t("ui.loading") : t("registry.staff.assign")}
       </button>
     </form>

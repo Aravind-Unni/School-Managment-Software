@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toLoadError } from "@shared/api/errors";
 import { useLanguage } from "@shared/i18n/LanguageContext";
 import { listAudit, type AuditRecord } from "./api";
+import { Loading } from "@shared/ui/Loading";
 
 type LoadState =
   | { readonly status: "loading" }
@@ -55,7 +56,7 @@ export function AuditViewerPage() {
       <button type="button" onClick={() => void load()}>
         {t("platform.apply_filters")}
       </button>
-      {state.status === "loading" && <p role="status">{t("ui.loading")}</p>}
+      {state.status === "loading" && <Loading />}
       {state.status === "error" && (
         <div role="alert">
           <p>{t(state.messageKey)}</p>

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from django.urls import path
 
-from .api import account_views, admin_views, auth_views
+from .api import account_views, admin_views, auth_views, views_capabilities
 
 app_name = "access"
 
@@ -21,7 +21,9 @@ urlpatterns = [
     path("auth/2fa/recover", auth_views.RecoverView.as_view(), name="recover"),
     path("auth/logout", auth_views.LogoutView.as_view(), name="logout"),
     path("auth/session", auth_views.CurrentSessionView.as_view(), name="current-session"),
-    path("auth/capabilities", auth_views.CapabilitiesView.as_view(), name="capabilities"),
+    path(
+        "auth/capabilities", views_capabilities.CapabilitiesView.as_view(), name="capabilities"
+    ),
     path(
         "auth/factor/reset-requests",
         auth_views.ResetRequestView.as_view(),

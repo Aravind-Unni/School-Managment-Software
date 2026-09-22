@@ -23,6 +23,7 @@ from ..models import (
     ResultWorkflowStatus,
 )
 from .authority import AuthorityGate
+from .grading import school_bands
 from .wire import build_result_snapshot, publication_to_wire
 from .workflow import assert_evidence_confirmed, assert_marks_complete, evidence_required
 
@@ -82,6 +83,7 @@ class PublishService:
         assert_evidence_confirmed(assessment, self.files, context)
 
         now = self.clock.now()
+        bands = school_bands(self.gate.registry, context)
         publication_id = uuid.uuid4()
         revision_ids: list[str] = []
 
@@ -93,7 +95,7 @@ class PublishService:
                 raise StateConflict("assessment.error.already_published")
 
             for result in Result.objects.select_for_update().filter(assessment=locked):
-                snapshot = build_result_snapshot(result, locked)
+                snapshot = build_result_snapshot(result, locked, bands)
                 revision = ResultRevision.objects.create(
                     id=uuid.uuid4(),
                     result=result,

@@ -9,7 +9,13 @@ from django.conf import settings
 
 from .api_actor import ApiActor
 from .seed_academics import seed_assessments, seed_attendance, seed_timetable
-from .seed_operations import rebuild_performance, seed_fees, seed_library, seed_notices
+from .seed_operations import (
+    rebuild_performance,
+    seed_fees,
+    seed_library,
+    seed_notices,
+    seed_transport,
+)
 from .seed_people import DEMO_PASSWORD, seed_people
 
 
@@ -61,6 +67,8 @@ def run(owner_login: str, *, seed: int = 2026, log=print) -> dict:
     payments = seed_fees(actors["accounts"], cast, school_id, rng=rng)
     log("library ...")
     loans = seed_library(actors["library"], cast, today=today, rng=rng)
+    log("transport ...")
+    riders = seed_transport(principal, cast, school_id, rng=rng)
     log("notices ...")
     notices = seed_notices(actors, cast)
     log("performance dashboards and warnings ...")
@@ -74,6 +82,7 @@ def run(owner_login: str, *, seed: int = 2026, log=print) -> dict:
         "payments": payments,
         "library_loans": loans,
         "notices": notices,
+        "bus_riders": riders,
         "projections": rebuilt,
         "password": DEMO_PASSWORD,
         "logins": cast.logins,

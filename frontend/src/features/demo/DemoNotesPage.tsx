@@ -10,6 +10,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ApiError, TransportError } from "@shared/api/errors";
 import { useLanguage } from "@shared/i18n/LanguageContext";
 import { listNotes, type Note } from "./api";
+import { Loading } from "@shared/ui/Loading";
 
 type LoadState =
   | { readonly status: "loading" }
@@ -65,7 +66,7 @@ export function DemoNotesPage() {
   }, [load]);
 
   if (state.status === "loading") {
-    return <p role="status">{t("ui.loading")}</p>;
+    return <Loading />;
   }
 
   if (state.status === "error") {

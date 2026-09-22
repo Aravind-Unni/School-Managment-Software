@@ -48,7 +48,7 @@ export function ReportCentrePage() {
         {t("exchange.report_id")}
         <input value={reportId} onChange={(event) => setReportId(event.target.value)} />
       </label>
-      <button type="button" disabled={loading || reportId.trim().length === 0} onClick={() => void load()}>
+      <button aria-busy={loading} type="button" disabled={loading || reportId.trim().length === 0} onClick={() => void load()}>
         {loading ? t("ui.loading") : t("exchange.load_report")}
       </button>
       {errorKey !== null && (

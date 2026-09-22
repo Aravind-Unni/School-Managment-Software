@@ -6,6 +6,7 @@ from decimal import Decimal
 from typing import Any
 
 from ..models import Assessment, EvidenceBinding, Result, ResultRevision
+from .grading import grade_for
 
 
 def format_mark(value: Decimal | None) -> str | None:
@@ -68,8 +69,9 @@ def result_to_wire(
     assessment: Assessment | None = None,
     revision_id=None,
     evidence: list[EvidenceBinding] | None = None,
+    bands: list[dict] | None = None,
 ) -> dict[str, Any]:
-    """Serialise one result. Grade is always null until school policy exists."""
+    """Serialise one result, with its grade when the school's bands are given."""
     assessment = assessment or result.assessment
     rev = revision_id or result.current_revision_id
     if rev is None:
@@ -93,16 +95,19 @@ def result_to_wire(
         "marking_outcome": result.marking_outcome,
         "score": format_mark(result.score),
         "max_score": format_mark(assessment.max_score),
-        "grade": None,
+        "grade": grade_for(result.score, assessment.max_score, bands),
         "policy_version": assessment.policy_version,
         "evidence_refs": [evidence_to_wire(b) for b in bindings],
     }
 
 
-def build_result_snapshot(result: Result, assessment: Assessment) -> dict[str, Any]:
+def build_result_snapshot(
+    result: Result, assessment: Assessment, bands: list[dict] | None = None
+) -> dict[str, Any]:
     """Build the immutable JSON snapshot stored on a ResultRevision.
 
-    Does not handle: grade letters — always null.
+    The grade is fixed at publishing time from the school's bands, so a later
+    change of bands never rewrites a grade parents have already seen.
     """
     marks = [
         {
@@ -128,7 +133,7 @@ def build_result_snapshot(result: Result, assessment: Assessment) -> dict[str, A
         "marking_outcome": result.marking_outcome,
         "score": format_mark(result.score),
         "max_score": format_mark(assessment.max_score),
-        "grade": None,
+        "grade": grade_for(result.score, assessment.max_score, bands),
         "policy_version": assessment.policy_version,
         "marks": marks,
         "evidence_refs": evidence,
@@ -149,7 +154,7 @@ def publication_to_wire(
 
 
 def revision_snapshot_result(
-    revision: ResultRevision, assessment: Assessment
+    revision: ResultRevision, assessment: Assessment, bands: list[dict] | None = None
 ) -> dict[str, Any]:
     """Rebuild a ResultDTO-shaped dict from a stored revision snapshot."""
     snap = revision.snapshot
@@ -165,7 +170,8 @@ def revision_snapshot_result(
         "marking_outcome": snap["marking_outcome"],
         "score": snap["score"],
         "max_score": snap["max_score"],
-        "grade": None,
+        # Published before grades existed: work it out from today's bands.
+        "grade": snap.get("grade") or grade_for(snap["score"], snap["max_score"], bands),
         "policy_version": snap["policy_version"],
         "evidence_refs": snap.get("evidence_refs", []),
     }

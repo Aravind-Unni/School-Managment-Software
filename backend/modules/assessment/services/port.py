@@ -20,6 +20,7 @@ from ..models import (
     ResultWorkflowStatus,
 )
 from .authority import READING_RELATIONSHIPS, AuthorityGate
+from .grading import school_bands
 from .wire import result_to_wire, revision_snapshot_result
 
 
@@ -78,6 +79,7 @@ class AssessmentService:
             .order_by("id")
         )
         items = []
+        bands = school_bands(self.registry, context)
         for result in results:
             assessment = result.assessment
             if assessment.state != AssessmentState.PUBLISHED:
@@ -94,6 +96,7 @@ class AssessmentService:
                     assessment=assessment,
                     revision_id=result.current_revision_id,
                     evidence=bindings,
+                    bands=bands,
                 )
             )
         return {"items": items, "next_cursor": None}
