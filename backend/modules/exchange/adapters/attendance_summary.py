@@ -55,9 +55,10 @@ class AttendanceSummaryAdapter(AdapterBase):
             return export_page(self.schema_version, [])
         effective = self.ports.clock.now().date()
         roster = self.ports.registry.get_roster(ctx, UUID(str(section_id)), effective)
+        start = self._term_start(ctx, effective)
         rows = []
         for entry in roster.students:
-            summary = self._summary_or_none(ctx, entry.student_id, effective)
+            summary = self._summary_or_none(ctx, entry.student_id, start, effective)
             if summary is None:
                 continue
             rows.append(
@@ -69,15 +70,32 @@ class AttendanceSummaryAdapter(AdapterBase):
                     "present": summary.present,
                     "absent": summary.absent,
                     "unmarked": summary.unmarked,
-                    "percentage": "" if summary.percentage is None else summary.percentage,
+                    "percentage": _percentage(summary),
                     "medical_note": f"synthetic-note-{entry.student_id}",
                 }
             )
         return export_page(self.schema_version, rows)
 
-    def _summary_or_none(self, ctx: RequestContext, student_id, effective):
-        """Return one pupil's summary, or None when M04 has no inputs for them."""
+    def _term_start(self, ctx: RequestContext, effective):
+        """Return the current term's first day, or today when there is no term."""
+        current_term = getattr(self.ports.registry, "current_term", None)
+        term = current_term(ctx, effective) if current_term is not None else None
+        return term.start if term is not None and term.start <= effective else effective
+
+    def _summary_or_none(self, ctx: RequestContext, student_id, start, effective):
+        """Return one pupil's term-to-date summary, or None when M04 has no inputs."""
         try:
-            return self.ports.attendance.get_summary(ctx, student_id, effective, effective)
+            return self.ports.attendance.get_summary(ctx, student_id, start, effective)
         except ObjectInaccessible:
             return None
+
+
+def _percentage(summary) -> str:
+    """Attendance % as a two-place string: the summary's own, else attended/counted."""
+    if summary.percentage is not None:
+        return str(summary.percentage)
+    counted = summary.marked - getattr(summary, "excused", 0)
+    if counted <= 0:
+        return ""
+    attended = summary.present + getattr(summary, "late", 0)
+    return f"{attended * 100 / counted:.2f}"

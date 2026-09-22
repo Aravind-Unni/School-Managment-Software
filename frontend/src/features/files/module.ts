@@ -22,13 +22,11 @@ export const filesModule: FeatureModule = {
     {
       path: "/files/review",
       component: FileReviewPage,
-      navLabelKey: "nav.files_review",
       requiredPermission: FILES_PERMISSIONS.reviewQuality,
     },
     {
       path: "/files/view",
       component: ParentFileViewerPage,
-      navLabelKey: "nav.files_view",
       requiredPermission: FILES_PERMISSIONS.read,
     },
   ],

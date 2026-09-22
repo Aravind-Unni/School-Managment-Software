@@ -1,145 +1,215 @@
-/** Request a dataset export and fetch its short-lived download URL. */
+/**
+ * Download a class list or report as a spreadsheet or PDF: choose what,
+ * for which class (and term, where marks are involved), tick the columns,
+ * and the file is prepared and offered for download.
+ *
+ * Only columns the school may share are offered; private notes never appear.
+ * Does not handle: whole-school exports in one file (one class at a time).
+ */
 
-import { useState } from "react";
-import { toLoadError } from "@shared/api/errors";
+import { useEffect, useState } from "react";
 import { useLanguage } from "@shared/i18n/LanguageContext";
-import {
-  createExport,
-  downloadExport,
-  getExport,
-  type ExchangeLocale,
-  type ExportDataset,
-  type ExportJob,
-} from "./api";
+import { Problem } from "@shared/ui/Problem";
+import * as registry from "@features/registry/api";
+import { schoolToday, useSchoolStructure } from "@features/registry/useSchoolStructure";
+import { createExport, downloadExport, getExport, type ExchangeLocale, type ExportDataset, type ExportJob } from "./api";
 
-const DATASETS: readonly ExportDataset[] = [
-  "attendance_summary",
-  "progress",
-  "at_risk",
-  "ptm_summary",
-  "class_roster",
-  "subject_summary",
+interface DatasetSpec {
+  readonly id: ExportDataset;
+  readonly needsTerm: boolean;
+  /** Columns offered, in order; the first ones are ticked by default. */
+  readonly fields: readonly string[];
+  readonly ticked: readonly string[];
+}
+
+const DATASETS: readonly DatasetSpec[] = [
+  { id: "class_roster", needsTerm: false, fields: ["display_name", "student_id", "enrolment_id"], ticked: ["display_name"] },
+  {
+    id: "attendance_summary",
+    needsTerm: false,
+    fields: ["display_name", "percentage", "present", "absent", "marked", "eligible", "unmarked", "student_id"],
+    ticked: ["display_name", "percentage", "present", "absent", "marked"],
+  },
+  {
+    id: "progress",
+    needsTerm: true,
+    fields: ["display_name", "mean_marks", "result_count", "metric", "source", "student_id"],
+    ticked: ["display_name", "mean_marks", "result_count"],
+  },
+  {
+    id: "subject_summary",
+    needsTerm: true,
+    fields: ["display_name", "subject_id", "marks_obtained", "student_id", "result_revision_id"],
+    ticked: ["display_name", "subject_id", "marks_obtained"],
+  },
+  {
+    id: "at_risk",
+    needsTerm: true,
+    fields: ["display_name", "risk_status", "absent_periods", "unmarked_periods", "published_results", "student_id", "threshold_policy_version"],
+    ticked: ["display_name", "risk_status", "absent_periods", "published_results"],
+  },
+  {
+    id: "ptm_summary",
+    needsTerm: false,
+    fields: ["display_name", "outstanding_paise", "overdue_paise", "attendance_marked", "student_id"],
+    ticked: ["display_name", "outstanding_paise", "overdue_paise", "attendance_marked"],
+  },
 ];
 
 export function ExportCentrePage() {
   const { t, language } = useLanguage();
-  const [dataset, setDataset] = useState<ExportDataset>("class_roster");
-  const [format, setFormat] = useState<"csv" | "xlsx" | "pdf">("csv");
+  const { state } = useSchoolStructure();
+  const sections = state.kind === "ready" ? state.structure.sections : [];
+  const [terms, setTerms] = useState<readonly registry.Term[]>([]);
+  const [dataset, setDataset] = useState<DatasetSpec>(DATASETS[0] as DatasetSpec);
+  const [sectionId, setSectionId] = useState("");
+  const [termId, setTermId] = useState("");
+  const [fields, setFields] = useState<readonly string[]>(DATASETS[0]?.ticked ?? []);
+  const [format, setFormat] = useState<"csv" | "pdf">("csv");
   const [locale, setLocale] = useState<ExchangeLocale>(language === "ml" ? "ml" : "en");
-  const [fields, setFields] = useState("");
-  const [filtersJson, setFiltersJson] = useState("{}");
   const [job, setJob] = useState<ExportJob | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
-  const [errorKey, setErrorKey] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<unknown>(null);
 
-  async function enqueue() {
-    setBusy(true);
-    setErrorKey(null);
+  useEffect(() => {
+    registry.listAllTerms().then((rows) => {
+      setTerms(rows);
+      const today = schoolToday();
+      const current = rows.find((row) => row.start <= today && today <= row.end) ?? rows[0];
+      if (current) setTermId(current.id);
+    }, setError);
+  }, []);
+
+  // Poll a queued export every two seconds until it is ready.
+  useEffect(() => {
+    if (job === null || job.state === "ready" || job.state === "failed") return undefined;
+    const timer = window.setInterval(() => {
+      getExport(job.id).then(async (status) => {
+        setJob(status);
+        if (status.state === "ready") setDownloadUrl((await downloadExport(status.id)).authorized_read_url);
+      }, setError);
+    }, 2000);
+    return () => window.clearInterval(timer);
+  }, [job]);
+
+  const choose = (spec: DatasetSpec) => {
+    setDataset(spec);
+    setFields(spec.ticked);
     setJob(null);
     setDownloadUrl(null);
-    let filters: Record<string, unknown>;
+  };
+
+  const chosenSection = sectionId || sections[0]?.id || "";
+  const ready = chosenSection !== "" && fields.length > 0 && (!dataset.needsTerm || termId !== "");
+
+  const start = async () => {
+    setBusy(true);
+    setError(null);
+    setJob(null);
+    setDownloadUrl(null);
     try {
-      filters = JSON.parse(filtersJson) as Record<string, unknown>;
-    } catch {
-      setErrorKey("exchange.filters_invalid");
-      setBusy(false);
-      return;
-    }
-    const fieldList = fields
-      .split(/[\s,]+/)
-      .map((field) => field.trim())
-      .filter((field) => field.length > 0);
-    if (fieldList.length === 0) {
-      setErrorKey("exchange.fields_required");
-      setBusy(false);
-      return;
-    }
-    try {
-      setJob(await createExport({ dataset, filters, fields: fieldList, format, locale }));
-    } catch (error) {
-      setErrorKey(toLoadError(error).messageKey);
+      const filters: Record<string, string> = { section_id: chosenSection };
+      if (dataset.needsTerm) filters.publication_id = termId;
+      const ordered = dataset.fields.filter((field) => fields.includes(field));
+      setJob(await createExport({ dataset: dataset.id, filters, fields: ordered, format, locale }));
+    } catch (caught) {
+      setError(caught);
     } finally {
       setBusy(false);
     }
-  }
-
-  async function poll() {
-    if (job === null) return;
-    setErrorKey(null);
-    try {
-      const status = await getExport(job.id);
-      setJob(status);
-      if (status.state === "ready") {
-        const access = await downloadExport(status.id);
-        setDownloadUrl(access.authorized_read_url);
-      }
-    } catch (error) {
-      setErrorKey(toLoadError(error).messageKey);
-    }
-  }
+  };
 
   return (
-    <section>
-      <h1>{t("exchange.exports_title")}</h1>
-      <label>
-        {t("exchange.dataset")}
-        <select value={dataset} onChange={(event) => setDataset(event.target.value as ExportDataset)}>
-          {DATASETS.map((value) => (
-            <option key={value} value={value}>
-              {value}
-            </option>
+    <section aria-labelledby="exports-title">
+      <h2 id="exports-title">{t("exchange.exports_title")}</h2>
+      <p className="hint">{t("exports.intro")}</p>
+
+      <h3>{t("exports.what")}</h3>
+      <div className="teacher-choices" role="radiogroup">
+        {DATASETS.map((spec) => (
+          <label key={spec.id} className="teacher-choice">
+            <input type="radio" name="dataset" checked={dataset.id === spec.id} onChange={() => choose(spec)} />
+            <span>
+              <strong>{t(`exports.dataset.${spec.id}`)}</strong>
+              <span className="hint">{t(`exports.dataset.${spec.id}.about`)}</span>
+            </span>
+          </label>
+        ))}
+      </div>
+
+      <div className="inline-fields">
+        <label>
+          {t("cards.class")}
+          <select value={chosenSection} onChange={(event) => setSectionId(event.target.value)}>
+            {sections.map((row) => (
+              <option key={row.id} value={row.id}>
+                {row.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        {dataset.needsTerm ? (
+          <label>
+            {t("cards.term")}
+            <select value={termId} onChange={(event) => setTermId(event.target.value)}>
+              {terms.map((row) => (
+                <option key={row.id} value={row.id}>
+                  {row.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+        <label>
+          {t("exports.format")}
+          <select value={format} onChange={(event) => setFormat(event.target.value as "csv" | "pdf")}>
+            <option value="csv">{t("exports.format.csv")}</option>
+            <option value="pdf">PDF</option>
+          </select>
+        </label>
+        <label>
+          {t("exports.language")}
+          <select value={locale} onChange={(event) => setLocale(event.target.value as ExchangeLocale)}>
+            <option value="en">English</option>
+            <option value="ml">മലയാളം</option>
+          </select>
+        </label>
+      </div>
+
+      <fieldset>
+        <legend>{t("exports.columns")}</legend>
+        <div className="class-grid">
+          {dataset.fields.map((field) => (
+            <label key={field} className="inline">
+              <input
+                type="checkbox"
+                checked={fields.includes(field)}
+                onChange={(event) =>
+                  setFields((previous) =>
+                    event.target.checked ? [...previous, field] : previous.filter((item) => item !== field),
+                  )
+                }
+              />
+              {t(`exports.field.${field}`)}
+            </label>
           ))}
-        </select>
-      </label>
-      <label>
-        {t("exchange.format")}
-        <select value={format} onChange={(event) => setFormat(event.target.value as "csv" | "xlsx" | "pdf")}>
-          <option value="csv">csv</option>
-          <option value="xlsx">xlsx</option>
-          <option value="pdf">pdf</option>
-        </select>
-      </label>
-      <label>
-        {t("exchange.locale")}
-        <select value={locale} onChange={(event) => setLocale(event.target.value as ExchangeLocale)}>
-          <option value="en">en</option>
-          <option value="ml">ml</option>
-        </select>
-      </label>
-      <label>
-        {t("exchange.fields_csv")}
-        <input value={fields} onChange={(event) => setFields(event.target.value)} />
-      </label>
-      <label>
-        {t("exchange.filters_json")}
-        <textarea value={filtersJson} onChange={(event) => setFiltersJson(event.target.value)} rows={3} />
-      </label>
-      <button type="button" disabled={busy} onClick={() => void enqueue()}>
-        {t("exchange.create_export")}
-      </button>
-      {job !== null && (
-        <section>
-          <p role="status">
-            {job.id} · {job.state}
-          </p>
-          <button type="button" onClick={() => void poll()}>
-            {t("exchange.refresh_status")}
-          </button>
-          {downloadUrl !== null && (
-            <p>
-              <a href={downloadUrl} rel="noopener noreferrer">
-                {t("exchange.download_link")}
-              </a>
-            </p>
-          )}
-        </section>
-      )}
-      {errorKey !== null && (
-        <div role="alert">
-          <p>{t(errorKey)}</p>
         </div>
-      )}
+      </fieldset>
+
+      <Problem error={error} />
+      <div className="row-actions">
+        <button type="button" disabled={busy || !ready} onClick={() => void start()}>
+          {busy ? t("ui.loading") : t("exchange.create_export")}
+        </button>
+        {job && !downloadUrl && job.state !== "failed" ? <span role="status">{t("exports.preparing")}</span> : null}
+        {job?.state === "failed" ? <span className="attention">{t("exports.failed")}</span> : null}
+        {downloadUrl ? (
+          <a className="button-link" href={downloadUrl} target="_blank" rel="noreferrer">
+            {t("exports.download")}
+          </a>
+        ) : null}
+      </div>
     </section>
   );
 }

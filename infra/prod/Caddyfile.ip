@@ -1,0 +1,20 @@
+# TLS front door when the school is reached by IP address (no domain name).
+# Public certificate authorities do not issue for bare IPs, so Caddy uses its
+# own local certificate: browsers show a warning once; accept it to continue.
+# Select with CADDYFILE=Caddyfile.ip and DOMAIN=<the server's IP> in .env.
+
+{$DOMAIN} {
+	tls internal
+	encode zstd gzip
+	header {
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "same-origin"
+		X-Frame-Options "DENY"
+		Permissions-Policy "camera=(self), microphone=(), geolocation=()"
+		-Server
+	}
+	reverse_proxy web:80 {
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Real-IP {remote_host}
+	}
+}

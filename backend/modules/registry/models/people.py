@@ -57,6 +57,9 @@ class Student(models.Model):
     date_of_birth = models.DateField(null=True, blank=True)
     preferred_language = models.CharField(max_length=2, choices=LANGUAGES, default="en")
     status = models.CharField(max_length=16, choices=STUDENT_STATUSES, default="active")
+    #: Admission-register details (address, blood group, parents ...); keys and
+    #: rules live in services/student_details.py.
+    details = models.JSONField(default=dict, blank=True)
     archived = models.BooleanField(default=False)
     version = models.IntegerField(default=1)
     created_at = models.DateTimeField()
@@ -80,6 +83,27 @@ class Student(models.Model):
     def __str__(self) -> str:
         """Return a short identifier for logs. Carries no birth date."""
         return f"Student {self.admission_no}@{self.school_id}"
+
+
+class StudentPhoto(models.Model):
+    """A pupil's photograph: one small image, replaced whole.
+
+    The browser shrinks the picture before upload, so rows stay small enough
+    to live in the database with the record they belong to.
+    """
+
+    student = models.OneToOneField(Student, on_delete=models.CASCADE, primary_key=True)
+    school_id = models.UUIDField(db_index=True)
+    content_type = models.CharField(max_length=32)
+    data = models.BinaryField()
+    updated_at = models.DateTimeField()
+
+    class Meta:
+        db_table = "registry_student_photo"
+
+    def __str__(self) -> str:
+        """Return a short identifier for logs."""
+        return f"StudentPhoto {self.student_id}"
 
 
 class Guardian(models.Model):

@@ -30,13 +30,11 @@ export const communicationsModule: FeatureModule = {
     {
       path: "/templates",
       component: TemplateEditorPage,
-      navLabelKey: "nav.templates",
       requiredPermission: COMMUNICATIONS_PERMISSIONS.messagesSend,
     },
     {
       path: "/deliveries",
       component: DeliveryDashboardPage,
-      navLabelKey: "nav.deliveries",
       requiredPermission: COMMUNICATIONS_PERMISSIONS.messagesReadStatus,
     },
   ],

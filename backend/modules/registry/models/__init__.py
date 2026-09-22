@@ -25,6 +25,7 @@ from .people import (
     Guardian,
     StaffProfile,
     Student,
+    StudentPhoto,
 )
 from .relationships import VISIBILITY_CHOICES, GuardianLink, SubjectOffering, TeachingAssignment
 
@@ -46,6 +47,7 @@ __all__ = [
     "StaffProfile",
     "Standard",
     "Student",
+    "StudentPhoto",
     "Subject",
     "SubjectEnrolment",
     "SubjectOffering",

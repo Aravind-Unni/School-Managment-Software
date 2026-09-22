@@ -31,6 +31,14 @@ class JobService:
         self.gate.same_school_or_404(context, row.school_id)
         return job_dto(row)
 
+    def recent(self, context: RequestContext, *, failed_only: bool = False) -> list[dict]:
+        """Return this school's 100 newest jobs (or only failed ones), newest first."""
+        self.gate.require_action(context, "jobs.read")
+        rows = Job.objects.filter(school_id=context.school_id)
+        if failed_only:
+            rows = rows.filter(state__in=[JobState.FAILED, JobState.DEAD])
+        return [job_dto(row) for row in rows.order_by("-created_at")[:100]]
+
     def retry(self, context: RequestContext, job_id: UUID, *, reason: str) -> dict:
         """Replay a failed or dead job preserving idempotency_key."""
         self.gate.require_action(context, "jobs.retry")

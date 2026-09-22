@@ -16,6 +16,7 @@ import { percent, rupees, shortDate } from "@shared/format";
 import { subjectColour } from "@features/timetable/subjectColours";
 import * as api from "./api";
 import { StudentPicker, type PickedStudent } from "./StudentPicker";
+import { StudentAvatar } from "./StudentPhoto";
 import { schoolToday } from "./useSchoolStructure";
 
 interface Chosen {
@@ -321,6 +322,7 @@ export function StudentOverviewPage() {
       ) : (
         <>
           <header className="overview-person">
+            <StudentAvatar studentId={chosen.id} name={chosen.display_name} size={56} />
             <h3>{chosen.display_name}</h3>
             <p className="hint">
               {chosen.admission_no}
@@ -331,7 +333,8 @@ export function StudentOverviewPage() {
             <TodayPanel student={chosen} />
             <AttendancePanel student={chosen} />
             <ProgressPanel student={chosen} />
-            <FeesPanel student={chosen} />
+            {/* Pupils do not hold fee access; their parents do. */}
+            {mine.find((row) => row.id === chosen.id)?.relationship === "self" ? null : <FeesPanel student={chosen} />}
             <LibraryPanel student={chosen} />
             {isFamily ? <NoticesPanel /> : null}
           </div>

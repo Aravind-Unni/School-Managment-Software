@@ -12,6 +12,14 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@shared/i18n/LanguageContext";
 import { Problem } from "@shared/ui/Problem";
+import {
+  StudentDetailsFields,
+  detailProblems,
+  loadStudentDetails,
+  saveStudentDetails,
+  type StudentDetails,
+} from "./StudentDetailsFields";
+import { uploadStudentPhoto } from "./StudentPhoto";
 import * as accessApi from "@features/access/api";
 import * as api from "./api";
 import { schoolToday, useSchoolStructure } from "./useSchoolStructure";
@@ -59,6 +67,10 @@ export function AdmitStudentPage() {
   const [savedGuardian, setSavedGuardian] = useState<api.Guardian | null>(null);
   const [savedStudent, setSavedStudent] = useState<api.StudentRecord | null>(null);
   const [savedEnrolment, setSavedEnrolment] = useState(false);
+  const [details, setDetails] = useState<StudentDetails>({});
+  const [savedDetails, setSavedDetails] = useState(false);
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [savedPhoto, setSavedPhoto] = useState(false);
 
   useEffect(() => {
     api.listAllGuardians().then(setGuardians, () => setGuardians([]));
@@ -99,6 +111,10 @@ export function AdmitStudentPage() {
     setSavedGuardian(null);
     setSavedStudent(null);
     setSavedEnrolment(false);
+    setDetails({});
+    setSavedDetails(false);
+    setPhoto(null);
+    setSavedPhoto(false);
   };
 
   const submit = async (event: FormEvent) => {
@@ -106,11 +122,8 @@ export function AdmitStudentPage() {
     setBusy(true);
     setError(null);
     setOutcome(null);
-    const done: string[] = [];
-    const note = (line: string) => {
-      done.push(line);
-      setProgress([...done]);
-    };
+    setProgress([]);
+    const note = (line: string) => setProgress((previous) => [...previous, line]);
     try {
       const today = schoolToday();
       let guardian: api.Guardian | null = null;
@@ -139,6 +152,17 @@ export function AdmitStudentPage() {
         });
         setSavedStudent(student);
         note(`${t("registry.admit.student_saved")}: ${student.display_name}`);
+      }
+      if (!savedDetails && Object.values(details).some((value) => value.trim() !== "")) {
+        const current = await loadStudentDetails(student.id);
+        await saveStudentDetails(student.id, details, current.version);
+        setSavedDetails(true);
+        note(t("registry.admit.details_saved"));
+      }
+      if (photo !== null && !savedPhoto) {
+        await uploadStudentPhoto(student.id, photo);
+        setSavedPhoto(true);
+        note(t("photo.saved"));
       }
       let className: string | null = null;
       if (sectionId && year !== null && savedEnrolment) {
@@ -233,6 +257,10 @@ export function AdmitStudentPage() {
             <input required value={studentName} onChange={(e) => setStudentName(e.target.value)} />
           </label>
           <label>
+            {t("photo.label")} ({t("ui.optional")})
+            <input type="file" accept="image/*" onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} />
+          </label>
+          <label>
             {t("registry.date_of_birth")}
             <input type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} />
           </label>
@@ -255,6 +283,9 @@ export function AdmitStudentPage() {
             </select>
           </label>
         </fieldset>
+
+        <p className="hint">{t("registry.admit.details_hint")}</p>
+        <StudentDetailsFields value={details} onChange={setDetails} problems={detailProblems(error)} />
 
         <fieldset>
           <legend>{t("registry.admit.parent")}</legend>

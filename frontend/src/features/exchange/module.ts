@@ -30,7 +30,6 @@ export const exchangeModule: FeatureModule = {
     {
       path: "/reports",
       component: ReportCentrePage,
-      navLabelKey: "nav.reports",
       requiredPermission: EXCHANGE_PERMISSIONS.reportsRead,
     },
     {

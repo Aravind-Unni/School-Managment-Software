@@ -17,6 +17,8 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
+import { listMyStudents } from "@features/registry/api";
+import { StudentPicker, type PickedStudent } from "@features/registry/StudentPicker";
 import { readStudentDay, type StudentDay } from "./api";
 import { SessionList } from "./SessionList";
 import { todayIso, toErrorState, type LoadState } from "./state";
@@ -24,7 +26,20 @@ import { useTimetableMessages } from "./useMessages";
 
 export function StudentSchedulePage() {
   const t = useTimetableMessages();
-  const [studentId, setStudentId] = useState("");
+  const [picked, setPicked] = useState<PickedStudent | null>(null);
+  const [mine, setMine] = useState<readonly PickedStudent[]>([]);
+  const studentId = picked?.id ?? "";
+
+  // Parents and pupils see their own children straight away.
+  useEffect(() => {
+    listMyStudents().then(
+      (rows) => {
+        setMine(rows);
+        if (rows[0]) setPicked(rows[0]);
+      },
+      () => setMine([]),
+    );
+  }, []);
   const [date, setDate] = useState(todayIso());
   const [state, setState] = useState<LoadState<StudentDay | null>>({
     status: "ready",
@@ -55,15 +70,35 @@ export function StudentSchedulePage() {
     <section aria-labelledby="timetable-student-heading">
       <h2 id="timetable-student-heading">{t("timetable.schedule.studentTitle")}</h2>
 
-      <label>
-        {t("timetable.schedule.student")}
-        <input
-          type="text"
-          value={studentId}
-          aria-label={t("timetable.schedule.student")}
-          onChange={(event) => setStudentId(event.target.value.trim())}
-        />
-      </label>
+      {mine.length > 1 ? (
+        <div className="child-switcher" role="tablist">
+          {mine.map((row) => (
+            <button
+              key={row.id}
+              type="button"
+              role="tab"
+              aria-selected={studentId === row.id}
+              className={studentId === row.id ? "" : "secondary"}
+              onClick={() => setPicked(row)}
+            >
+              {row.display_name}
+            </button>
+          ))}
+        </div>
+      ) : null}
+      {mine.length === 0 ? (
+        picked === null ? (
+          <StudentPicker onPick={setPicked} />
+        ) : (
+          <div className="picked-person">
+            <strong>{picked.display_name}</strong>
+            <span className="hint">{picked.admission_no}</span>
+            <button type="button" className="quiet" onClick={() => setPicked(null)}>
+              {t("fees.collect.change_student")}
+            </button>
+          </div>
+        )
+      ) : null}
 
       <label>
         {t("timetable.schedule.date")}

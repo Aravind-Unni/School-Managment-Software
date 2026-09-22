@@ -33,6 +33,7 @@ from .api.views import (
     SubjectCollectionView,
     TermCollectionView,
 )
+from .api.views_details import StudentDetailsView
 from .api.views_import import StudentImportView
 from .api.views_lifecycle import (
     EnrolmentCollectionView,
@@ -46,6 +47,7 @@ from .api.views_lifecycle import (
     TeachingAssignmentCollectionView,
     TeachingAssignmentDetailView,
 )
+from .api.views_photo import StudentPhotoView
 from .api.views_self import MyStudentsView
 
 app_name = "registry"
@@ -82,6 +84,16 @@ urlpatterns = [
     ),
     path("sections/<uuid:section_id>", SectionDetailView.as_view(), name="section-detail"),
     path("students/<uuid:student_id>", StudentDetailView.as_view(), name="student-detail"),
+    path(
+        "students/<uuid:student_id>/details",
+        StudentDetailsView.as_view(),
+        name="student-details",
+    ),
+    path(
+        "students/<uuid:student_id>/photo",
+        StudentPhotoView.as_view(),
+        name="student-photo",
+    ),
     path(
         "guardian-links",
         GuardianLinkCollectionView.as_view(),

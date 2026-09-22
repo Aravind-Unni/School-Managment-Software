@@ -70,19 +70,11 @@ describe("module registry", () => {
       "nav.library_overdues",
       "nav.alumni_candidates",
       "nav.alumni_directory",
-      "nav.alumni_profile",
-      "nav.alumni_export",
       "nav.notices",
-      "nav.templates",
-      "nav.deliveries",
-      "nav.files_review",
-      "nav.files_view",
       "nav.exports",
-      "nav.reports",
       "nav.report_cards",
       "nav.platform_jobs",
       "nav.platform_audit",
-      "nav.platform_backups",
     ]);
   });
 

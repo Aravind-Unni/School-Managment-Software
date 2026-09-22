@@ -37,13 +37,11 @@ export const alumniModule: FeatureModule = {
     {
       path: "/alumni/profile",
       component: AlumniProfilePage,
-      navLabelKey: "nav.alumni_profile",
       requiredPermission: ALUMNI_PERMISSIONS.manage,
     },
     {
       path: "/alumni/export",
       component: AlumniExportPage,
-      navLabelKey: "nav.alumni_export",
       requiredPermission: ALUMNI_PERMISSIONS.export,
     },
   ],

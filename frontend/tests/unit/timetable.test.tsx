@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { validateModule } from "@app/moduleRegistry";
@@ -390,6 +390,20 @@ describe("StudentSchedulePage", () => {
     // unexplained gap; showing it unmarked would tell a pupil to attend a lesson
     // they are not in, and later mark them absent from it.
     routeFetch({
+      // The pupil is chosen the way a parent's screen chooses it: their own child.
+      "/students/mine": {
+        items: [
+          {
+            id: "s",
+            display_name: "Pupil S",
+            admission_no: "1",
+            section_id: SECTION_ID,
+            section_label: null,
+            relationship: "guardian",
+          },
+        ],
+        next_cursor: null,
+      },
       "/student-schedule": {
         student_id: "s",
         section_id: SECTION_ID,
@@ -406,9 +420,6 @@ describe("StudentSchedulePage", () => {
       },
     });
     renderPage(<StudentSchedulePage />);
-
-    const field = screen.getByLabelText("Pupil");
-    fireEvent.change(field, { target: { value: "s" } });
 
     await waitFor(() => expect(screen.getAllByTestId("session")).toHaveLength(2));
     expect(screen.getAllByText("You do not take this subject")).toHaveLength(1);

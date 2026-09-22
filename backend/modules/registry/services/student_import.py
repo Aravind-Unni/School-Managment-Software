@@ -66,6 +66,8 @@ class StudentImportService:
                     external_ids=(),
                     acknowledgement=None,
                 )
+                if row.details:
+                    Student.objects.filter(id=student.id).update(details=row.details)
                 guardian_id = None
                 if row.parent_phone and row.parent_phone in guardians:
                     guardian_id = guardians[row.parent_phone]

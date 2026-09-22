@@ -17,7 +17,7 @@ export function AlumniProfilePage() {
   const { t } = useLanguage();
   const location = useLocation();
   const routed = (location.state as { profile?: AlumniProfile } | null)?.profile;
-  const [alumniId, setAlumniId] = useState(routed?.id ?? "");
+  const alumniId = routed?.id ?? "";
   const [state, setState] = useState<LoadState>(
     routed !== undefined ? { status: "ready", profile: routed } : { status: "idle" },
   );
@@ -81,19 +81,6 @@ export function AlumniProfilePage() {
       <p>
         <Link to="/alumni">{t("alumni.back_directory")}</Link>
       </p>
-      {routed === undefined && (
-        <label>
-          {t("alumni.profile_id")}
-          <input
-            value={alumniId}
-            onChange={(event) => setAlumniId(event.target.value.trim())}
-            aria-label={t("alumni.profile_id")}
-          />
-          <button type="button" onClick={() => void load(alumniId)}>
-            {t("alumni.load_profile")}
-          </button>
-        </label>
-      )}
       {state.status === "idle" && <p role="status">{t("alumni.profile_pick")}</p>}
       {state.status === "loading" && <p role="status">{t("ui.loading")}</p>}
       {state.status === "missing" && <p role="status">{t("alumni.profile_not_found")}</p>}

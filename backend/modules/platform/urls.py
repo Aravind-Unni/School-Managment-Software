@@ -8,6 +8,7 @@ from .api.views import (
     AuditCollectionView,
     HealthLiveView,
     HealthReadyView,
+    JobCollectionView,
     JobDetailView,
     JobRetryView,
     RestoreRehearsalCollectionView,
@@ -18,6 +19,7 @@ app_name = "platform"
 urlpatterns = [
     path("health/live", HealthLiveView.as_view(), name="health-live"),
     path("health/ready", HealthReadyView.as_view(), name="health-ready"),
+    path("jobs", JobCollectionView.as_view(), name="job-collection"),
     path("jobs/<uuid:job_id>", JobDetailView.as_view(), name="job-detail"),
     path("jobs/<uuid:job_id>/retry", JobRetryView.as_view(), name="job-retry"),
     path("audit", AuditCollectionView.as_view(), name="audit-collection"),

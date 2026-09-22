@@ -5,6 +5,7 @@
  * filters navigation by the caller's held action codes from /auth/capabilities.
  */
 
+import { OriginatorMark, PRODUCT_NAME } from "@shared/ui/OriginatorMark";
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffect, useState, type ReactNode } from "react";
 import { LanguageProvider, useLanguage } from "@shared/i18n/LanguageContext";
@@ -176,6 +177,7 @@ export function AppShell() {
 
 /** Sidebar + top bar + routed page. The sidebar is a drawer on phones. */
 function Frame() {
+  const { t } = useLanguage();
   const { status, session } = useSession();
   const location = useLocation();
   const [navOpen, setNavOpen] = useState(false);
@@ -196,8 +198,11 @@ function Frame() {
       {signedIn ? (
         <aside className="sidebar" id="main-navigation">
           <Link className="brand" to="/" onClick={() => setNavOpen(false)}>
-            {schoolName}
-            <small>School management</small>
+            <OriginatorMark size={34} onDark />
+            <span>
+              {PRODUCT_NAME}
+              <small>{schoolName}</small>
+            </span>
           </Link>
           <Navigation onNavigate={() => setNavOpen(false)} />
           <div className="sidebar-footer">
@@ -220,12 +225,24 @@ function Frame() {
             >
               Menu
             </button>
-            <span className="school-name">{schoolName}</span>
+            <span className="school-name">
+              <OriginatorMark size={26} />
+              {schoolName}
+            </span>
             <span className="spacer" />
             <LanguageSwitch />
           </header>
         ) : null}
         <main>
+          {signedIn ? null : (
+            <div className="signin-brand">
+              <OriginatorMark size={56} />
+              <div>
+                <strong>{PRODUCT_NAME}</strong>
+                <span>{t("brand.tagline")}</span>
+              </div>
+            </div>
+          )}
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginRoute />} />

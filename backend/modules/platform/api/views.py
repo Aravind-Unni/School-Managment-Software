@@ -58,6 +58,17 @@ class HealthReadyView(APIView):
         return Response(body, status=code)
 
 
+class JobCollectionView(APIView):
+    """GET /jobs: newest first; ?failed=true for failed jobs only."""
+
+    @extend_schema(operation_id="list_jobs", responses={200: dict, **COMMON_ERRORS})
+    def get(self, request: Request) -> Response:
+        """List this school's recent background jobs."""
+        failed_only = request.query_params.get("failed") in {"1", "true"}
+        items = deps.job_service().recent(request.school_context, failed_only=failed_only)
+        return Response({"items": items, "next_cursor": None})
+
+
 class JobDetailView(APIView):
     """GET /jobs/{id}."""
 

@@ -19,6 +19,8 @@ import re
 from dataclasses import dataclass, field
 from datetime import date
 
+from .student_details import clean_details
+
 MAX_ROWS = 2000
 
 #: Accepted spellings of each column, compared after lower-casing and
@@ -33,8 +35,6 @@ COLUMN_ALIASES: dict[str, tuple[str, ...]] = {
         "guardian name",
         "parent",
         "guardian",
-        "father name",
-        "mother name",
         "name of parent",
     ),
     "parent_phone": (
@@ -49,7 +49,38 @@ COLUMN_ALIASES: dict[str, tuple[str, ...]] = {
     ),
     "parent_email": ("parent email", "email", "guardian email", "email id"),
     "language": ("language", "preferred language"),
+    # Admission-register details (see student_details.py); all optional.
+    "gender": ("gender", "sex"),
+    "blood_group": ("blood group", "blood"),
+    "address_line": ("address", "home address", "house address", "address line"),
+    "place": ("place", "city", "town", "village"),
+    "district": ("district",),
+    "state": ("state",),
+    "pin_code": ("pin", "pin code", "pincode", "postal code"),
+    "father_name": ("father name", "father's name", "fathers name", "name of father"),
+    "mother_name": ("mother name", "mother's name", "mothers name", "name of mother"),
+    "mother_tongue": ("mother tongue",),
+    "religion": ("religion",),
+    "previous_school": ("previous school", "last school attended"),
+    "admission_date": ("admission date", "date of admission"),
 }
+DETAIL_COLUMNS = (
+    "gender",
+    "blood_group",
+    "address_line",
+    "place",
+    "district",
+    "state",
+    "pin_code",
+    "father_name",
+    "mother_name",
+    "mother_tongue",
+    "religion",
+    "previous_school",
+    "admission_date",
+)
+GENDER_WORDS = {"m": "male", "male": "male", "boy": "male", "f": "female", "female": "female",
+                "girl": "female", "other": "other"}  # fmt: skip
 REQUIRED_COLUMNS = ("admission_no", "name", "class")
 
 ROMAN = {
@@ -85,7 +116,7 @@ class RowProblem:
         }
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class ParsedRow:
     """One pupil as read from the file, before it is matched to the school."""
 
@@ -100,6 +131,7 @@ class ParsedRow:
     parent_phone: str
     parent_email: str
     language: str
+    details: dict = field(default_factory=dict)
 
 
 @dataclass(slots=True)
@@ -228,6 +260,7 @@ def _parse_row(number: int, line: list[str], cell, problems: list[RowProblem]):
     if email and "@" not in email:
         problems.append(RowProblem(number, "parent_email", "registry.import.bad_email", email))
     language = "ml" if cell(line, "language").lower() in {"ml", "malayalam", "മലയാളം"} else "en"
+    details = _row_details(number, line, cell, problems)
     if len(problems) > before:
         return None
     return ParsedRow(
@@ -242,7 +275,36 @@ def _parse_row(number: int, line: list[str], cell, problems: list[RowProblem]):
         parent_phone=phone or "",
         parent_email=email,
         language=language,
+        details=details,
     )
+
+
+def normalise_blood_group(text: str) -> str:
+    """Return 'B+' for 'B +ve', 'b positive', 'B+'; other text unchanged."""
+    compact = re.sub(r"\s+", "", text.upper())
+    compact = compact.replace("POSITIVE", "+").replace("NEGATIVE", "-")
+    return compact.replace("+VE", "+").replace("-VE", "-").replace("VE", "")
+
+
+def _row_details(number: int, line: list[str], cell, problems: list[RowProblem]) -> dict:
+    """Read the optional detail columns and check them like the details form."""
+    raw: dict[str, str] = {}
+    for column in DETAIL_COLUMNS:
+        value = cell(line, column)
+        if not value:
+            continue
+        if column == "gender":
+            value = GENDER_WORDS.get(value.lower(), value)
+        elif column == "blood_group":
+            value = normalise_blood_group(value)
+        elif column == "admission_date":
+            parsed = parse_date(value)
+            value = parsed.isoformat() if parsed else value
+        raw[column] = value
+    cleaned, found = clean_details(raw)
+    for column, message_key in found.items():
+        problems.append(RowProblem(number, column, message_key, raw.get(column, "")))
+    return cleaned
 
 
 def _flag_repeated_admission_numbers(parsed: ParsedFile) -> None:

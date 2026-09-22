@@ -173,7 +173,7 @@ services:
       - "${HOST_HTTP_PORT:-80}:80"
       - "${HOST_HTTPS_PORT:-443}:443"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./${CADDYFILE:-Caddyfile}:/etc/caddy/Caddyfile:ro
       - school_prod_caddy_data:/data
       - school_prod_caddy_config:/config
     depends_on:

@@ -66,6 +66,8 @@ interface RequestOptions {
    * forbidden and are rejected below regardless of what a caller passes.
    */
   readonly headers?: Record<string, string>;
+  /** Send these bytes as the body instead of JSON (a photo upload). */
+  readonly rawBody?: { readonly data: Blob; readonly contentType: string };
 }
 
 /**
@@ -79,7 +81,7 @@ export async function request<Result>(
   path: string,
   options: RequestOptions = {},
 ): Promise<Result> {
-  const { method = "GET", body, query, signal, headers: extraHeaders } = options;
+  const { method = "GET", body, query, signal, headers: extraHeaders, rawBody } = options;
 
   const url = new URL(`${apiBaseUrl()}${path}`, globalThis.location?.href ?? "http://127.0.0.1");
   for (const [key, value] of Object.entries(query ?? {})) {
@@ -91,6 +93,7 @@ export async function request<Result>(
     ...(extraHeaders ?? {}),
   };
   if (body !== undefined) headers["Content-Type"] = "application/json";
+  if (rawBody !== undefined) headers["Content-Type"] = rawBody.contentType;
 
   // Double-submit CSRF: readable cookie echoed on unsafe methods. Login has no
   // cookie yet and needs none.
@@ -122,6 +125,7 @@ export async function request<Result>(
       credentials: "include",
     };
     if (body !== undefined) init.body = JSON.stringify(body);
+    if (rawBody !== undefined) init.body = rawBody.data;
     if (signal) init.signal = signal;
     response = await fetch(url.toString(), init);
   } catch (cause) {

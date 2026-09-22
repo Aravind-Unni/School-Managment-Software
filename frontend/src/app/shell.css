@@ -254,7 +254,7 @@ main {
   }
 
   .topbar .school-name {
-    display: block;
+    display: flex;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1592,4 +1592,253 @@ td.num {
 
 .import-result {
   margin-top: 1rem;
+}
+
+/* Admission details */
+.details-group {
+  margin-bottom: 0.75rem;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.6rem 1rem;
+}
+
+.details-grid .wide {
+  grid-column: 1 / -1;
+}
+
+.field-problem {
+  color: var(--danger);
+  font-size: 0.85rem;
+}
+
+.details-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 1rem;
+}
+
+.details-view h4 {
+  margin: 0 0 0.4rem;
+}
+
+.details-view dl,
+.profile-facts {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.details-view dl div,
+.profile-facts div {
+  display: grid;
+  grid-template-columns: minmax(8rem, 40%) 1fr;
+  gap: 0.5rem;
+}
+
+.details-view dt,
+.profile-facts dt {
+  color: var(--ink-soft);
+}
+
+.details-view dd,
+.profile-facts dd {
+  margin: 0;
+}
+
+.profile-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+/* Cover a period */
+.cover-periods {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.cover-period {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 7rem 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  text-align: left;
+  padding: 0.7rem 1rem;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--subject, var(--navy));
+  border-radius: var(--radius);
+  font-weight: 400;
+}
+
+.cover-period.selected {
+  outline: 3px solid var(--navy);
+  outline-offset: 1px;
+}
+
+.cover-period:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.cover-when,
+.cover-what {
+  display: flex;
+  flex-direction: column;
+}
+
+.cover-when span,
+.cover-what span,
+.cover-state {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.cover-pick {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.teacher-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.teacher-choice {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.teacher-choice span {
+  display: flex;
+  flex-direction: column;
+}
+
+.teacher-choice:has(input:checked) {
+  border-color: var(--navy);
+  background: var(--navy-tint, #e8eef7);
+}
+
+.teacher-choice.busy {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 34rem) {
+  .cover-period {
+    grid-template-columns: 4.5rem 1fr;
+  }
+
+  .cover-state {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Originator brand */
+.sidebar .brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.sidebar .brand > span {
+  display: flex;
+  flex-direction: column;
+  letter-spacing: 0.01em;
+}
+
+.topbar .school-name {
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.signin-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.signin-brand div {
+  display: flex;
+  flex-direction: column;
+}
+
+.signin-brand strong {
+  font-size: 1.6rem;
+  color: var(--navy);
+  letter-spacing: 0.01em;
+}
+
+.signin-brand span {
+  color: var(--ink-soft);
+}
+
+/* Pupil photos */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--navy-tint, #e8eef7);
+  color: var(--navy);
+  font-weight: 700;
+  border: 2px solid var(--surface);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+.profile-head,
+.photo-editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.photo-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.photo-pick input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.photo-pick {
+  position: relative;
+  cursor: pointer;
+}
+
+.overview-person {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0.9rem;
 }

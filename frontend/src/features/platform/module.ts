@@ -36,7 +36,6 @@ export const platformModule: FeatureModule = {
     {
       path: "/platform/backups",
       component: BackupReportsPage,
-      navLabelKey: "nav.platform_backups",
       requiredPermission: PLATFORM_PERMISSIONS.backupsManage,
     },
   ],
