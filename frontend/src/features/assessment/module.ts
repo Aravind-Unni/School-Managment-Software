@@ -8,6 +8,7 @@ import { MarkingPage } from "./MarkingPage";
 import { MarkingGridPage } from "./MarkingGridPage";
 import { PublishPreviewPage } from "./PublishPreviewPage";
 import { PublishedResultPage } from "./PublishedResultPage";
+import { ExamResultsPage } from "@features/registry/ExamResultsPage";
 
 export const ASSESSMENT_PERMISSIONS = {
   manage: "assessment.manage",
@@ -25,6 +26,13 @@ export const assessmentModule: FeatureModule = {
   apiPrefix: "/api/v1/",
   permissionPrefixes: ["assessment.", "marks.", "results.", "evidence."],
   routes: [
+    {
+      path: "/assessment/results",
+      forFamilies: true,
+      component: ExamResultsPage,
+      navLabelKey: "nav.exam_results",
+      requiredPermission: "evidence.view",
+    },
     {
       path: "/assessment/setup",
       component: AssessmentsPage,

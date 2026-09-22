@@ -336,7 +336,7 @@
           "kind": "openapi",
           "owner": "M04 attendance",
           "path": "contracts/M04/openapi.json",
-          "sha256": "1883432bf93b3fe9c8d43c32e789cccb597db016c8734240eaa41e28b018382b"
+          "sha256": "c808e567960da5af8d5d53e01d172ece040740c3cb0bdaaaf0992bed0f821646"
         },
         {
           "frozen": true,
@@ -406,7 +406,7 @@
           "kind": "openapi",
           "owner": "M05 assessment",
           "path": "contracts/M05/openapi.json",
-          "sha256": "b0c64d59a5833de6b531a95ee914d7cb7a02f6fec75f792ee467524718fe3138"
+          "sha256": "cd60c9f2a2b3efe84f794f2a80680e8f26e0e795e2c07ba33a671496c72ef43c"
         },
         {
           "frozen": true,

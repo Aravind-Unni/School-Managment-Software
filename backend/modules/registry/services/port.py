@@ -26,6 +26,7 @@ from contracts.ports_registry import SchoolProfileDTO, TermDTO
 from contracts.scope import Relationship, RelationshipFacts
 
 from ..models import (
+    AcademicYear,
     Enrolment,
     Guardian,
     GuardianLink,
@@ -97,6 +98,21 @@ class RegistryService:
             return None
         return TermDTO(
             id=row.id, year_id=row.year_id, name=row.name, start=row.start, end=row.end
+        )
+
+    def list_terms(self, context: RequestContext, on: date) -> tuple[TermDTO, ...]:
+        """Return the terms of the academic year containing ``on`` (else the latest year)."""
+        years = AcademicYear.objects.filter(school_id=context.school_id)
+        year = (
+            years.filter(start__lte=on, end__gte=on).first() or years.order_by("-start").first()
+        )
+        if year is None:
+            return ()
+        return tuple(
+            TermDTO(id=row.id, year_id=row.year_id, name=row.name, start=row.start, end=row.end)
+            for row in Term.objects.filter(
+                school_id=context.school_id, year_id=year.id, archived=False
+            ).order_by("start")
         )
 
     def active_student_ids(self, context: RequestContext, on: date) -> tuple[UUID, ...]:

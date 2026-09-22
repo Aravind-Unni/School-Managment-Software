@@ -5,6 +5,7 @@
 import type { FeatureModule } from "@app/moduleRegistry";
 import { AttendanceSessionPage } from "./AttendanceSessionPage";
 import { AttendanceTodayPage } from "./AttendanceTodayPage";
+import { AttendanceRecordPage } from "@features/registry/AttendanceRecordPage";
 
 export const ATTENDANCE_PERMISSIONS = {
   read: "attendance.read",
@@ -19,6 +20,13 @@ export const attendanceModule: FeatureModule = {
   apiPrefix: "/api/v1/",
   permissionPrefixes: ["attendance."],
   routes: [
+    {
+      path: "/attendance/record",
+      forFamilies: true,
+      component: AttendanceRecordPage,
+      navLabelKey: "nav.attendance_record",
+      requiredPermission: "attendance.read",
+    },
     {
       path: "/attendance",
       component: AttendanceTodayPage,

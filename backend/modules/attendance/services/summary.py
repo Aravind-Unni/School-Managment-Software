@@ -33,6 +33,56 @@ class SummaryService:
         subject_id: UUID | None = None,
     ) -> AttendanceSummaryDTO:
         """Return period counts for one pupil. percentage stays None."""
+        self._authorise(context, student_id, from_date, to_date)
+        counts = _Counts()
+        for _day, _subject, status in self._walk(
+            context, student_id, from_date, to_date, subject_id
+        ):
+            counts.add(status)
+        return AttendanceSummaryDTO(
+            unit="period",
+            student_id=student_id,
+            from_date=from_date,
+            to_date=to_date,
+            subject_id=subject_id,
+            eligible=counts.eligible,
+            marked=counts.marked,
+            present=counts.present,
+            absent=counts.absent,
+            late=counts.late,
+            excused=counts.excused,
+            unmarked=counts.eligible - counts.marked,
+            percentage=None,
+            policy_version=None,
+            updated_at=self.clock.now(),
+        )
+
+    def breakdown(
+        self, context: RequestContext, student_id: UUID, from_date: date, to_date: date
+    ) -> dict:
+        """Return the same period counts split by subject and by month.
+
+        One walk over the pupil's timetable, so both views always add up to the
+        same totals as ``get_summary`` for the range.
+        """
+        self._authorise(context, student_id, from_date, to_date)
+        by_subject: dict[UUID, _Counts] = {}
+        by_month: dict[str, _Counts] = {}
+        total = _Counts()
+        for day, subject, status in self._walk(context, student_id, from_date, to_date, None):
+            by_subject.setdefault(subject, _Counts()).add(status)
+            by_month.setdefault(day.strftime("%Y-%m"), _Counts()).add(status)
+            total.add(status)
+        return {
+            "total": total.to_wire(),
+            "by_subject": {str(key): value.to_wire() for key, value in by_subject.items()},
+            "by_month": {key: by_month[key].to_wire() for key in sorted(by_month)},
+        }
+
+    def _authorise(
+        self, context: RequestContext, student_id: UUID, from_date: date, to_date: date
+    ) -> None:
+        """Check the range and that the reader may see this pupil's attendance."""
         if to_date < from_date:
             raise ValidationFailed("attendance.error.date_range_invalid")
         if (to_date - from_date).days > 400:
@@ -62,13 +112,22 @@ class SummaryService:
                 ScopeFacts(resource_school_id=context.school_id),
             )
 
-        # The reader is authorised for this pupil above. The day-by-day lookups
-        # below (class timetable, rosters) are internal, so they run as the
-        # school's read-only jobs account rather than needing the reader to
-        # hold class-wide timetable rights a parent never has.
+    def _walk(
+        self,
+        context: RequestContext,
+        student_id: UUID,
+        from_date: date,
+        to_date: date,
+        subject_id: UUID | None,
+    ):
+        """Yield (date, subject id, status or None) for every period the pupil was due at.
+
+        The reader was authorised by ``_authorise``. The day-by-day lookups
+        (class timetable, rosters) are internal, so they run as the school's
+        read-only jobs account rather than needing the reader to hold
+        class-wide timetable rights a parent never has.
+        """
         lookup = replace(context, actor_id=system_actor_id(context.school_id))
-        eligible = 0
-        present = absent = late = excused = 0
         # One query for every mark this pupil has, keyed by timetable period.
         marks = dict(
             AttendanceEntry.objects.filter(
@@ -116,38 +175,8 @@ class SummaryService:
                     rosters[key] = any(r.student_id == student_id for r in roster.students)
                 if not rosters[key]:
                     continue
-                eligible += 1
-                status = marks.get(period.timetable_session_id)
-                if status is None:
-                    continue
-                if status == AttendanceStatus.PRESENT:
-                    present += 1
-                elif status == AttendanceStatus.ABSENT:
-                    absent += 1
-                elif status == AttendanceStatus.LATE:
-                    late += 1
-                elif status == AttendanceStatus.EXCUSED:
-                    excused += 1
+                yield cursor, period.subject_id, marks.get(period.timetable_session_id)
             cursor += timedelta(days=1)
-
-        marked = present + absent + late + excused
-        return AttendanceSummaryDTO(
-            unit="period",
-            student_id=student_id,
-            from_date=from_date,
-            to_date=to_date,
-            subject_id=subject_id,
-            eligible=eligible,
-            marked=marked,
-            present=present,
-            absent=absent,
-            late=late,
-            excused=excused,
-            unmarked=eligible - marked,
-            percentage=None,
-            policy_version=None,
-            updated_at=self.clock.now(),
-        )
 
     def _section_on(self, context: RequestContext, student_id: UUID, on: date) -> UUID | None:
         """Return the pupil's section on a date, as Registry reports it."""
@@ -156,3 +185,42 @@ class SummaryService:
         except ObjectInaccessible:
             return None
         return facts.section_id
+
+
+class _Counts:
+    """Running period counts: due (eligible), and each mark kind."""
+
+    def __init__(self) -> None:
+        """Start at zero."""
+        self.eligible = self.present = self.absent = self.late = self.excused = 0
+
+    @property
+    def marked(self) -> int:
+        """Periods with any mark."""
+        return self.present + self.absent + self.late + self.excused
+
+    def add(self, status: str | None) -> None:
+        """Count one due period and its mark (None when not marked yet)."""
+        self.eligible += 1
+        if status == AttendanceStatus.PRESENT:
+            self.present += 1
+        elif status == AttendanceStatus.ABSENT:
+            self.absent += 1
+        elif status == AttendanceStatus.LATE:
+            self.late += 1
+        elif status == AttendanceStatus.EXCUSED:
+            self.excused += 1
+
+    def to_wire(self) -> dict:
+        """Return counts plus attended % (present + late over marked, excused left out)."""
+        counted = self.marked - self.excused
+        percent = f"{(self.present + self.late) * 100 / counted:.2f}" if counted > 0 else None
+        return {
+            "due": self.eligible,
+            "marked": self.marked,
+            "present": self.present,
+            "absent": self.absent,
+            "late": self.late,
+            "excused": self.excused,
+            "percentage": percent,
+        }

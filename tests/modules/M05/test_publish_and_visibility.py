@@ -293,3 +293,53 @@ def test_correction_preserves_old_revision(api, create_draft):
     assert events.count() >= 1
     for old_id in old_revision_ids:
         assert ResultRevision.objects.filter(id=old_id).exists()
+
+
+# --- GET /students/{id}/results --------------------------------------------
+
+
+def _publish(api, create_draft, key):
+    state = _prepare_scored_with_evidence(api, create_draft)
+    version = _submit_approve(api, state["assessment_id"], state["version"])
+    response = api.client.post(
+        f"/api/v1/assessments/{state['assessment_id']}/publication",
+        data={"expected_version": version},
+        content_type="application/json",
+        HTTP_IDEMPOTENCY_KEY=key,
+    )
+    assert response.status_code == 200, response.content
+    return state
+
+
+def test_guardian_sees_published_marks_with_percent(api, create_draft, as_persona):
+    """G1 sees S1's published mark, its percentage and a per-subject average."""
+    _publish(api, create_draft, "results-g1")
+    as_persona(fixtures.GUARDIAN_G1)
+    response = api.get(f"/students/{fixtures.STUDENT_S1}/results?term_id={TERM_ID}")
+    assert response.status_code == 200, response.content
+    body = response.json()
+    assert len(body["results"]) == 1
+    row = body["results"][0]
+    assert row["score"] == "73.50"
+    assert row["percent"] is not None
+    assert len(body["subjects"]) == 1
+    assert body["subjects"][0]["tests"] == 1
+    assert body["overall"]["average_percent"] == body["subjects"][0]["average_percent"]
+
+
+def test_unpublished_marks_are_not_listed(api, create_draft, as_persona):
+    """Approved but unpublished marks do not appear for the family."""
+    state = _prepare_scored_with_evidence(api, create_draft)
+    _submit_approve(api, state["assessment_id"], state["version"])
+    as_persona(fixtures.GUARDIAN_G1)
+    body = api.get(f"/students/{fixtures.STUDENT_S1}/results?term_id={TERM_ID}").json()
+    assert body["results"] == []
+    assert body["overall"]["average_percent"] is None
+
+
+def test_another_family_cannot_read(api, create_draft, as_persona):
+    """G2 is not S1's parent: 404, never someone else's marks."""
+    _publish(api, create_draft, "results-g2")
+    as_persona(fixtures.GUARDIAN_G2)
+    response = api.get(f"/students/{fixtures.STUDENT_S1}/results?term_id={TERM_ID}")
+    assert response.status_code == 404, response.content

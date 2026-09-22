@@ -92,6 +92,13 @@ class FakeRegistry:
             raise ObjectInaccessible("error.object_inaccessible")
         return kind
 
+    def list_terms(self, context: RequestContext, on: date) -> tuple[TermDTO, ...]:
+        """Return the one fixture term for the fixture schools."""
+        if context.school_id not in (fixtures.SCHOOL_A, fixtures.SCHOOL_B):
+            return ()
+        term = self.current_term(context, fixtures.TERM_START)
+        return (term,) if term is not None else ()
+
     def current_term(self, context: RequestContext, on: date) -> TermDTO | None:
         """Return the one fixture term when ``on`` falls inside it."""
         self._failures.maybe_fail("registry.current_term")

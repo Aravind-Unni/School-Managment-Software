@@ -15,11 +15,17 @@ from .api.views import (
     ResultEvidenceView,
     ResultPatchView,
 )
+from .api.views_student_results import StudentResultsView
 
 app_name = "assessment"
 
 urlpatterns = [
     path("assessments", AssessmentCollectionView.as_view(), name="assessment-collection"),
+    path(
+        "students/<uuid:student_id>/results",
+        StudentResultsView.as_view(),
+        name="student-results",
+    ),
     path(
         "assessments/<uuid:assessment_id>",
         AssessmentDetailView.as_view(),

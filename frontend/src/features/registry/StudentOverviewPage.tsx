@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { request } from "@shared/api/client";
 import { useLanguage } from "@shared/i18n/LanguageContext";
 import { percent, rupees, shortDate } from "@shared/format";
@@ -140,6 +140,7 @@ function AttendancePanel({ student }: { readonly student: Chosen }) {
         {t("overview.periods_present")}: {present + late} · {t("overview.absent")}: {absent} ·{" "}
         {t("overview.late")}: {late}
       </p>
+      <Link to={`/attendance/record?student=${student.id}`}>{t("record.see_all")}</Link>
     </Card>
   );
 }
@@ -161,6 +162,7 @@ function ProgressPanel({ student }: { readonly student: Chosen }) {
     <Card title={t("overview.progress")}>
       <p className="big-figure">{mean ? `${Math.round(Number(mean))}%` : "—"}</p>
       <p className="hint">{t("overview.average_marks")}</p>
+      <Link to={`/assessment/results?student=${student.id}`}>{t("results.see_all")}</Link>
       {panel.data.warnings.length > 0 ? (
         <p className="attention">
           {panel.data.warnings.length} {t("overview.warnings_open")}

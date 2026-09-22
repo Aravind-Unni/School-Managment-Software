@@ -764,6 +764,164 @@
           }
         }
       }
+    },
+    "/students/{id}/results": {
+      "get": {
+        "operationId": "get_student_results",
+        "summary": "A pupil's published marks for a term, with per-subject averages and grades",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "term_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Published results only.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "student_id",
+                    "term_id",
+                    "results",
+                    "subjects",
+                    "overall"
+                  ],
+                  "properties": {
+                    "student_id": {
+                      "type": "string"
+                    },
+                    "term_id": {
+                      "type": "string"
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "assessment_id": {
+                            "type": "string"
+                          },
+                          "subject_id": {
+                            "type": "string"
+                          },
+                          "subject_name": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "type": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "published_on": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "marking_outcome": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "score": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "max_score": {
+                            "type": "string"
+                          },
+                          "percent": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "grade": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "subjects": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "subject_id": {
+                            "type": "string"
+                          },
+                          "subject_name": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "tests": {
+                            "type": "integer"
+                          },
+                          "average_percent": {
+                            "type": "string"
+                          },
+                          "grade": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    "overall": {
+                      "type": "object",
+                      "properties": {
+                        "average_percent": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "grade": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

@@ -12,6 +12,7 @@ from .api.views import (
     SessionSubmitView,
     SummaryView,
 )
+from .api.views_record import AttendanceRecordView
 
 app_name = "attendance"
 
@@ -34,4 +35,9 @@ urlpatterns = [
         name="entry-correction",
     ),
     path("attendance/summary", SummaryView.as_view(), name="summary"),
+    path(
+        "attendance/students/<uuid:student_id>/record",
+        AttendanceRecordView.as_view(),
+        name="attendance-record",
+    ),
 ]

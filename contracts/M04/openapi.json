@@ -541,6 +541,195 @@
           }
         }
       }
+    },
+    "/attendance/students/{id}/record": {
+      "get": {
+        "operationId": "get_attendance_record",
+        "summary": "A pupil's attendance by subject and by month (default: current term to date)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Totals, per subject and per month.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "student_id",
+                    "from_date",
+                    "to_date",
+                    "total",
+                    "by_subject",
+                    "by_month"
+                  ],
+                  "properties": {
+                    "student_id": {
+                      "type": "string"
+                    },
+                    "from_date": {
+                      "type": "string"
+                    },
+                    "to_date": {
+                      "type": "string"
+                    },
+                    "total": {
+                      "type": "object",
+                      "properties": {
+                        "due": {
+                          "type": "integer"
+                        },
+                        "marked": {
+                          "type": "integer"
+                        },
+                        "present": {
+                          "type": "integer"
+                        },
+                        "absent": {
+                          "type": "integer"
+                        },
+                        "late": {
+                          "type": "integer"
+                        },
+                        "excused": {
+                          "type": "integer"
+                        },
+                        "percentage": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      }
+                    },
+                    "by_subject": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "due": {
+                                "type": "integer"
+                              },
+                              "marked": {
+                                "type": "integer"
+                              },
+                              "present": {
+                                "type": "integer"
+                              },
+                              "absent": {
+                                "type": "integer"
+                              },
+                              "late": {
+                                "type": "integer"
+                              },
+                              "excused": {
+                                "type": "integer"
+                              },
+                              "percentage": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "subject_id": {
+                                "type": "string"
+                              },
+                              "subject_name": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    "by_month": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "due": {
+                                "type": "integer"
+                              },
+                              "marked": {
+                                "type": "integer"
+                              },
+                              "present": {
+                                "type": "integer"
+                              },
+                              "absent": {
+                                "type": "integer"
+                              },
+                              "late": {
+                                "type": "integer"
+                              },
+                              "excused": {
+                                "type": "integer"
+                              },
+                              "percentage": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "month": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

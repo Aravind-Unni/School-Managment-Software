@@ -70,6 +70,10 @@ class RegistryPort(Protocol):
         """Return the school's term containing ``on``, or None between terms."""
         ...
 
+    def list_terms(self, context: RequestContext, on: date) -> tuple[TermDTO, ...]:
+        """Return the terms of the year containing ``on`` (else the latest year), by start."""
+        ...
+
     def active_student_ids(self, context: RequestContext, on: date) -> tuple[UUID, ...]:
         """Return every pupil with an active enrolment in the school on ``on``."""
         ...

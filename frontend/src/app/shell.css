@@ -1914,3 +1914,76 @@ button[aria-busy="true"]::before {
     animation-duration: 3s;
   }
 }
+
+/* Family pages: headline figures and bar tables */
+.stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1rem 0 0.5rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  min-width: 7.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--navy);
+}
+
+.stat-value.attention {
+  color: var(--danger);
+}
+
+.bar-table td {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.bar {
+  display: inline-block;
+  width: 8rem;
+  max-width: 40vw;
+  height: 0.55rem;
+  margin-right: 0.6rem;
+  vertical-align: middle;
+  background: var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.result-group h4 {
+  margin: 1rem 0 0.4rem;
+}
+
+.result-mark {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 34rem) {
+  .bar {
+    width: 3.5rem;
+  }
+
+  .bar-table th,
+  .bar-table td {
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+  }
+}
