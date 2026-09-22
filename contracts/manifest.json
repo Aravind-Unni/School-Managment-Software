@@ -406,7 +406,7 @@
           "kind": "openapi",
           "owner": "M05 assessment",
           "path": "contracts/M05/openapi.json",
-          "sha256": "cd60c9f2a2b3efe84f794f2a80680e8f26e0e795e2c07ba33a671496c72ef43c"
+          "sha256": "b36d4438a996cbb6e1d777e59414ff666c921c12ec848250dd2a90e9283125bc"
         },
         {
           "frozen": true,

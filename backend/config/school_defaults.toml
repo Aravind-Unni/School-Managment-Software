@@ -251,7 +251,7 @@ grants = [
   "accounts.manage", "auth.factor.manage_self@self", "auth.factor.reset_other",
   "registry.manage", "students.read", "students.update", "guardians.manage",
   "staff.assign", "students.promote", "students.withdraw",
-  "timetable.read", "timetable.read_section", "timetable.read_teacher",
+  "timetable.read", "timetable.read_calendar", "timetable.read_section", "timetable.read_teacher",
   "timetable.read_student", "timetable.edit", "timetable.publish", "timetable.substitute",
   "attendance.read", "attendance.correct",
   "assessment.manage", "results.approve", "results.publish", "evidence.view",
@@ -272,7 +272,7 @@ requires_two_factor = true
 grants = [
   "auth.factor.manage_self@self",
   "students.read",
-  "timetable.read", "timetable.read_section", "timetable.read_teacher",
+  "timetable.read", "timetable.read_calendar", "timetable.read_section", "timetable.read_teacher",
   "attendance.read", "attendance.mark", "attendance.submit", "attendance.correct",
   "assessment.manage", "marks.edit", "marks.submit", "evidence.view",
   "performance.read", "warnings.manage", "interventions.manage", "meetings.record",
@@ -312,7 +312,7 @@ name = "Parent / Guardian"
 requires_two_factor = false
 grants = [
   "auth.factor.manage_self@self",
-  "students.read@self", "timetable.read_student@self", "attendance.read@self",
+  "students.read@self", "timetable.read_student@self", "timetable.read_calendar", "attendance.read@self",
   "attendance.read_student@self",
   "evidence.view@self", "performance.read@self", "fees.read@self",
   "transport.read@self", "library.read_own@self", "files.read@self",
@@ -323,7 +323,7 @@ name = "Student"
 requires_two_factor = false
 grants = [
   "auth.factor.manage_self@self",
-  "students.read@self", "timetable.read_student@self", "attendance.read@self",
+  "students.read@self", "timetable.read_student@self", "timetable.read_calendar", "attendance.read@self",
   "attendance.read_student@self",
   "evidence.view@self", "performance.read@self", "library.read_own@self",
 ]

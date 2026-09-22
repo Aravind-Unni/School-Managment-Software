@@ -43,8 +43,12 @@ class CalendarService:
     def days(
         self, context: RequestContext, *, from_date: date, to_date: date
     ) -> tuple[CalendarDay, ...]:
-        """Return one answer per date in an inclusive, bounded range."""
-        self.scope.require_school_action(context, "timetable.read")
+        """Return one answer per date in an inclusive, bounded range.
+
+        Reading the calendar needs only ``timetable.read_calendar``, which every role
+        holds: term dates and holidays are what families plan around.
+        """
+        self.scope.require_school_action(context, "timetable.read_calendar")
         require_bounded_range(from_date, to_date)
         return self.reader.calendar_days(
             school_id=context.school_id, from_date=from_date, to_date=to_date

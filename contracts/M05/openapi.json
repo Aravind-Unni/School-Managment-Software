@@ -922,6 +922,205 @@
           }
         }
       }
+    },
+    "/exam-schedules": {
+      "post": {
+        "operationId": "schedule_exams",
+        "summary": "Set a term examination: one paper per class per subject",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "term_id",
+                  "title",
+                  "section_ids",
+                  "papers"
+                ],
+                "properties": {
+                  "term_id": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "section_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "papers": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "subject_id",
+                        "date"
+                      ],
+                      "properties": {
+                        "subject_id": {
+                          "type": "string"
+                        },
+                        "date": {
+                          "type": "string"
+                        },
+                        "time": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "max_score": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Papers created, already set, and skipped because the class does not take the subject.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "created",
+                    "already_scheduled",
+                    "not_taught"
+                  ],
+                  "properties": {
+                    "created": {
+                      "type": "integer"
+                    },
+                    "already_scheduled": {
+                      "type": "integer"
+                    },
+                    "not_taught": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/assessment-calendar": {
+      "get": {
+        "operationId": "get_assessment_calendar",
+        "summary": "Tests and exams scheduled in a date range",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "student_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "section_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Earliest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "assessment_id": {
+                            "type": "string"
+                          },
+                          "date": {
+                            "type": "string"
+                          },
+                          "time": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string"
+                          },
+                          "subject_id": {
+                            "type": "string"
+                          },
+                          "subject_name": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "section_id": {
+                            "type": "string"
+                          },
+                          "section_label": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "max_score": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "next_cursor": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

@@ -63,6 +63,8 @@ def list_assessments(request: Request) -> Response:
                 "subject_name": subjects.get(str(row.subject_id)),
                 "term_id": str(row.term_id),
                 "type": row.type,
+                "title": row.title,
+                "due_at": row.due_at.isoformat() if row.due_at else None,
                 "max_score": f"{row.max_score:.2f}",
                 "state": row.state,
                 "version": row.version,

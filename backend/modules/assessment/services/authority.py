@@ -113,6 +113,11 @@ class AuthorityGate:
                 ScopeFacts(resource_school_id=assessment.school_id),
             )
 
+    def require_school_wide(self, context: RequestContext, action: str) -> None:
+        """Raise ActionDenied unless ``action`` is held across the whole school."""
+        if not self._holds_school_wide(context, action):
+            raise ActionDenied("error.action_denied")
+
     def _holds_school_wide(self, context: RequestContext, action: str) -> bool:
         """Return whether Access grants ``action`` across the whole school."""
         return self.access.authorize(

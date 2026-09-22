@@ -18,6 +18,7 @@ class AssessmentType(models.TextChoices):
     WRITTEN_TEST = "written_test", "written_test"
     PRACTICAL = "practical", "practical"
     PROJECT = "project", "project"
+    EXAM = "exam", "exam"
 
 
 class AssessmentState(models.TextChoices):
@@ -62,6 +63,8 @@ class Assessment(models.Model):
     type = models.CharField(max_length=32, choices=AssessmentType.choices)
     max_score = models.DecimalField(max_digits=8, decimal_places=2)
     policy_version = models.CharField(max_length=64)
+    #: What the school calls it: "Unit Test 2", "Term 1 Examination".
+    title = models.CharField(max_length=120, blank=True, default="")
     state = models.CharField(
         max_length=16, choices=AssessmentState.choices, default=AssessmentState.DRAFT
     )

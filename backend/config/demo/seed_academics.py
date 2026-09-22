@@ -124,7 +124,9 @@ def seed_attendance(cast: DemoCast, actors: dict[str, ApiActor], *, today: date,
     return submitted
 
 
-def _create_assessment(actor: ApiActor, cast: DemoCast, section_id, subject_id, max_score):
+def _create_assessment(
+    actor: ApiActor, cast: DemoCast, section_id, subject_id, max_score, *, title="", on=None
+):
     """Create one written test with a single component; return (body, component id)."""
     component_id = str(uuid.uuid4())
     body = actor.post(
@@ -135,6 +137,8 @@ def _create_assessment(actor: ApiActor, cast: DemoCast, section_id, subject_id, 
             "section_id": section_id,
             "subject_id": subject_id,
             "type": "written_test",
+            "title": title,
+            "due_at": f"{on.isoformat()}T04:00:00Z" if on is not None else None,
             "policy_version": "cbse-v1",
             "max_score": f"{max_score}.00",
             "components": [
@@ -151,6 +155,13 @@ def _create_assessment(actor: ApiActor, cast: DemoCast, section_id, subject_id, 
     return body, component_id
 
 
+#: Unit Test 1 was written a fortnight ago; Unit Test 2 is next week.
+FIRST_TEST_DAY = date(2026, 9, 8)
+SECOND_TEST_DAY = date(2026, 9, 29)
+#: The term examination the office has already put on the calendar.
+EXAM_FIRST_DAY = date(2026, 10, 12)
+
+
 def seed_assessments(
     cast: DemoCast, actors: dict[str, ApiActor], principal: ApiActor, *, rng: random.Random
 ) -> int:
@@ -165,7 +176,9 @@ def seed_assessments(
         actor = actors[login]
         subject_id = cast.subjects[teacher["subject"]]
         for section_id in cast.sections.values():
-            test, component_id = _create_assessment(actor, cast, section_id, subject_id, 50)
+            test, component_id = _create_assessment(
+                actor, cast, section_id, subject_id, 50, title="Unit Test 1", on=FIRST_TEST_DAY
+            )
             for result in Result.objects.filter(assessment_id=test["id"]):
                 level = min(0.99, max(0.15, ability.get(str(result.student_id), 0.6)))
                 absent = rng.random() < 0.03
@@ -196,7 +209,9 @@ def seed_assessments(
                 idempotency_key=str(uuid.uuid4()),
             )
             published += 1
-            _create_assessment(actor, cast, section_id, subject_id, 50)
+            _create_assessment(
+                actor, cast, section_id, subject_id, 50, title="Unit Test 2", on=SECOND_TEST_DAY
+            )
     return published
 
 
@@ -205,3 +220,29 @@ def _assessment_version(assessment_id: str) -> int:
     from modules.assessment.models import Assessment
 
     return Assessment.objects.get(id=assessment_id).version
+
+
+def seed_exams(principal: ApiActor, cast: DemoCast) -> int:
+    """Put the term examination on the calendar: one paper a day, every class."""
+    papers = []
+    day = EXAM_FIRST_DAY
+    for subject_id in cast.subjects.values():
+        papers.append(
+            {
+                "subject_id": subject_id,
+                "date": day.isoformat(),
+                "time": "09:30",
+                "max_score": 80,
+            }
+        )
+        day += timedelta(days=1)
+    result = principal.post(
+        "/exam-schedules",
+        {
+            "term_id": cast.term_id,
+            "title": "Term 1 Examination",
+            "section_ids": list(cast.sections.values()),
+            "papers": papers,
+        },
+    )
+    return int(result.get("created", 0))

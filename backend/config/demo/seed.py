@@ -8,7 +8,7 @@ import uuid
 from django.conf import settings
 
 from .api_actor import ApiActor
-from .seed_academics import seed_assessments, seed_attendance, seed_timetable
+from .seed_academics import seed_assessments, seed_attendance, seed_exams, seed_timetable
 from .seed_operations import (
     rebuild_performance,
     seed_fees,
@@ -63,6 +63,8 @@ def run(owner_login: str, *, seed: int = 2026, log=print) -> dict:
     sessions = seed_attendance(cast, actors, today=today, rng=rng)
     log("assessments ...")
     published = seed_assessments(cast, actors, principal, rng=rng)
+    log("term examination ...")
+    exam_papers = seed_exams(principal, cast)
     log("fees ...")
     payments = seed_fees(actors["accounts"], cast, school_id, rng=rng)
     log("library ...")
@@ -79,6 +81,7 @@ def run(owner_login: str, *, seed: int = 2026, log=print) -> dict:
         "staff": len(cast.staff),
         "attendance_sessions": sessions,
         "published_assessments": published,
+        "exam_papers": exam_papers,
         "payments": payments,
         "library_loans": loans,
         "notices": notices,

@@ -75,6 +75,7 @@ class AssessmentCollectionView(APIView):
             policy_version=body["policy_version"],
             due_at=body.get("due_at"),
             max_score=body.get("max_score"),
+            title=body.get("title") or "",
         )
         return Response(created, status=status.HTTP_201_CREATED)
 

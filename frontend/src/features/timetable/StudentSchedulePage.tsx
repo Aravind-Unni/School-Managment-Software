@@ -1,150 +1,211 @@
 /**
- * One pupil's dated schedule, as the pupil or their guardian sees it.
+ * One pupil's week: the days across, the periods down, each lesson a coloured
+ * block with its subject and teacher. Today is marked, a day the school is
+ * closed is greyed, and a period teaching a subject the pupil does not take is
+ * shown struck through rather than hidden, so the day has no unexplained gap.
  *
- * Today first, one period per row.
- *
- * The distinguishing thing this view does: a period teaching a subject the pupil
- * is not enrolled in is shown, and marked as not theirs. Hiding it would leave a
- * gap in the day with no explanation, and showing it unmarked would tell a pupil
- * to attend a lesson they are not in -- and later mark them absent from it.
- * Enrolment comes from Registry's subject-filtered roster, never from this
- * module's own guess.
- *
- * The pupil id is typed rather than picked, because the frozen RegistryPort
- * exposes no directory (gap 1 in contracts/M03/ports.md). Once M01 is
- * integrated, a pupil reading their OWN schedule needs no field at all: the id
- * comes from the session.
+ * A test or exam scheduled that day appears above the day's lessons.
+ * On a phone the days become tabs, one day at a time.
+ * Does not handle: changing the timetable (see the planner).
  */
 
-import { useCallback, useEffect, useState } from "react";
-import { listMyStudents } from "@features/registry/api";
-import { StudentPicker, type PickedStudent } from "@features/registry/StudentPicker";
-import { readStudentDay, type StudentDay } from "./api";
-import { SessionList } from "./SessionList";
-import { todayIso, toErrorState, type LoadState } from "./state";
-import { useTimetableMessages } from "./useMessages";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { request } from "@shared/api/client";
+import { useLanguage } from "@shared/i18n/LanguageContext";
 import { Loading } from "@shared/ui/Loading";
+import { Problem } from "@shared/ui/Problem";
+import { PupilChooser, usePupilChoice } from "@features/registry/PupilChooser";
+import { readStudentDay, type StudentDay } from "./api";
+import { subjectColour } from "./subjectColours";
+import { periodLabel, todayIso } from "./state";
+import { useTimetableMessages } from "./useMessages";
+
+interface ScheduledItem {
+  readonly assessment_id: string;
+  readonly date: string;
+  readonly title: string;
+  readonly type: string;
+  readonly subject_name: string | null;
+}
+
+type NamedSession = StudentDay["sessions"][number]["session"] & {
+  readonly subject_name?: string | null;
+  readonly teacher_name?: string | null;
+  readonly substitute_name?: string | null;
+};
+
+/** Monday of the week containing ``date``, as YYYY-MM-DD. */
+function weekStart(date: string): string {
+  const day = new Date(`${date}T00:00:00Z`);
+  day.setUTCDate(day.getUTCDate() - ((day.getUTCDay() + 6) % 7));
+  return day.toISOString().slice(0, 10);
+}
+
+function addDays(date: string, delta: number): string {
+  const day = new Date(`${date}T00:00:00Z`);
+  day.setUTCDate(day.getUTCDate() + delta);
+  return day.toISOString().slice(0, 10);
+}
 
 export function StudentSchedulePage() {
   const t = useTimetableMessages();
-  const [picked, setPicked] = useState<PickedStudent | null>(null);
-  const [mine, setMine] = useState<readonly PickedStudent[]>([]);
-  const studentId = picked?.id ?? "";
+  const { t: tr, language } = useLanguage();
+  const { mine, chosen, setChosen } = usePupilChoice();
+  const [monday, setMonday] = useState(() => weekStart(todayIso()));
+  const [days, setDays] = useState<readonly StudentDay[] | null>(null);
+  const [scheduled, setScheduled] = useState<readonly ScheduledItem[]>([]);
+  const [shownDay, setShownDay] = useState(() => todayIso());
+  const [error, setError] = useState<unknown>(null);
 
-  // Parents and pupils see their own children straight away.
-  useEffect(() => {
-    listMyStudents().then(
-      (rows) => {
-        setMine(rows);
-        if (rows[0]) setPicked(rows[0]);
-      },
-      () => setMine([]),
-    );
-  }, []);
-  const [date, setDate] = useState(todayIso());
-  const [state, setState] = useState<LoadState<StudentDay | null>>({
-    status: "ready",
-    value: null,
-  });
+  const dates = Array.from({ length: 6 }, (_, index) => addDays(monday, index));
 
-  const load = useCallback(async (student: string, on: string) => {
-    if (student === "") {
-      setState({ status: "ready", value: null });
-      return;
-    }
-    setState({ status: "loading" });
+  const load = useCallback(async () => {
+    if (!chosen) return;
+    setDays(null);
+    setError(null);
     try {
-      setState({ status: "ready", value: await readStudentDay(student, on) });
-    } catch (error) {
-      setState(toErrorState(error));
+      const [loaded, tests] = await Promise.all([
+        Promise.all(dates.map((date) => readStudentDay(chosen.id, date))),
+        request<{ items: ScheduledItem[] }>("/api/v1/assessment-calendar", {
+          query: { from: dates[0], to: dates[dates.length - 1], student_id: chosen.id },
+        }).catch(() => ({ items: [] as ScheduledItem[] })),
+      ]);
+      setDays(loaded);
+      setScheduled(tests.items ?? []);
+    } catch (caught) {
+      setError(caught);
+      setDays([]);
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reload per pupil and week
+  }, [chosen, monday]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void load(studentId, date);
-  }, [load, studentId, date]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loads this screen's data
+    void load();
+  }, [load]);
 
-  const day = state.status === "ready" ? state.value : null;
+  // Every period code in the week, in time order: the rows of the grid.
+  const slots = new Map<string, { code: string; from: string; to: string }>();
+  for (const day of days ?? []) {
+    for (const { session } of day.sessions) {
+      if (!slots.has(session.slot_code)) {
+        slots.set(session.slot_code, {
+          code: session.slot_code,
+          from: session.starts_at_local,
+          to: session.ends_at_local,
+        });
+      }
+    }
+  }
+  const periods = [...slots.values()].sort((a, b) => a.from.localeCompare(b.from));
+  const today = todayIso();
+  const dayName = (date: string) =>
+    new Date(`${date}T00:00:00`).toLocaleDateString(language === "ml" ? "ml-IN" : "en-IN", {
+      weekday: "short",
+      day: "numeric",
+    });
+
+  const cell = (date: string, code: string) => {
+    const day = (days ?? []).find((row) => row.date === date);
+    const found = day?.sessions.find((row) => row.session.slot_code === code);
+    if (!day?.is_school_day) return <span className="lesson closed">{day ? "—" : ""}</span>;
+    if (!found) return <span className="lesson empty">—</span>;
+    const session = found.session as NamedSession;
+    const subject = session.subject_name ?? "";
+    return (
+      <span
+        className={`lesson${found.enrolled ? "" : " not-mine"}${session.cancelled ? " cancelled" : ""}`}
+        style={{ "--subject": subjectColour(subject) } as CSSProperties}
+      >
+        <strong>{subject}</strong>
+        <span className="hint">{session.substitute_name ?? session.teacher_name ?? ""}</span>
+        {found.enrolled ? null : <span className="hint">{t("timetable.schedule.notEnrolled")}</span>}
+      </span>
+    );
+  };
+
+  const testsOn = (date: string) => scheduled.filter((row) => row.date === date);
 
   return (
-    <section aria-labelledby="timetable-student-heading">
-      <h2 id="timetable-student-heading">{t("timetable.schedule.studentTitle")}</h2>
-
-      {mine.length > 1 ? (
-        <div className="child-switcher" role="tablist">
-          {mine.map((row) => (
-            <button
-              key={row.id}
-              type="button"
-              role="tab"
-              aria-selected={studentId === row.id}
-              className={studentId === row.id ? "" : "secondary"}
-              onClick={() => setPicked(row)}
-            >
-              {row.display_name}
-            </button>
-          ))}
-        </div>
-      ) : null}
-      {mine.length === 0 ? (
-        picked === null ? (
-          <StudentPicker onPick={setPicked} />
-        ) : (
-          <div className="picked-person">
-            <strong>{picked.display_name}</strong>
-            <span className="hint">{picked.admission_no}</span>
-            <button type="button" className="quiet" onClick={() => setPicked(null)}>
-              {t("fees.collect.change_student")}
+    <section aria-labelledby="week-title">
+      <h2 id="week-title">{t("timetable.schedule.studentTitle")}</h2>
+      <PupilChooser mine={mine} chosen={chosen} onChoose={setChosen} />
+      {chosen ? (
+        <>
+          <div className="toolbar">
+            <div className="month-nav">
+              <button type="button" className="secondary" onClick={() => setMonday(addDays(monday, -7))}>
+                ←
+              </button>
+              <strong>
+                {dayName(dates[0] ?? monday)} – {dayName(dates[5] ?? monday)}
+              </strong>
+              <button type="button" className="secondary" onClick={() => setMonday(addDays(monday, 7))}>
+                →
+              </button>
+            </div>
+            <button type="button" className="quiet" onClick={() => setMonday(weekStart(today))}>
+              {t("timetable.schedule.thisWeek")}
             </button>
           </div>
-        )
-      ) : null}
+          <Problem error={error} />
 
-      <label>
-        {t("timetable.schedule.date")}
-        <input
-          type="date"
-          value={date}
-          aria-label={t("timetable.schedule.date")}
-          onChange={(event) => setDate(event.target.value)}
-        />
-      </label>
+          <div className="day-tabs" role="tablist">
+            {dates.map((date) => (
+              <button
+                key={date}
+                type="button"
+                role="tab"
+                aria-selected={shownDay === date}
+                className={shownDay === date ? "" : "secondary"}
+                onClick={() => setShownDay(date)}
+              >
+                {dayName(date)}
+              </button>
+            ))}
+          </div>
 
-      {state.status === "loading" && <Loading />}
-
-      {state.status === "error" && (
-        <div role="alert">
-          <p>{t(state.messageKey)}</p>
-          {state.requestId !== null && (
-            <p className="request-id">
-              <code>{state.requestId}</code>
-            </p>
+          {days === null ? (
+            <Loading />
+          ) : (
+            <div className="week-grid" style={{ "--days": dates.length } as CSSProperties}>
+              <div className="week-head period-col" />
+              {dates.map((date) => (
+                <div
+                  key={date}
+                  className={`week-head${date === today ? " today" : ""}${date === shownDay ? " shown" : ""}`}
+                >
+                  {dayName(date)}
+                  {testsOn(date).map((row) => (
+                    <span key={row.assessment_id} className={`day-test${row.type === "exam" ? " exam" : ""}`}>
+                      {row.subject_name} {tr(`assessments.type.${row.type}`)}
+                    </span>
+                  ))}
+                </div>
+              ))}
+              {periods.map((period) => (
+                <div key={period.code} className="week-row" style={{ display: "contents" }}>
+                  <div className="period-col">
+                    <strong>{period.code}</strong>
+                    <span className="hint">{periodLabel(period.from, period.to)}</span>
+                  </div>
+                  {dates.map((date) => (
+                    <div
+                      key={`${date}-${period.code}`}
+                      className={`week-cell${date === today ? " today" : ""}${date === shownDay ? " shown" : ""}`}
+                    >
+                      {cell(date, period.code)}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
           )}
-          <button type="button" onClick={() => void load(studentId, date)}>
-            {t("ui.retry")}
-          </button>
-        </div>
-      )}
-
-      {state.status === "ready" &&
-        (day === null ? (
-          <p role="status">{t("ui.empty")}</p>
-        ) : (
-          <SessionList
-            sessions={day.sessions.map((row) => row.session)}
-            isSchoolDay={day.is_school_day}
-            reasonKey={day.reason_key}
-            t={t}
-            annotate={(session) =>
-              day.sessions.find(
-                (row) => row.session.timetable_session_id === session.timetable_session_id,
-              )?.enrolled === false
-                ? t("timetable.schedule.notEnrolled")
-                : null
-            }
-          />
-        ))}
+          {days !== null && periods.length === 0 ? (
+            <p className="empty-state">{t("timetable.schedule.notSchoolDay")}</p>
+          ) : null}
+        </>
+      ) : null}
     </section>
   );
 }

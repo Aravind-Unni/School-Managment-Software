@@ -25,6 +25,8 @@ interface Row {
   readonly section_label: string | null;
   readonly subject_name: string | null;
   readonly type: string;
+  readonly title: string;
+  readonly due_at: string | null;
   readonly max_score: string;
   readonly state: string;
   readonly pupils: number;
@@ -45,6 +47,9 @@ export function AssessmentsPage() {
   const [pair, setPair] = useState("");
   const [type, setType] = useState<(typeof TYPES)[number]>("written_test");
   const [maxScore, setMaxScore] = useState("50");
+  const [title, setTitle] = useState("");
+  const [on, setOn] = useState(schoolToday());
+  const [at, setAt] = useState("09:30");
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
@@ -113,6 +118,8 @@ export function AssessmentsPage() {
         subject_id: subjectId,
         type,
         policy_version: "school-v1",
+        title: title.trim(),
+        due_at: new Date(`${on}T${at}:00+05:30`).toISOString(),
         max_score: max,
         components: [{ max_score: max, weight: "1.000", topic: null, question_type: null }],
       });
@@ -154,10 +161,11 @@ export function AssessmentsPage() {
                 >
                   <div className="period-when">
                     <strong>{t(`assessments.type.${row.type}`)}</strong>
-                    <span>{shortDate(row.created_at, language)}</span>
+                    <span>{shortDate(row.due_at ?? row.created_at, language)}</span>
                   </div>
                   <div className="period-what">
                     <strong>
+                      {row.title ? `${row.title} · ` : ""}
                       {row.section_label} · {row.subject_name}
                     </strong>
                     <span className="hint">
@@ -182,6 +190,7 @@ export function AssessmentsPage() {
             }}
           >
             <h3>{t("assessments.new")}</h3>
+            <p className="hint">{t("assessments.new_hint")}</p>
             <label>
               {t("assessments.class_subject")}
               <select value={pair} onChange={(event) => setPair(event.target.value)}>
@@ -202,6 +211,25 @@ export function AssessmentsPage() {
                 ))}
               </select>
             </label>
+            <label>
+              {t("assessments.name")}
+              <input
+                value={title}
+                maxLength={120}
+                placeholder={t("assessments.name_example")}
+                onChange={(event) => setTitle(event.target.value)}
+              />
+            </label>
+            <div className="inline-fields">
+              <label>
+                {t("assessments.on")}
+                <input type="date" value={on} onChange={(event) => setOn(event.target.value)} />
+              </label>
+              <label>
+                {t("assessments.at")}
+                <input type="time" value={at} onChange={(event) => setAt(event.target.value)} />
+              </label>
+            </div>
             <label>
               {t("assessments.max_marks")}
               <input

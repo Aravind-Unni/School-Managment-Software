@@ -15,12 +15,15 @@ from .api.views import (
     ResultEvidenceView,
     ResultPatchView,
 )
+from .api.views_schedule import AssessmentCalendarView, ExamScheduleView
 from .api.views_student_results import StudentResultsView
 
 app_name = "assessment"
 
 urlpatterns = [
     path("assessments", AssessmentCollectionView.as_view(), name="assessment-collection"),
+    path("exam-schedules", ExamScheduleView.as_view(), name="exam-schedules"),
+    path("assessment-calendar", AssessmentCalendarView.as_view(), name="assessment-calendar"),
     path(
         "students/<uuid:student_id>/results",
         StudentResultsView.as_view(),

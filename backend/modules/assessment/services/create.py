@@ -82,6 +82,7 @@ class CreateService:
         assessment_id: UUID | None = None,
         result_ids: dict[UUID, UUID] | None = None,
         attempt_ids: dict[UUID, UUID] | None = None,
+        title: str = "",
     ) -> dict:
         """Create a draft assessment for the roster of section+subject.
 
@@ -98,12 +99,18 @@ class CreateService:
             raise ValidationFailed("error.validation_failed")
 
         validate_component_weights(components)
-        self.gate.require_section_subject_action(
-            context,
-            action="assessment.manage",
-            section_id=section_id,
-            subject_id=subject_id,
-        )
+        if assessment_type == AssessmentType.EXAM:
+            # Term exams are the school's, set by whoever runs examinations
+            # (principal, exam coordinator) for every class at once; the subject
+            # teachers still enter the marks.
+            self.gate.require_school_wide(context, "results.publish")
+        else:
+            self.gate.require_section_subject_action(
+                context,
+                action="assessment.manage",
+                section_id=section_id,
+                subject_id=subject_id,
+            )
 
         component_maxes = [parse_mark(c["max_score"]) for c in components]
         if any(m is None for m in component_maxes):
@@ -131,6 +138,7 @@ class CreateService:
                 section_id=section_id,
                 subject_id=subject_id,
                 type=assessment_type,
+                title=title.strip()[:120],
                 max_score=total_max,
                 policy_version=policy_version,
                 state=AssessmentState.DRAFT,

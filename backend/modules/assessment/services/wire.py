@@ -44,6 +44,7 @@ def assessment_to_wire(assessment: Assessment) -> dict[str, Any]:
         "section_id": str(assessment.section_id),
         "subject_id": str(assessment.subject_id),
         "type": assessment.type,
+        "title": assessment.title,
         "max_score": format_mark(assessment.max_score),
         "policy_version": assessment.policy_version,
         "state": assessment.state,

@@ -73,6 +73,13 @@ const VERSION = {
   slots: [SLOT],
 };
 
+/** Monday of the current week, as the week view computes it. */
+const MONDAY = (() => {
+  const day = new Date();
+  day.setUTCDate(day.getUTCDate() - ((day.getUTCDay() + 6) % 7));
+  return day.toISOString().slice(0, 10);
+})();
+
 const SESSION = {
   timetable_session_id: SESSION_ID,
   school_id: "s",
@@ -407,7 +414,9 @@ describe("StudentSchedulePage", () => {
       "/student-schedule": {
         student_id: "s",
         section_id: SECTION_ID,
-        date: "2026-07-15",
+        // The week view asks for the days of the current week, so the mocked
+        // day must be one of them.
+        date: MONDAY,
         is_school_day: true,
         reason_key: null,
         sessions: [
@@ -421,13 +430,15 @@ describe("StudentSchedulePage", () => {
     });
     renderPage(<StudentSchedulePage />);
 
-    await waitFor(() => expect(screen.getAllByTestId("session")).toHaveLength(2));
-    expect(screen.getAllByText("You do not take this subject")).toHaveLength(1);
+    // The week grid repeats the mocked day for each weekday; every day shows the
+    // pupil's lesson and the one they do not take, struck through and labelled.
+    await waitFor(() => expect(screen.getAllByText("You do not take this subject").length).toBeGreaterThan(0));
+    expect(document.querySelectorAll(".lesson.not-mine").length).toBeGreaterThan(0);
   });
 
-  it("shows the empty state before a pupil is named", () => {
-    routeFetch();
+  it("asks staff to find a pupil when the account has no children", async () => {
+    routeFetch({ "/students/mine": { items: [], next_cursor: null } });
     renderPage(<StudentSchedulePage />);
-    expect(screen.getByRole("status")).toHaveTextContent("Nothing to show yet");
+    await waitFor(() => expect(screen.getByLabelText("Find a student")).toBeInTheDocument());
   });
 });

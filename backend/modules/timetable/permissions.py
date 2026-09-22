@@ -38,6 +38,10 @@ CATALOGUE: tuple[PermissionSpec, ...] = (
         description="Read the school's own timetable metadata and calendar.",
     ),
     PermissionSpec(
+        code="timetable.read_calendar",
+        description="Read the school calendar: which days are school days, and why not.",
+    ),
+    PermissionSpec(
         code="timetable.read_section",
         description="Read one section's effective schedule, within an authorised relationship.",
     ),

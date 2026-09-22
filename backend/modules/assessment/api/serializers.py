@@ -36,8 +36,9 @@ class CreateAssessmentRequest(serializers.Serializer):
     section_id = serializers.UUIDField()
     subject_id = serializers.UUIDField()
     type = serializers.ChoiceField(
-        choices=["assignment", "written_test", "practical", "project"]
+        choices=["assignment", "written_test", "practical", "project", "exam"]
     )
+    title = serializers.CharField(required=False, allow_blank=True, max_length=120)
     components = ComponentInput(many=True, allow_empty=False)
     policy_version = serializers.CharField(min_length=1, max_length=64)
     due_at = serializers.DateTimeField(required=False, allow_null=True)

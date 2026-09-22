@@ -48,6 +48,8 @@ FIXTURE_POLICY_RULES: tuple[PolicyRule, ...] = (
     # School-scoped staff work: there is no single subject person, so a
     # relationship-gated rule would deny every list and calendar call.
     PolicyRule(action="timetable.read", allowed_relationships=frozenset()),
+    # The calendar is what families plan around, so every role holds this.
+    PolicyRule(action="timetable.read_calendar", allowed_relationships=frozenset()),
     PolicyRule(action="timetable.edit", allowed_relationships=frozenset()),
     PolicyRule(action="timetable.substitute", allowed_relationships=frozenset()),
     # Relationship-gated reads. These are what make "unrelated class denied" real.

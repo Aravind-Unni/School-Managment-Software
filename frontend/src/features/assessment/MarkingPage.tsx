@@ -184,7 +184,12 @@ export function MarkingPage() {
                     type="checkbox"
                     checked={row.absent}
                     disabled={!editable}
-                    onChange={(event) => void save(result.student_id, { ...row, absent: event.target.checked })}
+                    onChange={(event) => {
+                      // Show the tick at once; the save follows in order behind earlier saves.
+                      const next = { ...row, absent: event.target.checked, saved: false };
+                      setRows((previous) => ({ ...previous, [result.student_id]: next }));
+                      void save(result.student_id, next);
+                    }}
                   />
                   {t("assessments.absent")}
                 </label>
