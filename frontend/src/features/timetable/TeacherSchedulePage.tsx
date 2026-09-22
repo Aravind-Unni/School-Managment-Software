@@ -1,68 +1,98 @@
 /**
- * A teacher's own dated schedule, including the periods they are covering.
+ * A teacher's own week: the days across, the periods down, each lesson showing
+ * the class it is with. Periods they are covering for someone else appear the
+ * same way, because for that week they are theirs.
  *
- * Today first, one period per row: this is the screen a teacher opens between
- * lessons on a phone.
- *
- * The staff id is typed rather than picked. M03 has no way to list staff -- the
- * frozen RegistryPort has no ``get_staff`` and no directory -- which is gap 3 in
- * contracts/M03/ports.md. When M01 is integrated the actor's own id comes from
- * the session and this field disappears for the common case.
+ * Tests and exams the teacher has set that week appear under the day.
+ * Staff who may read other teachers' weeks can switch teacher.
+ * Does not handle: editing the timetable (see the planner).
  */
 
 import { useCallback, useEffect, useState } from "react";
+import { request } from "@shared/api/client";
+import { useLanguage } from "@shared/i18n/LanguageContext";
+import { Loading } from "@shared/ui/Loading";
+import { Problem } from "@shared/ui/Problem";
 import { useSession } from "@app/SessionContext";
 import { listAllStaff, type StaffMember } from "@features/registry/api";
 import { readTeacherDay, type TeacherDay } from "./api";
-import { SessionList } from "./SessionList";
-import { todayIso, toErrorState, type LoadState } from "./state";
+import { todayIso } from "./state";
 import { useTimetableMessages } from "./useMessages";
-import { Loading } from "@shared/ui/Loading";
+import { WeekGrid, addDays, weekStart, type WeekDay } from "./WeekGrid";
+
+interface ScheduledItem {
+  readonly assessment_id: string;
+  readonly date: string;
+  readonly type: string;
+  readonly subject_name: string | null;
+  readonly section_label: string | null;
+}
 
 export function TeacherSchedulePage() {
   const t = useTimetableMessages();
+  const { t: tr, language } = useLanguage();
   const { session } = useSession();
-  // Opens on the signed-in teacher's own day; staff who may read other
-  // teachers' schedules also get a list to choose from.
   const [staffId, setStaffId] = useState(session?.actor_id ?? "");
   const [staff, setStaff] = useState<readonly StaffMember[]>([]);
+  const [monday, setMonday] = useState(() => weekStart(todayIso()));
+  const [days, setDays] = useState<readonly WeekDay[] | null>(null);
+  const [scheduled, setScheduled] = useState<readonly ScheduledItem[]>([]);
+  const [error, setError] = useState<unknown>(null);
+
+  const dates = Array.from({ length: 6 }, (_, index) => addDays(monday, index));
+
   useEffect(() => {
     listAllStaff().then(
       (rows) => setStaff(rows.filter((row) => !row.archived)),
       () => setStaff([]),
     );
   }, []);
-  const [date, setDate] = useState(todayIso());
-  const [state, setState] = useState<LoadState<TeacherDay | null>>({
-    status: "ready",
-    value: null,
-  });
 
-  const load = useCallback(async (staff: string, on: string) => {
-    if (staff === "") {
-      setState({ status: "ready", value: null });
-      return;
-    }
-    setState({ status: "loading" });
+  const load = useCallback(async () => {
+    if (staffId === "") return;
+    setDays(null);
+    setError(null);
     try {
-      setState({ status: "ready", value: await readTeacherDay(staff, on) });
-    } catch (error) {
-      setState(toErrorState(error));
+      const [loaded, tests] = await Promise.all([
+        Promise.all(dates.map((date) => readTeacherDay(staffId, date))),
+        request<{ items: ScheduledItem[] }>("/api/v1/assessment-calendar", {
+          query: { from: dates[0], to: dates[dates.length - 1] },
+        }).catch(() => ({ items: [] as ScheduledItem[] })),
+      ]);
+      setDays(
+        loaded.map((day: TeacherDay) => ({
+          date: day.date,
+          is_school_day: day.is_school_day,
+          reason_key: day.reason_key,
+          sessions: day.sessions.map((session) => ({ session })),
+        })),
+      );
+      setScheduled(tests.items ?? []);
+    } catch (caught) {
+      setError(caught);
+      setDays([]);
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reload per teacher and week
+  }, [staffId, monday]);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void load(staffId, date);
-  }, [load, staffId, date]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loads this screen's data
+    void load();
+  }, [load]);
+
+  const today = todayIso();
+  const dayName = (date: string) =>
+    new Date(`${date}T00:00:00`).toLocaleDateString(language === "ml" ? "ml-IN" : "en-IN", {
+      weekday: "short",
+      day: "numeric",
+    });
 
   return (
-    <section aria-labelledby="timetable-teacher-heading">
-      <h2 id="timetable-teacher-heading">{t("timetable.schedule.teacherTitle")}</h2>
-
+    <section aria-labelledby="teacher-week-title">
+      <h2 id="teacher-week-title">{t("timetable.schedule.teacherTitle")}</h2>
       {staff.length > 1 ? (
         <label>
-          {t("timetable.editor.teacher")}
+          {t("timetable.schedule.teacher")}
           <select value={staffId} onChange={(event) => setStaffId(event.target.value)}>
             {staff.map((row) => (
               <option key={row.id} value={row.id}>
@@ -72,45 +102,42 @@ export function TeacherSchedulePage() {
           </select>
         </label>
       ) : null}
-
-      <label>
-        {t("timetable.schedule.date")}
-        <input
-          type="date"
-          value={date}
-          aria-label={t("timetable.schedule.date")}
-          onChange={(event) => setDate(event.target.value)}
-        />
-      </label>
-
-      {state.status === "loading" && <Loading />}
-
-      {state.status === "error" && (
-        <div role="alert">
-          <p>{t(state.messageKey)}</p>
-          {state.requestId !== null && (
-            <p className="request-id">
-              <code>{state.requestId}</code>
-            </p>
-          )}
-          <button type="button" onClick={() => void load(staffId, date)}>
-            {t("ui.retry")}
+      <div className="toolbar">
+        <div className="month-nav">
+          <button type="button" className="secondary" onClick={() => setMonday(addDays(monday, -7))}>
+            ←
+          </button>
+          <strong>
+            {dayName(dates[0] ?? monday)} – {dayName(dates[5] ?? monday)}
+          </strong>
+          <button type="button" className="secondary" onClick={() => setMonday(addDays(monday, 7))}>
+            →
           </button>
         </div>
+        <button type="button" className="quiet" onClick={() => setMonday(weekStart(today))}>
+          {t("timetable.schedule.thisWeek")}
+        </button>
+      </div>
+      <Problem error={error} />
+      {days === null ? (
+        <Loading />
+      ) : (
+        <WeekGrid
+          dates={dates}
+          days={days}
+          today={today}
+          secondLine="class"
+          events={(date) =>
+            scheduled
+              .filter((row) => row.date === date)
+              .map((row) => ({
+                key: row.assessment_id,
+                label: `${row.section_label ?? ""} ${row.subject_name ?? ""} ${tr(`assessments.type.${row.type}`)}`,
+                strong: row.type === "exam",
+              }))
+          }
+        />
       )}
-
-      {state.status === "ready" &&
-        (state.value === null ? (
-          <p role="status">{t("ui.empty")}</p>
-        ) : (
-          <SessionList
-            sessions={state.value.sessions}
-            isSchoolDay={state.value.is_school_day}
-            reasonKey={state.value.reason_key}
-            t={t}
-            showClass
-          />
-        ))}
     </section>
   );
 }

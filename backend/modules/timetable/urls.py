@@ -35,6 +35,7 @@ from .api.views_schedules import (
     StudentScheduleView,
     TeacherScheduleView,
 )
+from .api.views_slots import TeacherSlotsView
 
 app_name = "timetable"
 
@@ -60,6 +61,7 @@ urlpatterns = [
         name="timetable-detail",
     ),
     path("teacher-schedule", TeacherScheduleView.as_view(), name="teacher-schedule"),
+    path("teacher-slots", TeacherSlotsView.as_view(), name="teacher-slots"),
     path("student-schedule", StudentScheduleView.as_view(), name="student-schedule"),
     path("calendar", CalendarView.as_view(), name="calendar"),
     path(

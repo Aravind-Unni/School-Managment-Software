@@ -1104,6 +1104,10 @@
                           },
                           "max_score": {
                             "type": "string"
+                          },
+                          "mine": {
+                            "type": "boolean",
+                            "description": "The caller teaches this class and subject."
                           }
                         }
                       }

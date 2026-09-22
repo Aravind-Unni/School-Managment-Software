@@ -266,7 +266,7 @@
           "kind": "openapi",
           "owner": "M03 timetable",
           "path": "contracts/M03/openapi.json",
-          "sha256": "0a87cf32cc9a9859e003cdfaf11089250fc03f6bd21ee0cfc5157c7ea6d9bef3"
+          "sha256": "514bf064ba305c82243768baddd9fd453643e5d8940b92528c006577a31d7299"
         },
         {
           "frozen": true,
@@ -406,7 +406,7 @@
           "kind": "openapi",
           "owner": "M05 assessment",
           "path": "contracts/M05/openapi.json",
-          "sha256": "b36d4438a996cbb6e1d777e59414ff666c921c12ec848250dd2a90e9283125bc"
+          "sha256": "2dd7825f3ce2c1e6911e5c6a7cf48e361640fdafea03f5ed467b739ea58cc362"
         },
         {
           "frozen": true,

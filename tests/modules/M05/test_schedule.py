@@ -82,3 +82,37 @@ def test_a_teachers_dated_test_has_its_title(api):
     assert response.json()["title"] == "Unit Test 2"
     items = api.get("/assessment-calendar?from=2026-09-25&to=2026-09-25").json()["items"]
     assert [(row["title"], row["time"]) for row in items] == [("Unit Test 2", "09:30")]
+
+
+def test_a_pupil_does_not_see_a_test_in_a_subject_they_do_not_take(api, as_persona):
+    """An elective the pupil dropped is somebody else's exam, not theirs.
+
+    S2 is moved onto malayalam only, so the C1 maths exam stops being S2's
+    business even though it is their class's exam.
+    """
+    from shared.fakes.registry import SUBJECT_ENROLMENTS
+    from shared.ports import runtime
+
+    registry = runtime.get_registry().resolve("registry")
+    registry._enrolment_overlay = {
+        **SUBJECT_ENROLMENTS,
+        fixtures.STUDENT_S2: (fixtures.SUBJECT_MALAYALAM,),
+    }
+    _schedule_exam(api)
+
+    as_persona(fixtures.GUARDIAN_G1)
+    items = api.get(
+        f"/assessment-calendar?from=2026-09-01&to=2026-09-30&student_id={fixtures.STUDENT_S2}"
+    ).json()["items"]
+
+    assert items == []
+
+
+def test_the_calendar_says_which_tests_are_the_teachers_own(api):
+    """T1 teaches C1 maths, so the C1 maths exam is marked as theirs."""
+    _schedule_exam(api)
+
+    items = api.get("/assessment-calendar?from=2026-09-01&to=2026-09-30").json()["items"]
+
+    assert items
+    assert all(row["mine"] is True for row in items)

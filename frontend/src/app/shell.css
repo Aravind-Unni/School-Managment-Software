@@ -2192,3 +2192,49 @@ button[aria-busy="true"]::before {
     display: none;
   }
 }
+
+/* One day read top to bottom: the viewer's own periods, each with whatever
+   test or exam falls inside it. */
+.day-timeline {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.day-timeline li {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.55rem 0.7rem;
+  border-left: 4px solid var(--line);
+  background: var(--paper);
+  border-radius: 0 var(--radius-small) var(--radius-small) 0;
+}
+
+.day-timeline li > div {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.day-timeline li.cancelled strong {
+  text-decoration: line-through;
+}
+
+.day-timeline .attention,
+.day-timeline .day-test {
+  margin-top: 0.15rem;
+}
+
+@media (max-width: 34rem) {
+  .day-timeline li {
+    grid-template-columns: 4.5rem 1fr;
+    gap: 0.5rem;
+  }
+}
+
+.month-event.not-mine {
+  opacity: 0.55;
+}

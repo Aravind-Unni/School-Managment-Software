@@ -24,6 +24,7 @@ REGISTRATION = ModuleRegistration(
         "calendar-exceptions/",
         "teacher-unavailability/",
         "teacher-schedule/",
+        "teacher-slots/",
         "student-schedule/",
         "substitutions/",
         "timetable-sessions/",

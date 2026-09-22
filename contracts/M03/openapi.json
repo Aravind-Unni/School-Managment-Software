@@ -828,6 +828,133 @@
         "description": "Includes periods the teacher is substituting on that date. Reading another staff member's day requires timetable.edit."
       }
     },
+    "/teacher-slots": {
+      "get": {
+        "operationId": "list_teacher_slots",
+        "summary": "the periods a teacher has with one class and subject",
+        "x-permission": "timetable.read_teacher",
+        "x-recent-2fa": false,
+        "parameters": [
+          {
+            "name": "staff_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "section_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "subject_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeacherSlotPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client asserted its own identity or school",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated, or the second factor is too old",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Action denied in this scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent, or not visible to this actor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version or state conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Business validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/student-schedule": {
       "get": {
         "operationId": "get_student_schedule",
@@ -2196,182 +2323,76 @@
       }
     },
     "schemas": {
-      "ErrorEnvelope": {
+      "CalendarDTO": {
         "type": "object",
-        "description": "The frozen error body. M03 adds no field to it; only message_key values are module-specific.",
+        "description": "A dated range of calendar answers.",
         "additionalProperties": false,
         "properties": {
-          "code": {
+          "from_date": {
             "type": "string",
-            "enum": [
-              "unauthenticated",
-              "stale_auth",
-              "action_denied",
-              "object_inaccessible",
-              "version_conflict",
-              "state_conflict",
-              "validation_failed",
-              "rate_limited"
-            ]
+            "format": "date"
           },
-          "message_key": {
+          "to_date": {
             "type": "string",
-            "minLength": 1
+            "format": "date"
           },
-          "request_id": {
-            "type": "string",
-            "minLength": 1
-          },
-          "field_errors": {
+          "days": {
             "type": "array",
             "items": {
-              "type": "object",
-              "description": "One field-scoped validation problem.",
-              "additionalProperties": false,
-              "properties": {
-                "field": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "message_key": {
-                  "type": "string",
-                  "minLength": 1
-                }
-              },
-              "required": [
-                "field",
-                "message_key"
+              "$ref": "#/components/schemas/CalendarDayDTO"
+            }
+          }
+        },
+        "required": [
+          "from_date",
+          "to_date",
+          "days"
+        ]
+      },
+      "CalendarDayDTO": {
+        "type": "object",
+        "description": "Whether one date is a teaching day, and why not when it is not.",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "is_school_day": {
+            "type": "boolean"
+          },
+          "reason_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
+          },
+          "kinds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "holiday",
+                "exam",
+                "event"
               ]
-            }
+            },
+            "description": "Every exception in force on the date. An exam day is a teaching day; a holiday is not."
           }
         },
         "required": [
-          "code",
-          "message_key",
-          "request_id",
-          "field_errors"
+          "date",
+          "is_school_day",
+          "reason_key",
+          "kinds"
         ]
       },
-      "PeriodTemplateDTO": {
+      "CalendarExceptionDTO": {
         "type": "object",
-        "description": "One bell-time slot on one weekday, owned by a timetable version. Bell times can change between revisions, so the template belongs to the version rather than to the school.",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "school_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "timetable_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "day_of_week": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 7,
-            "description": "ISO-8601 weekday: 1 Monday .. 7 Sunday."
-          },
-          "slot_code": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 16,
-            "description": "The school's own short code for a period, e.g. 'P1'. School-authored; this module supplies no period naming convention."
-          },
-          "starts_at_local": {
-            "type": "string",
-            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
-            "description": "Wall-clock time at the school (Asia/Kolkata). Never a UTC instant."
-          },
-          "ends_at_local": {
-            "type": "string",
-            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
-            "description": "Wall-clock time at the school (Asia/Kolkata). Never a UTC instant."
-          }
-        },
-        "required": [
-          "id",
-          "school_id",
-          "timetable_id",
-          "day_of_week",
-          "slot_code",
-          "starts_at_local",
-          "ends_at_local"
-        ]
-      },
-      "SlotDTO": {
-        "type": "object",
-        "description": "One recurring teaching assignment: this section takes this subject from this teacher in this period, every week the version is effective.",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "school_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "timetable_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "period_template_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "day_of_week": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 7,
-            "description": "ISO-8601 weekday: 1 Monday .. 7 Sunday."
-          },
-          "slot_code": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 16,
-            "description": "The school's own short code for a period, e.g. 'P1'. School-authored; this module supplies no period naming convention."
-          },
-          "section_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "subject_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "teacher_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "room_code": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "maxLength": 32,
-            "description": "PROPOSED. Free text, school-authored. There is no Room aggregate and no room conflict detection: rooms were not among the owned records, so modelling them would widen the module."
-          }
-        },
-        "required": [
-          "id",
-          "school_id",
-          "timetable_id",
-          "period_template_id",
-          "day_of_week",
-          "slot_code",
-          "section_id",
-          "subject_id",
-          "teacher_id",
-          "room_code"
-        ]
-      },
-      "TimetableVersionDTO": {
-        "type": "object",
-        "description": "One dated revision of the central timetable. Periods and slots are its children and are replaced as a whole while it is a draft.",
+        "description": "One school-authored exception to the weekly pattern.",
         "additionalProperties": false,
         "properties": {
           "id": {
@@ -2386,129 +2407,94 @@
             "type": "integer",
             "minimum": 1
           },
-          "year_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "effective_from": {
+          "date": {
             "type": "string",
             "format": "date"
           },
-          "effective_to": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date"
-          },
-          "state": {
+          "kind": {
             "type": "string",
             "enum": [
-              "draft",
-              "published",
-              "superseded"
+              "holiday",
+              "exam",
+              "event"
             ]
           },
-          "published_at": {
+          "reason_key": {
             "type": [
               "string",
               "null"
             ],
-            "format": "date-time"
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
           },
-          "periods": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PeriodTemplateDTO"
-            }
-          },
-          "slots": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SlotDTO"
-            }
+          "withdrawn": {
+            "type": "boolean"
           }
         },
         "required": [
           "id",
           "school_id",
           "version",
-          "year_id",
-          "effective_from",
-          "effective_to",
-          "state",
-          "published_at",
-          "periods",
-          "slots"
+          "date",
+          "kind",
+          "reason_key",
+          "withdrawn"
         ]
       },
-      "TimetableSummaryDTO": {
+      "CalendarExceptionPage": {
         "type": "object",
-        "description": "A timetable version without its grid, for listing.",
+        "description": "A page of calendar exceptions.",
         "additionalProperties": false,
         "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalendarExceptionDTO"
+            }
           },
-          "school_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "version": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "year_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "effective_from": {
-            "type": "string",
-            "format": "date"
-          },
-          "effective_to": {
+          "next_cursor": {
             "type": [
               "string",
               "null"
-            ],
-            "format": "date"
-          },
-          "state": {
-            "type": "string",
-            "enum": [
-              "draft",
-              "published",
-              "superseded"
             ]
-          },
-          "published_at": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "period_count": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "slot_count": {
-            "type": "integer",
-            "minimum": 0
           }
         },
         "required": [
-          "id",
-          "school_id",
-          "version",
-          "year_id",
-          "effective_from",
-          "effective_to",
-          "state",
-          "published_at",
-          "period_count",
-          "slot_count"
+          "items",
+          "next_cursor"
+        ]
+      },
+      "CalendarExceptionRequest": {
+        "type": "object",
+        "description": "Record one exception to the weekly pattern.",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "holiday",
+              "exam",
+              "event"
+            ]
+          },
+          "reason_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
+          }
+        },
+        "required": [
+          "date",
+          "kind"
         ]
       },
       "ConflictDTO": {
@@ -2574,52 +2560,14 @@
           "date"
         ]
       },
-      "ValidationReportDTO": {
+      "CreateTimetableRequest": {
         "type": "object",
-        "description": "The result of validating a draft. An empty list means publish would be accepted at this moment; it is not a reservation.",
+        "description": "Create a draft revision. Never creates a published one: publication is a separate, authorised transition.",
         "additionalProperties": false,
         "properties": {
-          "timetable_id": {
+          "year_id": {
             "type": "string",
             "format": "uuid"
-          },
-          "version": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "conflicts": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ConflictDTO"
-            }
-          }
-        },
-        "required": [
-          "timetable_id",
-          "version",
-          "conflicts"
-        ]
-      },
-      "PublishResultDTO": {
-        "type": "object",
-        "description": "The outcome of publishing a draft.",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "school_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "version": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "state": {
-            "type": "string",
-            "const": "published"
           },
           "effective_from": {
             "type": "string",
@@ -2632,22 +2580,80 @@
             ],
             "format": "date"
           },
-          "superseded_timetable_id": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "uuid"
+          "periods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PeriodTemplateRequest"
+            }
+          },
+          "slots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SlotRequest"
+            }
           }
         },
         "required": [
-          "id",
-          "school_id",
-          "version",
-          "state",
+          "year_id",
           "effective_from",
-          "effective_to",
-          "superseded_timetable_id"
+          "periods",
+          "slots"
+        ]
+      },
+      "ErrorEnvelope": {
+        "type": "object",
+        "description": "The frozen error body. M03 adds no field to it; only message_key values are module-specific.",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "unauthenticated",
+              "stale_auth",
+              "action_denied",
+              "object_inaccessible",
+              "version_conflict",
+              "state_conflict",
+              "validation_failed",
+              "rate_limited"
+            ]
+          },
+          "message_key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "request_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "field_errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "One field-scoped validation problem.",
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "message_key": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "field",
+                "message_key"
+              ]
+            }
+          }
+        },
+        "required": [
+          "code",
+          "message_key",
+          "request_id",
+          "field_errors"
         ]
       },
       "PeriodSessionDTO": {
@@ -2764,6 +2770,195 @@
           "timetable_version"
         ]
       },
+      "PeriodTemplateDTO": {
+        "type": "object",
+        "description": "One bell-time slot on one weekday, owned by a timetable version. Bell times can change between revisions, so the template belongs to the version rather than to the school.",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "timetable_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "day_of_week": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7,
+            "description": "ISO-8601 weekday: 1 Monday .. 7 Sunday."
+          },
+          "slot_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16,
+            "description": "The school's own short code for a period, e.g. 'P1'. School-authored; this module supplies no period naming convention."
+          },
+          "starts_at_local": {
+            "type": "string",
+            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+            "description": "Wall-clock time at the school (Asia/Kolkata). Never a UTC instant."
+          },
+          "ends_at_local": {
+            "type": "string",
+            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+            "description": "Wall-clock time at the school (Asia/Kolkata). Never a UTC instant."
+          }
+        },
+        "required": [
+          "id",
+          "school_id",
+          "timetable_id",
+          "day_of_week",
+          "slot_code",
+          "starts_at_local",
+          "ends_at_local"
+        ]
+      },
+      "PeriodTemplateRequest": {
+        "type": "object",
+        "description": "One bell-time row in a draft grid.",
+        "additionalProperties": false,
+        "properties": {
+          "day_of_week": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7,
+            "description": "ISO-8601 weekday: 1 Monday .. 7 Sunday."
+          },
+          "slot_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16,
+            "description": "The school's own short code for a period, e.g. 'P1'. School-authored; this module supplies no period naming convention."
+          },
+          "starts_at_local": {
+            "type": "string",
+            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+            "description": "Wall-clock time at the school (Asia/Kolkata). Never a UTC instant."
+          },
+          "ends_at_local": {
+            "type": "string",
+            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+            "description": "Wall-clock time at the school (Asia/Kolkata). Never a UTC instant."
+          }
+        },
+        "required": [
+          "day_of_week",
+          "slot_code",
+          "starts_at_local",
+          "ends_at_local"
+        ]
+      },
+      "PublishRequest": {
+        "type": "object",
+        "description": "Publish the draft the caller last read.",
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "expected_version"
+        ]
+      },
+      "PublishResultDTO": {
+        "type": "object",
+        "description": "The outcome of publishing a draft.",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "state": {
+            "type": "string",
+            "const": "published"
+          },
+          "effective_from": {
+            "type": "string",
+            "format": "date"
+          },
+          "effective_to": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "superseded_timetable_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "id",
+          "school_id",
+          "version",
+          "state",
+          "effective_from",
+          "effective_to",
+          "superseded_timetable_id"
+        ]
+      },
+      "ReplaceTimetableRequest": {
+        "type": "object",
+        "description": "Replace a draft's whole grid under optimistic locking. The editor saves a week, not a cell, so one transaction either takes the grid or refuses it.",
+        "additionalProperties": false,
+        "properties": {
+          "effective_from": {
+            "type": "string",
+            "format": "date"
+          },
+          "effective_to": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date"
+          },
+          "periods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PeriodTemplateRequest"
+            }
+          },
+          "slots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SlotRequest"
+            }
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "effective_from",
+          "periods",
+          "slots",
+          "expected_version"
+        ]
+      },
       "SectionDayDTO": {
         "type": "object",
         "description": "The effective schedule for one section on one date, with the calendar answer that produced it.",
@@ -2820,20 +3015,12 @@
           "sessions"
         ]
       },
-      "TeacherDayDTO": {
+      "SessionCancellationRequest": {
         "type": "object",
-        "description": "One teacher's dated schedule: periods they are assigned to, plus periods they are substituting on that date.",
+        "description": "Cancel or restore one dated period without touching the recurring schedule.",
         "additionalProperties": false,
         "properties": {
-          "staff_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "date": {
-            "type": "string",
-            "format": "date"
-          },
-          "is_school_day": {
+          "cancelled": {
             "type": "boolean"
           },
           "reason_key": {
@@ -2845,36 +3032,130 @@
             "maxLength": 64,
             "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
           },
-          "sessions": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PeriodSessionDTO"
-            }
+          "expected_version": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "description": "The cancellation record's version. Null on the first cancellation of a session, which has no record yet."
           }
         },
         "required": [
-          "staff_id",
-          "date",
-          "is_school_day",
-          "reason_key",
-          "sessions"
+          "cancelled",
+          "expected_version"
         ]
       },
-      "StudentSessionDTO": {
+      "SlotDTO": {
         "type": "object",
-        "description": "One session as a pupil sees it. 'enrolled' comes from the subject-filtered roster, so a pupil who does not take the subject sees a free period rather than a lesson they must attend.",
+        "description": "One recurring teaching assignment: this section takes this subject from this teacher in this period, every week the version is effective.",
         "additionalProperties": false,
         "properties": {
-          "session": {
-            "$ref": "#/components/schemas/PeriodSessionDTO"
+          "id": {
+            "type": "string",
+            "format": "uuid"
           },
-          "enrolled": {
-            "type": "boolean"
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "timetable_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "period_template_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "day_of_week": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7,
+            "description": "ISO-8601 weekday: 1 Monday .. 7 Sunday."
+          },
+          "slot_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16,
+            "description": "The school's own short code for a period, e.g. 'P1'. School-authored; this module supplies no period naming convention."
+          },
+          "section_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subject_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teacher_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "room_code": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 32,
+            "description": "PROPOSED. Free text, school-authored. There is no Room aggregate and no room conflict detection: rooms were not among the owned records, so modelling them would widen the module."
           }
         },
         "required": [
-          "session",
-          "enrolled"
+          "id",
+          "school_id",
+          "timetable_id",
+          "period_template_id",
+          "day_of_week",
+          "slot_code",
+          "section_id",
+          "subject_id",
+          "teacher_id",
+          "room_code"
+        ]
+      },
+      "SlotRequest": {
+        "type": "object",
+        "description": "One cell in a draft grid. The period is named by weekday and slot code, not by id, so a grid can be sent before its period rows have ids.",
+        "additionalProperties": false,
+        "properties": {
+          "day_of_week": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7,
+            "description": "ISO-8601 weekday: 1 Monday .. 7 Sunday."
+          },
+          "slot_code": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16,
+            "description": "The school's own short code for a period, e.g. 'P1'. School-authored; this module supplies no period naming convention."
+          },
+          "section_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subject_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teacher_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "room_code": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 32
+          }
+        },
+        "required": [
+          "day_of_week",
+          "slot_code",
+          "section_id",
+          "subject_id",
+          "teacher_id"
         ]
       },
       "StudentDayDTO": {
@@ -2922,176 +3203,21 @@
           "sessions"
         ]
       },
-      "CalendarDayDTO": {
+      "StudentSessionDTO": {
         "type": "object",
-        "description": "Whether one date is a teaching day, and why not when it is not.",
+        "description": "One session as a pupil sees it. 'enrolled' comes from the subject-filtered roster, so a pupil who does not take the subject sees a free period rather than a lesson they must attend.",
         "additionalProperties": false,
         "properties": {
-          "date": {
-            "type": "string",
-            "format": "date"
+          "session": {
+            "$ref": "#/components/schemas/PeriodSessionDTO"
           },
-          "is_school_day": {
-            "type": "boolean"
-          },
-          "reason_key": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "minLength": 1,
-            "maxLength": 64,
-            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
-          },
-          "kinds": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "holiday",
-                "exam",
-                "event"
-              ]
-            },
-            "description": "Every exception in force on the date. An exam day is a teaching day; a holiday is not."
-          }
-        },
-        "required": [
-          "date",
-          "is_school_day",
-          "reason_key",
-          "kinds"
-        ]
-      },
-      "CalendarDTO": {
-        "type": "object",
-        "description": "A dated range of calendar answers.",
-        "additionalProperties": false,
-        "properties": {
-          "from_date": {
-            "type": "string",
-            "format": "date"
-          },
-          "to_date": {
-            "type": "string",
-            "format": "date"
-          },
-          "days": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CalendarDayDTO"
-            }
-          }
-        },
-        "required": [
-          "from_date",
-          "to_date",
-          "days"
-        ]
-      },
-      "CalendarExceptionDTO": {
-        "type": "object",
-        "description": "One school-authored exception to the weekly pattern.",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "school_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "version": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "date": {
-            "type": "string",
-            "format": "date"
-          },
-          "kind": {
-            "type": "string",
-            "enum": [
-              "holiday",
-              "exam",
-              "event"
-            ]
-          },
-          "reason_key": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "minLength": 1,
-            "maxLength": 64,
-            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
-          },
-          "withdrawn": {
+          "enrolled": {
             "type": "boolean"
           }
         },
         "required": [
-          "id",
-          "school_id",
-          "version",
-          "date",
-          "kind",
-          "reason_key",
-          "withdrawn"
-        ]
-      },
-      "TeacherUnavailableDTO": {
-        "type": "object",
-        "description": "A half-open UTC interval during which a staff member cannot teach.",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "school_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "version": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "staff_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "starts_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "ends_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "reason_key": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "minLength": 1,
-            "maxLength": 64,
-            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
-          },
-          "withdrawn": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "school_id",
-          "version",
-          "staff_id",
-          "starts_at",
-          "ends_at",
-          "reason_key",
-          "withdrawn"
+          "session",
+          "enrolled"
         ]
       },
       "SubstitutionDTO": {
@@ -3168,6 +3294,280 @@
           "withdrawn"
         ]
       },
+      "SubstitutionPage": {
+        "type": "object",
+        "description": "A page of substitutions.",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubstitutionDTO"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ]
+      },
+      "SubstitutionRequest": {
+        "type": "object",
+        "description": "Assign a substitute to one dated period.",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "slot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teacher_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "valid_until": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "date",
+          "slot_id",
+          "teacher_id",
+          "reason"
+        ]
+      },
+      "TeacherDayDTO": {
+        "type": "object",
+        "description": "One teacher's dated schedule: periods they are assigned to, plus periods they are substituting on that date.",
+        "additionalProperties": false,
+        "properties": {
+          "staff_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "is_school_day": {
+            "type": "boolean"
+          },
+          "reason_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
+          },
+          "sessions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PeriodSessionDTO"
+            }
+          }
+        },
+        "required": [
+          "staff_id",
+          "date",
+          "is_school_day",
+          "reason_key",
+          "sessions"
+        ]
+      },
+      "TeacherSlotDTO": {
+        "type": "object",
+        "description": "One period a teacher teaches on a named date.",
+        "required": [
+          "date",
+          "slot_code",
+          "starts_at_local",
+          "ends_at_local",
+          "section_id",
+          "subject_id",
+          "timetable_session_id"
+        ],
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "slot_code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "starts_at_local": {
+            "type": "string"
+          },
+          "ends_at_local": {
+            "type": "string"
+          },
+          "section_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "subject_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "timetable_session_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TeacherSlotPage": {
+        "type": "object",
+        "description": "Teacher periods in the requested range, earliest first.",
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeacherSlotDTO"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "TeacherUnavailableDTO": {
+        "type": "object",
+        "description": "A half-open UTC interval during which a staff member cannot teach.",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "staff_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
+          },
+          "withdrawn": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "school_id",
+          "version",
+          "staff_id",
+          "starts_at",
+          "ends_at",
+          "reason_key",
+          "withdrawn"
+        ]
+      },
+      "TeacherUnavailablePage": {
+        "type": "object",
+        "description": "A page of unavailability intervals.",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeacherUnavailableDTO"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ]
+      },
+      "TeacherUnavailableRequest": {
+        "type": "object",
+        "description": "Record a staff member's unavailability as a half-open UTC interval.",
+        "additionalProperties": false,
+        "properties": {
+          "staff_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "starts_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ends_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "reason_key": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
+          }
+        },
+        "required": [
+          "staff_id",
+          "starts_at",
+          "ends_at"
+        ]
+      },
       "TeachingAuthorityDTO": {
         "type": "object",
         "description": "The trusted fact M04 attendance combines with Access policy: who may record attendance for one dated period, and until when.",
@@ -3232,91 +3632,46 @@
           "eligible_for_attendance"
         ]
       },
-      "PeriodTemplateRequest": {
+      "TimetablePage": {
         "type": "object",
-        "description": "One bell-time row in a draft grid.",
+        "description": "A page of timetable versions.",
         "additionalProperties": false,
         "properties": {
-          "day_of_week": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 7,
-            "description": "ISO-8601 weekday: 1 Monday .. 7 Sunday."
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimetableSummaryDTO"
+            }
           },
-          "slot_code": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 16,
-            "description": "The school's own short code for a period, e.g. 'P1'. School-authored; this module supplies no period naming convention."
-          },
-          "starts_at_local": {
-            "type": "string",
-            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
-            "description": "Wall-clock time at the school (Asia/Kolkata). Never a UTC instant."
-          },
-          "ends_at_local": {
-            "type": "string",
-            "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
-            "description": "Wall-clock time at the school (Asia/Kolkata). Never a UTC instant."
-          }
-        },
-        "required": [
-          "day_of_week",
-          "slot_code",
-          "starts_at_local",
-          "ends_at_local"
-        ]
-      },
-      "SlotRequest": {
-        "type": "object",
-        "description": "One cell in a draft grid. The period is named by weekday and slot code, not by id, so a grid can be sent before its period rows have ids.",
-        "additionalProperties": false,
-        "properties": {
-          "day_of_week": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 7,
-            "description": "ISO-8601 weekday: 1 Monday .. 7 Sunday."
-          },
-          "slot_code": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 16,
-            "description": "The school's own short code for a period, e.g. 'P1'. School-authored; this module supplies no period naming convention."
-          },
-          "section_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "subject_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "teacher_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "room_code": {
+          "next_cursor": {
             "type": [
               "string",
               "null"
-            ],
-            "maxLength": 32
+            ]
           }
         },
         "required": [
-          "day_of_week",
-          "slot_code",
-          "section_id",
-          "subject_id",
-          "teacher_id"
+          "items",
+          "next_cursor"
         ]
       },
-      "CreateTimetableRequest": {
+      "TimetableSummaryDTO": {
         "type": "object",
-        "description": "Create a draft revision. Never creates a published one: publication is a separate, authorised transition.",
+        "description": "A timetable version without its grid, for listing.",
         "additionalProperties": false,
         "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
           "year_id": {
             "type": "string",
             "format": "uuid"
@@ -3332,31 +3687,64 @@
             ],
             "format": "date"
           },
-          "periods": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PeriodTemplateRequest"
-            }
+          "state": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "superseded"
+            ]
           },
-          "slots": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SlotRequest"
-            }
+          "published_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "period_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "slot_count": {
+            "type": "integer",
+            "minimum": 0
           }
         },
         "required": [
+          "id",
+          "school_id",
+          "version",
           "year_id",
           "effective_from",
-          "periods",
-          "slots"
+          "effective_to",
+          "state",
+          "published_at",
+          "period_count",
+          "slot_count"
         ]
       },
-      "ReplaceTimetableRequest": {
+      "TimetableVersionDTO": {
         "type": "object",
-        "description": "Replace a draft's whole grid under optimistic locking. The editor saves a week, not a cell, so one transaction either takes the grid or refuses it.",
+        "description": "One dated revision of the central timetable. Periods and slots are its children and are replaced as a whole while it is a draft.",
         "additionalProperties": false,
         "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "school_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "year_id": {
+            "type": "string",
+            "format": "uuid"
+          },
           "effective_from": {
             "type": "string",
             "format": "date"
@@ -3368,74 +3756,45 @@
             ],
             "format": "date"
           },
+          "state": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "superseded"
+            ]
+          },
+          "published_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
           "periods": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/PeriodTemplateRequest"
+              "$ref": "#/components/schemas/PeriodTemplateDTO"
             }
           },
           "slots": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SlotRequest"
+              "$ref": "#/components/schemas/SlotDTO"
             }
-          },
-          "expected_version": {
-            "type": "integer",
-            "minimum": 1
           }
         },
         "required": [
+          "id",
+          "school_id",
+          "version",
+          "year_id",
           "effective_from",
+          "effective_to",
+          "state",
+          "published_at",
           "periods",
-          "slots",
-          "expected_version"
-        ]
-      },
-      "PublishRequest": {
-        "type": "object",
-        "description": "Publish the draft the caller last read.",
-        "additionalProperties": false,
-        "properties": {
-          "expected_version": {
-            "type": "integer",
-            "minimum": 1
-          }
-        },
-        "required": [
-          "expected_version"
-        ]
-      },
-      "CalendarExceptionRequest": {
-        "type": "object",
-        "description": "Record one exception to the weekly pattern.",
-        "additionalProperties": false,
-        "properties": {
-          "date": {
-            "type": "string",
-            "format": "date"
-          },
-          "kind": {
-            "type": "string",
-            "enum": [
-              "holiday",
-              "exam",
-              "event"
-            ]
-          },
-          "reason_key": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "minLength": 1,
-            "maxLength": 64,
-            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
-          }
-        },
-        "required": [
-          "date",
-          "kind"
+          "slots"
         ]
       },
       "UpdateCalendarExceptionRequest": {
@@ -3474,37 +3833,22 @@
           "expected_version"
         ]
       },
-      "TeacherUnavailableRequest": {
+      "UpdateSubstitutionRequest": {
         "type": "object",
-        "description": "Record a staff member's unavailability as a half-open UTC interval.",
+        "description": "Withdraw a substitution. Withdrawn rather than deleted: attendance may already cite it.",
         "additionalProperties": false,
         "properties": {
-          "staff_id": {
-            "type": "string",
-            "format": "uuid"
+          "withdrawn": {
+            "type": "boolean"
           },
-          "starts_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "ends_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "reason_key": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "minLength": 1,
-            "maxLength": 64,
-            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
           }
         },
         "required": [
-          "staff_id",
-          "starts_at",
-          "ends_at"
+          "withdrawn",
+          "expected_version"
         ]
       },
       "UpdateTeacherUnavailableRequest": {
@@ -3544,182 +3888,30 @@
           "expected_version"
         ]
       },
-      "SubstitutionRequest": {
+      "ValidationReportDTO": {
         "type": "object",
-        "description": "Assign a substitute to one dated period.",
+        "description": "The result of validating a draft. An empty list means publish would be accepted at this moment; it is not a reservation.",
         "additionalProperties": false,
         "properties": {
-          "date": {
-            "type": "string",
-            "format": "date"
-          },
-          "slot_id": {
+          "timetable_id": {
             "type": "string",
             "format": "uuid"
           },
-          "teacher_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "reason": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 200
-          },
-          "valid_until": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "date",
-          "slot_id",
-          "teacher_id",
-          "reason"
-        ]
-      },
-      "UpdateSubstitutionRequest": {
-        "type": "object",
-        "description": "Withdraw a substitution. Withdrawn rather than deleted: attendance may already cite it.",
-        "additionalProperties": false,
-        "properties": {
-          "withdrawn": {
-            "type": "boolean"
-          },
-          "expected_version": {
+          "version": {
             "type": "integer",
             "minimum": 1
-          }
-        },
-        "required": [
-          "withdrawn",
-          "expected_version"
-        ]
-      },
-      "SessionCancellationRequest": {
-        "type": "object",
-        "description": "Cancel or restore one dated period without touching the recurring schedule.",
-        "additionalProperties": false,
-        "properties": {
-          "cancelled": {
-            "type": "boolean"
           },
-          "reason_key": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "minLength": 1,
-            "maxLength": 64,
-            "description": "Stable message key the frontend renders in English or Malayalam. Never user-facing prose."
-          },
-          "expected_version": {
-            "type": [
-              "integer",
-              "null"
-            ],
-            "minimum": 1,
-            "description": "The cancellation record's version. Null on the first cancellation of a session, which has no record yet."
-          }
-        },
-        "required": [
-          "cancelled",
-          "expected_version"
-        ]
-      },
-      "TimetablePage": {
-        "type": "object",
-        "description": "A page of timetable versions.",
-        "additionalProperties": false,
-        "properties": {
-          "items": {
+          "conflicts": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TimetableSummaryDTO"
+              "$ref": "#/components/schemas/ConflictDTO"
             }
-          },
-          "next_cursor": {
-            "type": [
-              "string",
-              "null"
-            ]
           }
         },
         "required": [
-          "items",
-          "next_cursor"
-        ]
-      },
-      "CalendarExceptionPage": {
-        "type": "object",
-        "description": "A page of calendar exceptions.",
-        "additionalProperties": false,
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CalendarExceptionDTO"
-            }
-          },
-          "next_cursor": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        },
-        "required": [
-          "items",
-          "next_cursor"
-        ]
-      },
-      "TeacherUnavailablePage": {
-        "type": "object",
-        "description": "A page of unavailability intervals.",
-        "additionalProperties": false,
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TeacherUnavailableDTO"
-            }
-          },
-          "next_cursor": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        },
-        "required": [
-          "items",
-          "next_cursor"
-        ]
-      },
-      "SubstitutionPage": {
-        "type": "object",
-        "description": "A page of substitutions.",
-        "additionalProperties": false,
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SubstitutionDTO"
-            }
-          },
-          "next_cursor": {
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        },
-        "required": [
-          "items",
-          "next_cursor"
+          "timetable_id",
+          "version",
+          "conflicts"
         ]
       }
     }

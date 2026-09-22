@@ -1,10 +1,13 @@
 /**
- * The school month: tests and exams that are coming, and the days the school
- * is closed. Families see their own child's class; teachers see their classes;
- * the office sees every class.
+ * The school month as the viewer has it: a pupil sees the subjects they take,
+ * a teacher the classes they teach, the office every class. Days the school is
+ * closed are greyed.
  *
- * Tap a day to see what is on it. Does not handle: adding events (teachers set
- * tests on Assessments, the office sets exams on Examinations).
+ * Tapping a day opens that day in order: the viewer's own periods, with any
+ * test or exam shown inside the period it falls in, and anything without a
+ * period (an assignment to hand in) listed after.
+ * Does not handle: adding events (teachers set tests on Assessments, the
+ * office sets exams on Examinations).
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -15,6 +18,10 @@ import { Problem } from "@shared/ui/Problem";
 import { PupilChooser, usePupilChoice } from "@features/registry/PupilChooser";
 import { schoolToday } from "@features/registry/useSchoolStructure";
 import { subjectColour } from "@features/timetable/subjectColours";
+import { readStudentDay, readTeacherDay } from "@features/timetable/api";
+import { periodLabel } from "@features/timetable/state";
+import type { WeekSession } from "@features/timetable/WeekGrid";
+import { useSession } from "@app/SessionContext";
 
 interface Event {
   readonly assessment_id: string;
@@ -24,6 +31,17 @@ interface Event {
   readonly type: string;
   readonly subject_name: string | null;
   readonly section_label: string | null;
+  readonly mine?: boolean;
+}
+
+/** A period on the chosen day, as the viewer has it. */
+interface Period {
+  readonly slot_code: string;
+  readonly starts_at_local: string;
+  readonly ends_at_local: string;
+  readonly subject_name: string | null;
+  readonly with_whom: string | null;
+  readonly cancelled: boolean;
 }
 
 interface CalendarDay {
@@ -57,10 +75,12 @@ function addMonths(anchor: string, delta: number): string {
 export function CalendarPage() {
   const { t, language } = useLanguage();
   const { mine, chosen, setChosen } = usePupilChoice();
+  const { session } = useSession();
   const [month, setMonth] = useState(() => schoolToday().slice(0, 7));
   const [events, setEvents] = useState<readonly Event[]>([]);
   const [days, setDays] = useState<readonly CalendarDay[]>([]);
   const [chosenDay, setChosenDay] = useState<string | null>(null);
+  const [periods, setPeriods] = useState<readonly Period[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
 
@@ -95,6 +115,39 @@ export function CalendarPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- loads this screen's data
     void load();
   }, [load, isFamily, chosen]);
+
+  // The day a viewer taps is their own day: a pupil's lessons, or a teacher's.
+  useEffect(() => {
+    if (chosenDay === null) return;
+    const who = isFamily ? chosen?.id : session?.actor_id;
+    if (!who) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loads this screen's data
+    setPeriods(null);
+    const asPeriod = (session: WeekSession, withWhom: string | null): Period => ({
+      slot_code: session.slot_code,
+      starts_at_local: session.starts_at_local,
+      ends_at_local: session.ends_at_local,
+      subject_name: session.subject_name ?? null,
+      with_whom: withWhom,
+      cancelled: session.cancelled,
+    });
+    const day = isFamily
+      ? readStudentDay(who, chosenDay).then((read) =>
+          read.sessions
+            .filter((row) => row.enrolled)
+            .map((row) => {
+              const session: WeekSession = row.session;
+              return asPeriod(session, session.substitute_name ?? session.teacher_name ?? null);
+            }),
+        )
+      : readTeacherDay(who, chosenDay).then((read) =>
+          read.sessions.map((row) => {
+            const session: WeekSession = row;
+            return asPeriod(session, session.section_label ?? null);
+          }),
+        );
+    day.then(setPeriods, () => setPeriods([]));
+  }, [chosenDay, isFamily, chosen?.id, session?.actor_id]);
 
   const closed = new Set(days.filter((row) => !row.is_school_day).map((row) => row.date));
   const eventsOn = (date: string) => events.filter((row) => row.date === date);
@@ -147,7 +200,10 @@ export function CalendarPage() {
               {onDay.slice(0, 3).map((row) => (
                 <span
                   key={row.assessment_id}
-                  className={`month-event${row.type === "exam" ? " exam" : ""}`}
+                  className={`month-event${row.type === "exam" ? " exam" : ""}${
+                    !isFamily && row.mine === false ? " not-mine" : ""
+                  }`}
+                  title={`${row.section_label ?? ""} ${row.title}`.trim()}
                   style={{ borderColor: subjectColour(row.subject_name ?? "") }}
                 >
                   {row.subject_name}
@@ -166,28 +222,64 @@ export function CalendarPage() {
             day: "numeric",
             month: "long",
           })}</h3>
-          {closed.has(chosenDay) ? <p className="hint">{t("calendar.closed")}</p> : null}
-          {selected.length === 0 ? (
+          {closed.has(chosenDay) ? (
+            <p className="hint">{t("calendar.closed")}</p>
+          ) : periods === null ? (
+            <Loading />
+          ) : periods.length === 0 && selected.length === 0 ? (
             <p className="hint">{t("calendar.nothing")}</p>
           ) : (
-            <ul className="charge-list">
-              {selected.map((row) => (
-                <li key={row.assessment_id}>
-                  <div>
-                    <strong>
-                      {row.subject_name} · {row.title || t(`assessments.type.${row.type}`)}
-                    </strong>
-                    <span className="hint">
-                      {row.time}
-                      {isFamily ? "" : ` · ${row.section_label ?? ""}`}
-                    </span>
-                  </div>
-                  <span className={row.type === "exam" ? "attention" : "hint"}>
-                    {t(`assessments.type.${row.type}`)}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <ol className="day-timeline">
+              {periods.map((period) => {
+                const inThisPeriod = selected.filter(
+                  (row) => row.time >= period.starts_at_local && row.time < period.ends_at_local,
+                );
+                return (
+                  <li
+                    key={period.slot_code}
+                    className={period.cancelled ? "cancelled" : ""}
+                    style={{ borderColor: subjectColour(period.subject_name ?? "") }}
+                  >
+                    <span className="hint">{periodLabel(period.starts_at_local, period.ends_at_local)}</span>
+                    <div>
+                      <strong>{period.subject_name}</strong>
+                      <span className="hint">{period.with_whom}</span>
+                      {inThisPeriod.map((row) => (
+                        <span
+                          key={row.assessment_id}
+                          className={row.type === "exam" ? "attention" : "day-test"}
+                        >
+                          {row.title || t(`assessments.type.${row.type}`)} ·{" "}
+                          {t(`assessments.type.${row.type}`)}
+                        </span>
+                      ))}
+                    </div>
+                  </li>
+                );
+              })}
+              {selected
+                .filter(
+                  (row) =>
+                    !periods.some(
+                      (period) =>
+                        row.time >= period.starts_at_local && row.time < period.ends_at_local,
+                    ),
+                )
+                .map((row) => (
+                  <li key={row.assessment_id} style={{ borderColor: subjectColour(row.subject_name ?? "") }}>
+                    <span className="hint">{row.time}</span>
+                    <div>
+                      <strong>
+                        {row.subject_name} · {row.title || t(`assessments.type.${row.type}`)}
+                      </strong>
+                      <span className="hint">
+                        {t(`assessments.type.${row.type}`)}
+                        {isFamily ? "" : ` · ${row.section_label ?? ""}`}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+            </ol>
           )}
         </div>
       ) : null}

@@ -129,6 +129,10 @@ class ScheduleService:
             raise ValidationFailed("error.validation_failed")
         today = self.gate.effective_date()
         sections: set[UUID] = set()
+        # Subjects the pupil actually takes, so an elective they dropped does
+        # not appear on their calendar. Empty means "no per-subject record",
+        # which is the school taking every subject together.
+        wanted_subjects: set[UUID] = set()
         if student_id is not None:
             facts = self.registry.get_relationships(
                 context, context.actor_id, student_id, today
@@ -139,6 +143,7 @@ class ScheduleService:
                 raise ObjectInaccessible("error.object_inaccessible")
             if facts.section_id is not None:
                 sections.add(facts.section_id)
+            wanted_subjects = set(facts.subject_ids or ())
         elif section_id is not None:
             teaches = any(
                 row.section_id == section_id
@@ -172,10 +177,18 @@ class ScheduleService:
             due_at__gte=start,
             due_at__lte=end,
         ).order_by("due_at")
+        # What the caller teaches, so their own tests read differently from a
+        # colleague's test in the same class.
+        teaches = {
+            (row.section_id, row.subject_id)
+            for row in self.registry.get_teaching_assignments(context, context.actor_id, today)
+        }
         names = self.registry.subject_names(context)
         labels: dict[UUID, str | None] = {}
         items = []
         for row in rows:
+            if wanted_subjects and row.subject_id not in wanted_subjects:
+                continue
             if row.section_id not in labels:
                 labels[row.section_id] = self.registry.section_label(context, row.section_id)
             local = row.due_at.astimezone(SCHOOL_TZ)
@@ -191,6 +204,7 @@ class ScheduleService:
                     "section_id": str(row.section_id),
                     "section_label": labels[row.section_id],
                     "max_score": f"{row.max_score.normalize():f}",
+                    "mine": (row.section_id, row.subject_id) in teaches,
                 }
             )
         return items

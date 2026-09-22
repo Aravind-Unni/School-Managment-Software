@@ -17,6 +17,7 @@ import { useSession } from "@app/SessionContext";
 import * as registry from "@features/registry/api";
 import { schoolToday, useSchoolStructure } from "@features/registry/useSchoolStructure";
 import { subjectColour } from "@features/timetable/subjectColours";
+import { addDays } from "@features/timetable/WeekGrid";
 import { createAssessment } from "./api";
 import { Loading } from "@shared/ui/Loading";
 
@@ -34,7 +35,21 @@ interface Row {
   readonly created_at: string;
 }
 
-const TYPES = ["written_test", "assignment", "practical", "project"] as const;
+const TYPES = ["written_test", "practical", "assignment", "project"] as const;
+/** Types that happen in a lesson, so they are scheduled into a real period. */
+const IN_A_LESSON = new Set(["written_test", "practical"]);
+
+interface Slot {
+  readonly date: string;
+  readonly slot_code: string;
+  readonly starts_at_local: string;
+  readonly ends_at_local: string;
+}
+
+/** ``2026-10-06`` + ``09:30`` in school time, as the instant the API wants. */
+function startsAt(date: string, local: string): string {
+  return new Date(`${date}T${local}:00+05:30`).toISOString();
+}
 
 export function AssessmentsPage() {
   const { t, language } = useLanguage();
@@ -48,8 +63,9 @@ export function AssessmentsPage() {
   const [type, setType] = useState<(typeof TYPES)[number]>("written_test");
   const [maxScore, setMaxScore] = useState("50");
   const [title, setTitle] = useState("");
-  const [on, setOn] = useState(schoolToday());
-  const [at, setAt] = useState("09:30");
+  const [dueOn, setDueOn] = useState("");
+  const [slots, setSlots] = useState<readonly Slot[] | null>(null);
+  const [slotKey, setSlotKey] = useState("");
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
@@ -100,6 +116,33 @@ export function AssessmentsPage() {
     if (pair === "" && options[0]) setPair(options[0][0]);
   }, [options, pair]);
 
+  // A test or practical is set in a lesson the teacher already has with that
+  // class, so the form offers those periods instead of a free-text time.
+  useEffect(() => {
+    const [sectionId, subjectId] = pair.split("|");
+    if (!IN_A_LESSON.has(type) || !sectionId || !subjectId || !session?.actor_id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- loads this screen's data
+      setSlots(null);
+      return;
+    }
+    setSlots(null);
+    request<{ items: Slot[] }>("/api/v1/teacher-slots", {
+      query: {
+        staff_id: session.actor_id,
+        from: today,
+        to: addDays(today, 27),
+        section_id: sectionId,
+        subject_id: subjectId,
+      },
+    }).then(
+      (page) => {
+        setSlots(page.items);
+        setSlotKey(page.items[0] ? `${page.items[0].date}|${page.items[0].starts_at_local}` : "");
+      },
+      () => setSlots([]),
+    );
+  }, [pair, type, session?.actor_id, today]);
+
   const create = async () => {
     const [sectionId, subjectId] = pair.split("|");
     if (!structure?.year || !sectionId || !subjectId) return;
@@ -111,6 +154,14 @@ export function AssessmentsPage() {
         terms.find((row) => row.year_id === structure.year?.id && row.start <= today && today <= row.end) ??
         terms.find((row) => row.year_id === structure.year?.id);
       const max = `${Number(maxScore).toFixed(2)}`;
+      const [slotDate, slotStart] = slotKey.split("|");
+      const when = IN_A_LESSON.has(type)
+        ? slotDate && slotStart
+          ? startsAt(slotDate, slotStart)
+          : null
+        : dueOn
+          ? startsAt(dueOn, "23:59")
+          : null;
       const created = await createAssessment({
         year_id: structure.year.id,
         term_id: term?.id,
@@ -119,7 +170,7 @@ export function AssessmentsPage() {
         type,
         policy_version: "school-v1",
         title: title.trim(),
-        due_at: new Date(`${on}T${at}:00+05:30`).toISOString(),
+        due_at: when,
         max_score: max,
         components: [{ max_score: max, weight: "1.000", topic: null, question_type: null }],
       });
@@ -190,7 +241,9 @@ export function AssessmentsPage() {
             }}
           >
             <h3>{t("assessments.new")}</h3>
-            <p className="hint">{t("assessments.new_hint")}</p>
+            <p className="hint">
+              {IN_A_LESSON.has(type) ? t("assessments.new_hint") : t("assessments.assignment_hint")}
+            </p>
             <label>
               {t("assessments.class_subject")}
               <select value={pair} onChange={(event) => setPair(event.target.value)}>
@@ -220,16 +273,32 @@ export function AssessmentsPage() {
                 onChange={(event) => setTitle(event.target.value)}
               />
             </label>
-            <div className="inline-fields">
+            {IN_A_LESSON.has(type) ? (
               <label>
-                {t("assessments.on")}
-                <input type="date" value={on} onChange={(event) => setOn(event.target.value)} />
+                {t("assessments.which_lesson")}
+                {slots === null ? (
+                  <Loading />
+                ) : slots.length === 0 ? (
+                  <span className="field-problem">{t("assessments.no_lessons")}</span>
+                ) : (
+                  <select value={slotKey} onChange={(event) => setSlotKey(event.target.value)}>
+                    {slots.map((slot) => (
+                      <option
+                        key={`${slot.date}|${slot.starts_at_local}`}
+                        value={`${slot.date}|${slot.starts_at_local}`}
+                      >
+                        {`${shortDate(slot.date, language)} · ${slot.slot_code} · ${slot.starts_at_local}–${slot.ends_at_local}`}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </label>
+            ) : (
               <label>
-                {t("assessments.at")}
-                <input type="time" value={at} onChange={(event) => setAt(event.target.value)} />
+                {t("assessments.hand_in_by")}
+                <input type="date" value={dueOn} min={today} onChange={(event) => setDueOn(event.target.value)} />
               </label>
-            </div>
+            )}
             <label>
               {t("assessments.max_marks")}
               <input
@@ -238,7 +307,15 @@ export function AssessmentsPage() {
                 onChange={(event) => setMaxScore(event.target.value.replace(/[^\d.]/g, ""))}
               />
             </label>
-            <button type="submit" disabled={busy || !(Number(maxScore) > 0)}>
+            <button
+              type="submit"
+              aria-busy={busy}
+              disabled={
+                busy ||
+                !(Number(maxScore) > 0) ||
+                (IN_A_LESSON.has(type) ? slotKey === "" : dueOn === "")
+              }
+            >
               {t("assessments.create")}
             </button>
           </form>
