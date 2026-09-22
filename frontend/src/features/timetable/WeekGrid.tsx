@@ -18,6 +18,8 @@ import { periodLabel } from "./state";
 
 export interface WeekSession {
   readonly slot_code: string;
+  readonly section_id: string;
+  readonly subject_id: string;
   readonly starts_at_local: string;
   readonly ends_at_local: string;
   readonly subject_name?: string | null;

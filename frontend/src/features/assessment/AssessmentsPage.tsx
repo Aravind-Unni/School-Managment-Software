@@ -240,7 +240,7 @@ export function AssessmentsPage() {
               void create();
             }}
           >
-            <h3>{t("assessments.new")}</h3>
+            <h3>{IN_A_LESSON.has(type) ? t("assessments.new") : t("assessments.new_work")}</h3>
             <p className="hint">
               {IN_A_LESSON.has(type) ? t("assessments.new_hint") : t("assessments.assignment_hint")}
             </p>
@@ -265,11 +265,15 @@ export function AssessmentsPage() {
               </select>
             </label>
             <label>
-              {t("assessments.name")}
+              {IN_A_LESSON.has(type) ? t("assessments.name") : t("assessments.name_work")}
               <input
                 value={title}
                 maxLength={120}
-                placeholder={t("assessments.name_example")}
+                placeholder={
+                  IN_A_LESSON.has(type)
+                    ? t("assessments.name_example")
+                    : t("assessments.name_example_work")
+                }
                 onChange={(event) => setTitle(event.target.value)}
               />
             </label>

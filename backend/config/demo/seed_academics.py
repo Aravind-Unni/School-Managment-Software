@@ -11,10 +11,13 @@ from __future__ import annotations
 
 import random
 import uuid
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from .api_actor import ApiActor
 from .seed_people import DemoCast
+
+SCHOOL_TZ = ZoneInfo("Asia/Kolkata")
 
 #: The first school day the demo timetable (and attendance history) covers.
 TIMETABLE_START = date(2026, 9, 1)
@@ -124,10 +127,47 @@ def seed_attendance(cast: DemoCast, actors: dict[str, ApiActor], *, today: date,
     return submitted
 
 
+def lesson_moment(school_id, section_id, subject_id, on: date) -> str | None:
+    """Return the UTC instant of that class's lesson in the subject, on or after ``on``.
+
+    A test happens in a lesson, so the demo dates its tests the way the
+    Assessments screen makes a teacher date them: to a real period in the
+    published timetable. Returns None when the class does not take the subject
+    in the fortnight after ``on``, and the caller leaves the test undated.
+    """
+    from modules.timetable.models import Slot, TimetableVersion
+
+    published = TimetableVersion.objects.filter(school_id=school_id, state="published").first()
+    if published is None:
+        return None
+    slots = {
+        slot.period.day_of_week: slot.period.starts_at_local
+        for slot in Slot.objects.filter(
+            timetable=published, section_id=section_id, subject_id=subject_id
+        ).select_related("period")
+    }
+    if not slots:
+        return None
+    for ahead in range(14):
+        day = on + timedelta(days=ahead)
+        starts_at = slots.get(day.isoweekday())
+        if starts_at is not None:
+            local = datetime.combine(day, starts_at, tzinfo=SCHOOL_TZ)
+            return local.astimezone(UTC).isoformat().replace("+00:00", "Z")
+    return None
+
+
 def _create_assessment(
     actor: ApiActor, cast: DemoCast, section_id, subject_id, max_score, *, title="", on=None
 ):
-    """Create one written test with a single component; return (body, component id)."""
+    """Create one written test with a single component; return (body, component id).
+
+    ``on`` is the earliest day the test may happen; it is moved to that class's
+    next lesson in the subject so it lands inside a real period.
+    """
+    due_at = (
+        lesson_moment(cast.school_id, section_id, subject_id, on) if on is not None else None
+    )
     component_id = str(uuid.uuid4())
     body = actor.post(
         "/assessments",
@@ -138,7 +178,7 @@ def _create_assessment(
             "subject_id": subject_id,
             "type": "written_test",
             "title": title,
-            "due_at": f"{on.isoformat()}T04:00:00Z" if on is not None else None,
+            "due_at": due_at,
             "policy_version": "cbse-v1",
             "max_score": f"{max_score}.00",
             "components": [

@@ -31,12 +31,16 @@ interface Event {
   readonly type: string;
   readonly subject_name: string | null;
   readonly section_label: string | null;
+  readonly section_id: string;
+  readonly subject_id: string;
   readonly mine?: boolean;
 }
 
 /** A period on the chosen day, as the viewer has it. */
 interface Period {
   readonly slot_code: string;
+  readonly section_id: string;
+  readonly subject_id: string;
   readonly starts_at_local: string;
   readonly ends_at_local: string;
   readonly subject_name: string | null;
@@ -81,6 +85,7 @@ export function CalendarPage() {
   const [days, setDays] = useState<readonly CalendarDay[]>([]);
   const [chosenDay, setChosenDay] = useState<string | null>(null);
   const [periods, setPeriods] = useState<readonly Period[] | null>(null);
+  const [onlyMine, setOnlyMine] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
 
@@ -125,6 +130,8 @@ export function CalendarPage() {
     setPeriods(null);
     const asPeriod = (session: WeekSession, withWhom: string | null): Period => ({
       slot_code: session.slot_code,
+      section_id: session.section_id,
+      subject_id: session.subject_id,
       starts_at_local: session.starts_at_local,
       ends_at_local: session.ends_at_local,
       subject_name: session.subject_name ?? null,
@@ -150,7 +157,11 @@ export function CalendarPage() {
   }, [chosenDay, isFamily, chosen?.id, session?.actor_id]);
 
   const closed = new Set(days.filter((row) => !row.is_school_day).map((row) => row.date));
-  const eventsOn = (date: string) => events.filter((row) => row.date === date);
+  // A subject teacher's month is their own subject. The rest of their classes'
+  // tests are one tick away, for anyone checking a week is not overloaded.
+  const hasOthers = !isFamily && events.some((row) => row.mine === false);
+  const shown = hasOthers && onlyMine ? events.filter((row) => row.mine !== false) : events;
+  const eventsOn = (date: string) => shown.filter((row) => row.date === date);
   const today = schoolToday();
   const weekdays = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
   const monthName = new Date(`${month}-01T00:00:00`).toLocaleDateString(language === "ml" ? "ml-IN" : "en-IN", {
@@ -158,6 +169,12 @@ export function CalendarPage() {
     year: "numeric",
   });
   const selected = chosenDay ? eventsOn(chosenDay) : [];
+  /** A test sits in a period only if it is that class's lesson in that subject. */
+  const happensIn = (event: Event, period: Period) =>
+    event.section_id === period.section_id &&
+    event.subject_id === period.subject_id &&
+    event.time >= period.starts_at_local &&
+    event.time < period.ends_at_local;
 
   return (
     <section aria-labelledby="calendar-title">
@@ -175,6 +192,16 @@ export function CalendarPage() {
         </div>
         <span className="hint">{t("calendar.legend")}</span>
       </div>
+      {hasOthers ? (
+        <label className="inline">
+          <input
+            type="checkbox"
+            checked={!onlyMine}
+            onChange={(event) => setOnlyMine(!event.target.checked)}
+          />
+          {t("calendar.show_all_classes")}
+        </label>
+      ) : null}
       <Problem error={error} />
       {loading ? <Loading /> : null}
 
@@ -231,9 +258,7 @@ export function CalendarPage() {
           ) : (
             <ol className="day-timeline">
               {periods.map((period) => {
-                const inThisPeriod = selected.filter(
-                  (row) => row.time >= period.starts_at_local && row.time < period.ends_at_local,
-                );
+                const inThisPeriod = selected.filter((row) => happensIn(row, period));
                 return (
                   <li
                     key={period.slot_code}
@@ -258,13 +283,7 @@ export function CalendarPage() {
                 );
               })}
               {selected
-                .filter(
-                  (row) =>
-                    !periods.some(
-                      (period) =>
-                        row.time >= period.starts_at_local && row.time < period.ends_at_local,
-                    ),
-                )
+                .filter((row) => !periods.some((period) => happensIn(row, period)))
                 .map((row) => (
                   <li key={row.assessment_id} style={{ borderColor: subjectColour(row.subject_name ?? "") }}>
                     <span className="hint">{row.time}</span>

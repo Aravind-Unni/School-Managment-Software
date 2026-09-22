@@ -38,6 +38,7 @@ DEMO_STAFF = (
 class DemoCast:
     """Ids of everything created, for the later stages."""
 
+    school_id: str = ""
     year_id: str = ""
     term_id: str = ""
     year_start: date | None = None
@@ -54,6 +55,7 @@ def _load_structure(school_id, cast: DemoCast) -> None:
     from modules.registry.models import AcademicYear, Section, Subject, Term
 
     year = AcademicYear.objects.get(school_id=school_id, state="active")
+    cast.school_id = str(school_id)
     cast.year_id = str(year.id)
     cast.year_start = year.start
     term = Term.objects.filter(school_id=school_id, year=year).order_by("start").first()
