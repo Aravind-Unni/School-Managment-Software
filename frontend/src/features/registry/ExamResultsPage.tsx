@@ -21,6 +21,8 @@ interface ResultRow {
   readonly subject_id: string;
   readonly subject_name: string | null;
   readonly type: string | null;
+  readonly title: string;
+  readonly sat_on: string | null;
   readonly published_on: string | null;
   readonly marking_outcome: string | null;
   readonly score: string | null;
@@ -155,8 +157,13 @@ export function ExamResultsPage() {
                     {rows.map((row) => (
                       <li key={row.assessment_id}>
                         <div>
-                          <strong>{row.type ? t(`assessments.type.${row.type}`) : t("results.test")}</strong>
-                          <span className="hint">{shortDate(row.published_on, language)}</span>
+                          <strong>
+                            {row.title || (row.type ? t(`assessments.type.${row.type}`) : t("results.test"))}
+                          </strong>
+                          <span className="hint">
+                            {row.type ? `${t(`assessments.type.${row.type}`)} · ` : ""}
+                            {shortDate(row.sat_on ?? row.published_on, language)}
+                          </span>
                         </div>
                         {row.marking_outcome === "absent" ? (
                           <span className="attention">{t("assessments.absent")}</span>

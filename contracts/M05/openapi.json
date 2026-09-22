@@ -833,6 +833,17 @@
                               "null"
                             ]
                           },
+                          "title": {
+                            "type": "string",
+                            "description": "What the teacher called the test."
+                          },
+                          "sat_on": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "The day the test was sat, when it was scheduled."
+                          },
                           "published_on": {
                             "type": [
                               "string",

@@ -1,7 +1,7 @@
 """GET /students/{id}/results?term_id=: a pupil's published marks for a term.
 
 For parents, pupils and staff. Each published assessment gives one row: subject,
-kind of test, date published, marks out of the maximum, percentage and grade
+its name and kind, the day it was sat, marks out of the maximum, percentage and grade
 (from the school's grade bands). ``subjects`` averages each subject's
 percentages, graded the same way, and ``overall`` averages everything.
 Access and "published only" come from the assessment port, the same rules
@@ -88,6 +88,12 @@ class StudentResultsView(APIView):
                     "subject_id": item["subject_id"],
                     "subject_name": names.get(UUID(item["subject_id"])),
                     "type": assessment.type if assessment else None,
+                    "title": assessment.title if assessment else "",
+                    "sat_on": (
+                        school_date(assessment.due_at).isoformat()
+                        if assessment and assessment.due_at
+                        else None
+                    ),
                     "published_on": school_date(when).isoformat() if when else None,
                     "marking_outcome": item["marking_outcome"],
                     "score": item["score"],
@@ -97,7 +103,12 @@ class StudentResultsView(APIView):
                     or grade_for(item["score"], item["max_score"], bands),
                 }
             )
-        rows.sort(key=lambda row: (row["subject_name"] or "", row["published_on"] or ""))
+        rows.sort(
+            key=lambda row: (
+                row["subject_name"] or "",
+                row["sat_on"] or row["published_on"] or "",
+            )
+        )
         subjects = []
         for subject_id, values in per_subject.items():
             average = sum(values) / len(values)

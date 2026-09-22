@@ -1,5 +1,15 @@
 /**
- * Student progress dashboard with accessible metric table.
+ * How one pupil is getting on: their average across published marks, the share
+ * of lessons they have attended, and anything a teacher has been asked to
+ * follow up.
+ *
+ * A figure nobody can act on is not shown: a measure without enough marks
+ * behind it yet is left out rather than printed as "insufficient data", and
+ * the machinery behind it (status codes, rule ids, definition versions) never
+ * reaches the page.
+ *
+ * Does not handle: per-topic breakdown (M06 has no topic data yet) or raising
+ * a warning, which is the at-risk list's work.
  */
 
 import { useEffect, useState } from "react";
@@ -77,6 +87,13 @@ export function StudentDashboardPage() {
     };
   }, [studentId, t]);
 
+  // Percentages a family can act on. A measure still gathering marks, or one
+  // with no number behind it, says nothing and is left out.
+  const shown = (data?.metrics ?? []).filter(
+    (metric) => metric.status !== "insufficient_data" && metric.value !== null,
+  );
+  const open = (data?.warnings ?? []).filter((warning) => warning.state !== "dismissed");
+
   return (
     <section>
       <h1>{t["performance.title"]}</h1>
@@ -94,44 +111,42 @@ export function StudentDashboardPage() {
       )}
       {loading && <Loading />}
       {error && <p role="alert">{error}</p>}
-      {!loading && !error && data && data.metrics.length === 0 && (
-        <p>{t["performance.empty"]}</p>
+      {!loading && !error && data && shown.length === 0 && (
+        <p className="empty-state">{t["performance.empty"]}</p>
       )}
-      {data && data.metrics.length > 0 && (
-        <table>
-          <caption>{t["performance.title"]}</caption>
-          <thead>
-            <tr>
-              <th scope="col">Metric</th>
-              <th scope="col">Value</th>
-              <th scope="col">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.metrics.map((m) => (
-              <tr key={m.code}>
-                <th scope="row">
-                  {t[`performance.metric.${m.code}` as keyof typeof t] ?? m.code}
-                </th>
-                <td>
-                  {m.status === "insufficient_data"
-                    ? t["performance.insufficient"]
-                    : (m.value ?? "—")}
-                </td>
-                <td>{m.status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-      {data && data.warnings.length > 0 && (
-        <ul aria-label="warnings">
-          {data.warnings.map((w) => (
-            <li key={w.id}>
-              {t[w.explanation_key as keyof typeof t] ?? w.explanation_key} ({w.state})
-            </li>
+      {data && shown.length > 0 && (
+        <div className="stat-row">
+          {shown.map((metric) => (
+            <div className="stat" key={metric.code}>
+              <span className="stat-value">
+                {metric.value === null ? "—" : `${Math.round(Number(metric.value))}%`}
+              </span>
+              <span className="hint">
+                {t[`performance.metric.${metric.code}` as keyof typeof t] ?? metric.code}
+              </span>
+            </div>
           ))}
-        </ul>
+        </div>
+      )}
+      {data && shown.length > 0 ? (
+        <p className="hint">{t["performance.window"]}</p>
+      ) : null}
+      {data && open.length > 0 && (
+        <>
+          <h3>{t["performance.following_up"]}</h3>
+          <ul className="charge-list" aria-label={t["performance.following_up"]}>
+            {open.map((warning) => (
+              <li key={warning.id}>
+                <div>
+                  <strong>
+                    {t[warning.explanation_key as keyof typeof t] ?? warning.explanation_key}
+                  </strong>
+                  <span className="hint">{t["performance.teacher_told"]}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </section>
   );
